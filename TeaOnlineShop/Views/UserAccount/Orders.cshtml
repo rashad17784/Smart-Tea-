@@ -1,0 +1,66 @@
+@model List<TeaOnlineShop.Models.Dbase.Order>
+@{
+    ViewData["Title"] = "Order List";
+    ViewData["BodyClass"] = "orders-page";
+}
+
+<section class="account-modern-section section-block">
+    <div class="container">
+        <div class="account-page-head">
+            <p class="tea-eyebrow">Purchase History</p>
+            <h1>Order List</h1>
+            <p>Track submitted tea orders and review order totals, references, and status.</p>
+        </div>
+
+        <div class="orders-panel">
+            <div class="orders-panel-head">
+                <div>
+                    <h2>Recent Orders</h2>
+                    <p>@Model.Count order@(Model.Count == 1 ? "" : "s") found for your account.</p>
+                </div>
+                <a href="/Products" class="btn btn-outline-primary rounded-pill">Shop More Tea</a>
+            </div>
+
+            @if (Model.Any())
+            {
+                <div class="table-responsive">
+                    <table class="table orders-table align-middle mb-0">
+                        <thead>
+                            <tr>
+                                <th>Order Ref</th>
+                                <th>Date</th>
+                                <th>Customer</th>
+                                <th>Total</th>
+                                <th>Status</th>
+                                <th class="text-end">Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var order in Model)
+                            {
+                                <tr>
+                                    <td><strong>@(order.TransId ?? $"ORD-{order.Id}")</strong></td>
+                                    <td>@(order.CreateDate?.ToString("dd MMM yyyy") ?? "N/A")</td>
+                                    <td>@order.FirstName @order.LastName</td>
+                                    <td>$@((order.Total ?? 0).ToString("F2"))</td>
+                                    <td><span class="account-status-pill">@(!string.IsNullOrWhiteSpace(order.Status) ? order.Status : "Pending")</span></td>
+                                    <td class="text-end">
+                                        <a href="/Cart/OrderConfirmation?orderId=@order.Id" class="btn btn-sm btn-outline-primary rounded-pill">View</a>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            }
+            else
+            {
+                <div class="account-empty-state">
+                    <h3>No orders yet</h3>
+                    <p>Your completed tea orders will appear here after checkout.</p>
+                    <a href="/Products" class="btn btn-primary rounded-pill">Start Shopping</a>
+                </div>
+            }
+        </div>
+    </div>
+</section>

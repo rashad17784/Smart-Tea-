@@ -1,0 +1,263 @@
+@model TeaOnlineShop.Models.ViewModels.QRScanViewModel
+
+@{
+    ViewData["Title"] = "Scan Supplier QR Code";
+}
+
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-md-8 mx-auto">
+            <div class="card shadow-sm">
+                <div class="card-header bg-primary text-white">
+                    <h4>@ViewData["Title"]</h4>
+                </div>
+                <div class="card-body">
+                    @if (TempData["SuccessMessage"] != null)
+                    {
+                        <div class="alert alert-success mb-3">
+                            @TempData["SuccessMessage"]
+                        </div>
+                    }
+                    
+                    @if (TempData["ErrorMessage"] != null)
+                    {
+                        <div class="alert alert-danger mb-3">
+                            @TempData["ErrorMessage"]
+                        </div>
+                    }
+                    
+                    @if (TempData["Message"] != null)
+                    {
+                        <div class="alert alert-info mb-3">
+                            @TempData["Message"]
+                        </div>
+                    }
+                    
+                    <div class="row mb-4">
+                        <div class="col-md-6">
+                            <div class="alert alert-info">
+                                <i class="icon-info icons"></i> Position the QR code in the camera view to scan it automatically.
+                            </div>
+                            
+                            <!-- QR Code Scanner Container -->
+                            <div id="qr-reader" class="border rounded overflow-hidden" style="width: 100%; min-height: 300px;"></div>
+                            
+                            <div class="mt-3">
+                                <button id="startButton" class="btn btn-primary">
+                                    <i class="icon-camera icons"></i> Start Scanner
+                                </button>
+                                <button id="stopButton" class="btn btn-secondary" disabled>
+                                    <i class="icon-close icons"></i> Stop Scanner
+                                </button>
+                                <a asp-action="Index" class="btn btn-outline-secondary">
+                                    <i class="icon-arrow-left icons"></i> Back to List
+                                </a>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="card border-0 shadow-sm h-100">
+                                <div class="card-header bg-light">
+                                    <h5>Scan Results</h5>
+                                </div>
+                                <div class="card-body" id="result-container">
+                                    <div class="text-center text-muted py-5" id="initial-message">
+                                        <i class="icon-compass icons fs-1"></i>
+                                        <p class="mt-3">Scan a supplier QR code to see results</p>
+                                    </div>
+                                    
+                                    <div id="supplier-info" class="d-none">
+                                        <div class="alert alert-success mb-3" id="success-message">
+                                            Supplier found!
+                                        </div>
+                                        
+                                        <div class="alert alert-danger mb-3 d-none" id="error-message">
+                                            No supplier found with this QR code.
+                                        </div>
+                                        
+                                        <div class="supplier-details">
+                                            <h5 id="supplier-name" class="mb-3"></h5>
+                                            <table class="table table-sm">
+                                                <tr>
+                                                    <th>Code:</th>
+                                                    <td id="supplier-code"></td>
+                                                </tr>
+                                                <tr>
+                                                    <th>Contact:</th>
+                                                    <td id="supplier-contact"></td>
+                                                </tr>
+                                                <tr>
+                                                    <th>Phone:</th>
+                                                    <td id="supplier-phone"></td>
+                                                </tr>
+                                                <tr>
+                                                    <th>Email:</th>
+                                                    <td id="supplier-email"></td>
+                                                </tr>
+                                            </table>
+                                            
+                                            <div class="mt-3">
+                                                <a id="view-details-btn" href="#" class="btn btn-primary me-2">
+                                                    <i class="icon-eye icons"></i> View Details
+                                                </a>
+                                                <a id="record-delivery-btn" href="#" class="btn btn-success">
+                                                    <i class="icon-note icons"></i> Record Delivery
+                                                </a>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    <div id="register-supplier" class="d-none">
+                                        <div class="alert alert-warning mb-3">
+                                            No supplier found with this QR code.
+                                        </div>
+                                        <p>Would you like to register a new supplier with this QR code?</p>
+                                        <a id="register-btn" href="#" class="btn btn-primary">
+                                            <i class="icon-plus icons"></i> Register New Supplier
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+    
+    <!-- HTML5 QR Code Scanner Script -->
+    <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
+    
+    <script>
+        $(document).ready(function() {
+            let qrCodeData = "";
+            let html5QrCode = null;
+            
+            try {
+                html5QrCode = new Html5Qrcode("qr-reader");
+                console.log("QR scanner initialized successfully");
+            } catch (err) {
+                console.error("Error initializing QR scanner:", err);
+                $("#initial-message").html("<div class='alert alert-danger'>Error initializing QR scanner: " + err.message + "</div>");
+            }
+            
+            const qrConfig = { fps: 10, qrbox: { width: 250, height: 250 } };
+            
+            // Start scanning button
+            $("#startButton").on("click", function() {
+                if (!html5QrCode) {
+                    alert("QR scanner could not be initialized");
+                    return;
+                }
+                
+                $("#startButton").prop("disabled", true);
+                $("#stopButton").prop("disabled", false);
+                
+                html5QrCode.start(
+                    { facingMode: "environment" },
+                    qrConfig,
+                    onScanSuccess,
+                    onScanFailure
+                ).catch(err => {
+                    console.log("Error starting scanner: ", err);
+                    alert("Camera access error: " + err);
+                    $("#startButton").prop("disabled", false);
+                    $("#stopButton").prop("disabled", true);
+                });
+            });
+            
+            // Stop scanning button
+            $("#stopButton").on("click", function() {
+                if (!html5QrCode) return;
+                
+                html5QrCode.stop().then(() => {
+                    $("#startButton").prop("disabled", false);
+                    $("#stopButton").prop("disabled", true);
+                }).catch(err => {
+                    console.log("Error stopping scanner: ", err);
+                });
+            });
+            
+            // Handle successful QR scan
+            function onScanSuccess(decodedText, decodedResult) {
+                // Stop scanning once we have a result
+                if (!html5QrCode) return;
+                
+                html5QrCode.stop().then(() => {
+                    $("#startButton").prop("disabled", false);
+                    $("#stopButton").prop("disabled", true);
+                    
+                    // Process the QR code
+                    processQRCode(decodedText);
+                }).catch(err => {
+                    console.log("Error stopping scanner: ", err);
+                });
+            }
+            
+            // Handle scan failures
+            function onScanFailure(error) {
+                // Not displaying errors, just continuing to scan
+                //console.log("QR Code scanning failure:", error);
+            }
+            
+            // Process the QR code data
+            function processQRCode(qrData) {
+                qrCodeData = qrData;
+                console.log("QR code scanned:", qrData);
+                
+                // Reset UI
+                $("#initial-message").addClass("d-none");
+                $("#supplier-info").addClass("d-none");
+                $("#register-supplier").addClass("d-none");
+                $("#success-message").addClass("d-none");
+                $("#error-message").addClass("d-none");
+                
+                // Call the API to check if this QR code belongs to a supplier
+                $.ajax({
+                    url: "@Url.Action("ProcessScan", "Suppliers")",
+                    type: "POST",
+                    data: { QRCodeData: qrData },
+                    success: function(result) {
+                        console.log("API response:", result);
+                        if (result.success) {
+                            // Supplier found - show supplier info
+                            displaySupplierInfo(result.supplier);
+                        } else {
+                            // Supplier not found - show register option
+                            displayRegisterOption(qrData);
+                        }
+                    },
+                    error: function(xhr, status, error) {
+                        console.error("API error:", error);
+                        alert("Error: " + error);
+                    }
+                });
+            }
+            
+            // Display supplier information
+            function displaySupplierInfo(supplier) {
+                $("#supplier-info").removeClass("d-none");
+                $("#success-message").removeClass("d-none");
+                
+                $("#supplier-name").text(supplier.name);
+                $("#supplier-code").text(supplier.code);
+                $("#supplier-contact").text(supplier.contactPerson || "N/A");
+                $("#supplier-phone").text(supplier.phone || "N/A");
+                $("#supplier-email").text(supplier.email || "N/A");
+                
+                // Set up links
+                $("#view-details-btn").attr("href", "@Url.Action("Details", "Suppliers")/" + supplier.id);
+                $("#record-delivery-btn").attr("href", "@Url.Action("Create", "Deliveries")?supplierId=" + supplier.id);
+            }
+            
+            // Display register new supplier option
+            function displayRegisterOption(qrData) {
+                $("#register-supplier").removeClass("d-none");
+                $("#register-btn").attr("href", "@Url.Action("Create", "Suppliers")?qrCode=" + encodeURIComponent(qrData));
+            }
+        });
+    </script>
+} 

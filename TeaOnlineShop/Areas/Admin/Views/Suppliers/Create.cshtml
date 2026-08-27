@@ -1,0 +1,130 @@
+@model TeaOnlineShop.Models.ViewModels.SupplierViewModel
+
+@{
+    ViewData["Title"] = "Create Supplier";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2 class="mb-0"><i class="fa fa-truck me-2"></i>Create New Supplier</h2>
+    <div>
+        <a asp-area="Admin" asp-controller="Suppliers" asp-action="Index" class="btn btn-outline-secondary">
+            <i class="fa fa-arrow-left me-2"></i>Back to List
+        </a>
+    </div>
+</div>
+
+<div class="card shadow-sm">
+    <div class="card-header bg-light">
+        <h5 class="mb-0">Supplier Information</h5>
+    </div>
+    <div class="card-body">
+        <form asp-area="Admin" asp-controller="Suppliers" asp-action="Create" method="post">
+            <div asp-validation-summary="ModelOnly" class="alert alert-danger"></div>
+            
+            <div class="row mb-3">
+                <div class="col-md-6">
+                    <div class="form-group mb-3">
+                        <label asp-for="SupplierCode" class="form-label">Supplier Code</label>
+                        <input asp-for="SupplierCode" class="form-control" />
+                        <span asp-validation-for="SupplierCode" class="text-danger"></span>
+                    </div>
+                    
+                    <div class="form-group mb-3">
+                        <label asp-for="Name" class="form-label">Name</label>
+                        <input asp-for="Name" class="form-control" />
+                        <span asp-validation-for="Name" class="text-danger"></span>
+                    </div>
+                    
+                    <div class="form-group mb-3">
+                        <label asp-for="ContactPerson" class="form-label">Contact Person</label>
+                        <input asp-for="ContactPerson" class="form-control" />
+                        <span asp-validation-for="ContactPerson" class="text-danger"></span>
+                    </div>
+                    
+                    <div class="form-group mb-3">
+                        <label asp-for="Phone" class="form-label">Phone</label>
+                        <input asp-for="Phone" class="form-control" />
+                        <span asp-validation-for="Phone" class="text-danger"></span>
+                    </div>
+
+                    <div class="form-group mb-3">
+                        <label asp-for="SelectedCategoryIds" class="form-label">Categories</label>
+                        <select asp-for="SelectedCategoryIds" asp-items="Model.AvailableCategories" class="form-select" multiple>
+                        </select>
+                        <span asp-validation-for="SelectedCategoryIds" class="text-danger"></span>
+                        <small class="text-muted">Hold Ctrl/Cmd to select multiple categories</small>
+                    </div>
+                </div>
+                
+                <div class="col-md-6">
+                    <div class="form-group mb-3">
+                        <label asp-for="Email" class="form-label">Email</label>
+                        <input asp-for="Email" class="form-control" type="email" />
+                        <span asp-validation-for="Email" class="text-danger"></span>
+                    </div>
+                    
+                    <div class="form-group mb-3">
+                        <label asp-for="Address" class="form-label">Address</label>
+                        <textarea asp-for="Address" class="form-control" rows="2"></textarea>
+                        <span asp-validation-for="Address" class="text-danger"></span>
+                    </div>
+                    
+                    <div class="form-group mb-3">
+                        <label asp-for="Status" class="form-label">Status</label>
+                        <select asp-for="Status" class="form-select">
+                            <option value="Active">Active</option>
+                            <option value="Inactive">Inactive</option>
+                        </select>
+                        <span asp-validation-for="Status" class="text-danger"></span>
+                    </div>
+                    
+                    <div class="form-group mb-3">
+                        <label asp-for="RegistrationDate" class="form-label">Registration Date</label>
+                        <input asp-for="RegistrationDate" class="form-control" type="date" />
+                        <span asp-validation-for="RegistrationDate" class="text-danger"></span>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="form-group mb-3">
+                <label asp-for="Notes" class="form-label">Notes</label>
+                <textarea asp-for="Notes" class="form-control" rows="3"></textarea>
+                <span asp-validation-for="Notes" class="text-danger"></span>
+            </div>
+            
+            <div class="form-group mb-3">
+                <label asp-for="QRCodeData" class="form-label">QR Code Data</label>
+                <div class="input-group">
+                    <input asp-for="QRCodeData" class="form-control" readonly />
+                    <button type="button" class="btn btn-outline-secondary" id="regenerateQR">
+                        <i class="fa fa-sync-alt"></i>
+                    </button>
+                </div>
+                <small class="text-muted">A unique QR code will be generated for this supplier</small>
+            </div>
+            
+            <div class="mt-4">
+                <button type="submit" class="btn btn-primary">
+                    <i class="fa fa-save me-2"></i>Create Supplier
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+    
+    <script>
+        $(document).ready(function() {
+            // Regenerate QR code data when button is clicked
+            $("#regenerateQR").click(function() {
+                var prefix = "SUP";
+                var dateStr = new Date().toISOString().slice(2, 10).replace(/-/g, "");
+                var randomStr = Math.floor(Math.random() * 10000).toString().padStart(4, '0');
+                var newCode = prefix + dateStr + "-" + randomStr;
+                $("#QRCodeData").val(newCode);
+            });
+        });
+    </script>
+} 

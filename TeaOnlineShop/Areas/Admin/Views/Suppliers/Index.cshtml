@@ -1,0 +1,148 @@
+@model IEnumerable<TeaOnlineShop.Models.Dbase.Supplier>
+
+@{
+    ViewData["Title"] = "Suppliers Management";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2 class="mb-0"><i class="fa fa-truck me-2"></i>Suppliers Management</h2>
+    <div>
+        @if (User.HasClaim("permission", "Supplier.Manage"))
+        {
+            <a asp-area="Admin" asp-controller="Suppliers" asp-action="Create" class="btn btn-primary"><i class="fa fa-plus me-2"></i>Add New Supplier</a>
+        }
+        <a asp-area="Admin" asp-controller="Suppliers" asp-action="Scan" class="btn btn-info text-white ms-2">
+            <i class="fa fa-qrcode me-2"></i>Scan QR Code
+        </a>
+    </div>
+</div>
+
+<div class="card shadow-sm">
+    <div class="card-header bg-light">
+        <div class="d-flex justify-content-between align-items-center">
+            <h5 class="mb-0">All Suppliers</h5>
+            <div>
+                <input type="text" id="supplierSearch" class="form-control form-control-sm" placeholder="Search suppliers..." style="width: 200px;">
+            </div>
+        </div>
+    </div>
+    <div class="card-body p-0">
+        @if (TempData["SuccessMessage"] != null)
+        {
+            <div class="alert alert-success m-3">
+                @TempData["SuccessMessage"]
+            </div>
+        }
+        
+        @if (TempData["ErrorMessage"] != null)
+        {
+            <div class="alert alert-danger m-3">
+                @TempData["ErrorMessage"]
+            </div>
+        }
+        
+        <div class="table-responsive">
+            <table class="table table-hover table-striped mb-0 table-admin">
+                <thead>
+                    <tr>
+                        <th style="width: 10%">
+                            <i class="fa fa-hashtag me-2 text-muted"></i>Code
+                        </th>
+                        <th style="width: 20%">
+                            <i class="fa fa-building me-2 text-muted"></i>Name
+                        </th>
+                        <th style="width: 15%">
+                            <i class="fa fa-user me-2 text-muted"></i>Contact Person
+                        </th>
+                        <th style="width: 15%">
+                            <i class="fa fa-phone me-2 text-muted"></i>Phone
+                        </th>
+                        <th style="width: 15%">
+                            <i class="fa fa-calendar me-2 text-muted"></i>Registration Date
+                        </th>
+                        <th style="width: 10%">
+                            <i class="fa fa-circle me-2 text-muted"></i>Status
+                        </th>
+                        <th style="width: 15%" class="text-end">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @if (Model != null && Model.Any())
+                    {
+                        foreach (var item in Model)
+                        {
+                            <tr>
+                                <td>@item.SupplierCode</td>
+                                <td>
+                                    <div class="fw-medium">@item.Name</div>
+                                    @if (!string.IsNullOrEmpty(item.Email))
+                                    {
+                                        <small class="text-muted">@item.Email</small>
+                                    }
+                                </td>
+                                <td>@item.ContactPerson</td>
+                                <td>@item.Phone</td>
+                                <td>@item.RegistrationDate.ToString("yyyy-MM-dd")</td>
+                                <td>
+                                    @if (item.Status == "Active")
+                                    {
+                                        <span class="badge bg-success">Active</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="badge bg-danger">Inactive</span>
+                                    }
+                                </td>
+                                <td>
+                                    <div class="d-flex justify-content-end action-buttons">
+                                        <a asp-area="Admin" asp-controller="Suppliers" asp-action="Details" asp-route-id="@item.Id" class="btn btn-sm btn-outline-primary me-1" title="Details">
+                                            <i class="fa fa-eye"></i>
+                                        </a>
+                                        @if (User.HasClaim("permission", "Supplier.Manage"))
+                                        {
+                                            <a asp-area="Admin" asp-controller="Suppliers" asp-action="Edit" asp-route-id="@item.Id" class="btn btn-sm btn-outline-secondary me-1" title="Edit"><i class="fa fa-pencil-alt"></i></a>
+                                        }
+                                        @if (User.HasClaim("permission", "Inventory.Receive"))
+                                        {
+                                            <a asp-area="Admin" asp-controller="Deliveries" asp-action="Create" asp-route-supplierId="@item.Id" class="btn btn-sm btn-outline-success" title="Create Delivery"><i class="fa fa-clipboard-check"></i></a>
+                                        }
+                                    </div>
+                                </td>
+                            </tr>
+                        }
+                    }
+                    else
+                    {
+                        <tr>
+                            <td colspan="7" class="text-center py-4">
+                                <p class="text-muted mb-0">No suppliers found</p>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+    <div class="card-footer">
+        <div class="d-flex justify-content-between align-items-center">
+            <a asp-area="Admin" asp-controller="SupplierCategories" asp-action="Index" class="btn btn-outline-secondary">
+                <i class="fa fa-tags me-2"></i>Manage Categories
+            </a>
+            <small class="text-muted">Showing @Model.Count() suppliers</small>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        $(document).ready(function() {
+            // Filter table as user types in search box
+            $("#supplierSearch").on("keyup", function() {
+                var value = $(this).val().toLowerCase();
+                $("table tbody tr").filter(function() {
+                    $(this).toggle($(this).text().toLowerCase().indexOf(value) > -1)
+                });
+            });
+        });
+    </script>
+} 

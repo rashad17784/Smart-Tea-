@@ -1,0 +1,84 @@
+@model TeaOnlineShop.Models.Dbase.Supplier
+
+@{
+    ViewData["Title"] = "Delete Supplier";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2 class="mb-0"><i class="fa fa-trash-alt me-2 text-danger"></i>Delete Supplier</h2>
+    <div>
+        <a asp-area="Admin" asp-controller="Suppliers" asp-action="Index" class="btn btn-outline-secondary">
+            <i class="fa fa-arrow-left me-2"></i>Back to List
+        </a>
+    </div>
+</div>
+
+<div class="alert alert-danger mb-4">
+    <h5 class="alert-heading"><i class="fa fa-exclamation-triangle me-2"></i>Warning!</h5>
+    <p>Are you sure you want to delete this supplier? This action cannot be undone and may affect related deliveries.</p>
+</div>
+
+<div class="card shadow-sm mb-4">
+    <div class="card-header bg-light">
+        <h5 class="mb-0">Supplier Details</h5>
+    </div>
+    <div class="card-body">
+        <div class="row">
+            <div class="col-md-6">
+                <dl class="row">
+                    <dt class="col-sm-4">Code</dt>
+                    <dd class="col-sm-8">@Model.SupplierCode</dd>
+                    
+                    <dt class="col-sm-4">Name</dt>
+                    <dd class="col-sm-8">@Model.Name</dd>
+                    
+                    <dt class="col-sm-4">Contact Person</dt>
+                    <dd class="col-sm-8">@(Model.ContactPerson ?? "Not specified")</dd>
+                </dl>
+            </div>
+            
+            <div class="col-md-6">
+                <dl class="row">
+                    <dt class="col-sm-4">Registration Date</dt>
+                    <dd class="col-sm-8">@Model.RegistrationDate.ToString("yyyy-MM-dd")</dd>
+                    
+                    <dt class="col-sm-4">Status</dt>
+                    <dd class="col-sm-8">
+                        @if (Model.Status == "Active")
+                        {
+                            <span class="badge bg-success">Active</span>
+                        }
+                        else
+                        {
+                            <span class="badge bg-danger">Inactive</span>
+                        }
+                    </dd>
+                    
+                    <dt class="col-sm-4">Deliveries</dt>
+                    <dd class="col-sm-8">
+                        @if (Model.Deliveries != null && Model.Deliveries.Any())
+                        {
+                            <span class="badge bg-warning text-dark">@Model.Deliveries.Count deliveries associated</span>
+                        }
+                        else
+                        {
+                            <span class="badge bg-secondary">No deliveries</span>
+                        }
+                    </dd>
+                </dl>
+            </div>
+        </div>
+    </div>
+</div>
+
+<form asp-area="Admin" asp-controller="Suppliers" asp-action="DeleteConfirmed" method="post">
+    <input type="hidden" name="id" value="@Model.Id" />
+    <div class="d-flex justify-content-between">
+        <a asp-area="Admin" asp-controller="Suppliers" asp-action="Edit" asp-route-id="@Model.Id" class="btn btn-outline-primary">
+            <i class="fa fa-pencil-alt me-2"></i>Edit Instead
+        </a>
+        <button type="submit" class="btn btn-danger">
+            <i class="fa fa-trash-alt me-2"></i>Confirm Delete
+        </button>
+    </div>
+</form> 

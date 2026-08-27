@@ -1,0 +1,72 @@
+@model IEnumerable<TeaOnlineShop.Models.ViewModels.OperationalDataImportListItem>
+@{
+    ViewData["Title"] = "Operational Data Imports";
+    string Badge(string status) => status switch
+    {
+        "Approved" => "bg-success",
+        "PendingApproval" => "bg-warning text-dark",
+        "ValidationFailed" => "bg-danger",
+        "Rejected" => "bg-dark",
+        _ => "bg-secondary"
+    };
+}
+
+<div class="d-flex flex-wrap justify-content-between align-items-start gap-3 mb-4">
+    <div>
+        <h1 class="h3 mb-1"><i class="fa fa-database me-2 text-primary"></i>Operational Data Imports</h1>
+        <p class="text-muted mb-0">Controlled factory-history staging, reconciliation, independent approval and immutable publication.</p>
+    </div>
+    <div class="d-flex flex-wrap gap-2">
+        <a asp-action="Template" class="btn btn-outline-secondary"><i class="fa fa-file-csv me-2"></i>Controlled template</a>
+        <a asp-action="Upload" class="btn btn-primary"><i class="fa fa-cloud-arrow-up me-2"></i>Stage factory export</a>
+    </div>
+</div>
+
+@if (TempData["Success"] is string success)
+{
+    <div class="alert alert-success" role="alert">@success</div>
+}
+
+<div class="alert alert-info border-0 shadow-sm d-flex gap-3" role="note">
+    <i class="fa fa-shield-halved fs-4 mt-1"></i>
+    <div><strong>Evidence-first import.</strong> An approved batch supplies verified historical observations for analytics and AI. It does not silently alter the current stock ledger or today’s balances.</div>
+</div>
+
+<div class="card shadow-sm border-0">
+    <div class="card-header bg-white d-flex flex-wrap justify-content-between align-items-center gap-2">
+        <strong>Import register</strong>
+        <form method="get" class="d-flex gap-2">
+            <select name="status" class="form-select form-select-sm" aria-label="Filter by status">
+                <option value="">All statuses</option>
+                @foreach (var value in new[] { "PendingApproval", "Approved", "ValidationFailed", "Rejected" })
+                {
+                    <option value="@value" selected="@(ViewBag.Status == value)">@value</option>
+                }
+            </select>
+            <button class="btn btn-sm btn-outline-primary" type="submit">Filter</button>
+        </form>
+    </div>
+    <div class="table-responsive">
+        <table class="table table-hover align-middle mb-0">
+            <thead><tr><th>Batch</th><th>Source / period</th><th>Reconciliation</th><th>Rows</th><th>Submitted</th><th>Status</th><th></th></tr></thead>
+            <tbody>
+            @if (!Model.Any())
+            {
+                <tr><td colspan="7" class="text-center text-muted py-5"><i class="fa fa-inbox d-block fs-2 mb-2"></i>No operational imports recorded.</td></tr>
+            }
+            @foreach (var item in Model)
+            {
+                <tr>
+                    <td><strong>@item.BatchNumber</strong><div class="small text-muted text-break">@item.FileName</div></td>
+                    <td><strong>@item.SourceSystem</strong><div class="small text-muted">@item.SourcePeriodStartUtc.ToString("yyyy-MM-dd") – @item.SourcePeriodEndUtc.ToString("yyyy-MM-dd")</div></td>
+                    <td>@item.ReconciliationStatus<div class="small text-muted">In @item.CalculatedInboundKg.ToString("N4") / Out @item.CalculatedOutboundKg.ToString("N4") kg</div></td>
+                    <td>@item.ValidRowCount valid<div class="small @(item.RejectedRowCount > 0 ? "text-danger" : "text-muted")">@item.RejectedRowCount rejected</div></td>
+                    <td>@item.SubmittedAtUtc.ToLocalTime().ToString("g")<div class="small text-muted">@item.SubmittedByName</div></td>
+                    <td><span class="badge @Badge(item.Status)">@item.Status</span></td>
+                    <td class="text-end"><a asp-action="Details" asp-route-id="@item.Id" class="btn btn-sm btn-outline-primary">Review</a></td>
+                </tr>
+            }
+            </tbody>
+        </table>
+    </div>
+</div>

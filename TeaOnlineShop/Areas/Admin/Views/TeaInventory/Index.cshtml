@@ -1,0 +1,140 @@
+@model IEnumerable<TeaOnlineShop.Models.Dbase.TeaInventoryItem>
+
+@{
+    ViewData["Title"] = "Tea Inventory";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2 class="mb-0"><i class="fa fa-leaf me-2"></i>Tea Inventory Management</h2>
+    <div>
+        @if (User.HasClaim("permission", "Inventory.MasterDataManage"))
+        {
+            <a asp-area="Admin" asp-controller="TeaInventory" asp-action="Create" class="btn btn-primary">
+                <i class="fa fa-plus me-2"></i>Add New Item
+            </a>
+        }
+        <a asp-area="Admin" asp-controller="TeaInventory" asp-action="LowStock" class="btn btn-warning ms-2">
+            <i class="fa fa-exclamation-triangle me-2"></i>Low Stock Items
+        </a>
+        <a asp-area="Admin" asp-controller="TeaInventory" asp-action="Scan" class="btn btn-secondary ms-2">
+            <i class="fa fa-qrcode me-2"></i>Scan QR Code
+        </a>
+    </div>
+</div>
+
+@if (TempData["SuccessMessage"] != null)
+{
+    <div class="alert alert-success alert-dismissible fade show" role="alert">
+        <i class="fa fa-check-circle me-2"></i>@TempData["SuccessMessage"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+}
+
+@if (TempData["ErrorMessage"] != null)
+{
+    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+        <i class="fa fa-exclamation-circle me-2"></i>@TempData["ErrorMessage"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+}
+
+<div class="card shadow-sm">
+    <div class="card-header bg-light">
+        <div class="row align-items-center">
+            <div class="col">
+                <h5 class="mb-0">Tea Inventory Items</h5>
+            </div>
+            <div class="col-auto">
+                <input type="text" id="itemSearch" class="form-control" placeholder="Search items..." />
+            </div>
+        </div>
+    </div>
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table table-hover mb-0" id="itemsTable">
+                <thead class="table-light">
+                    <tr>
+                        <th>Item Code</th>
+                        <th>Name</th>
+                        <th>Type</th>
+                        <th>Grade</th>
+                        <th>Origin</th>
+                        <th>Batch</th>
+                        <th>Current Stock</th>
+                        <th>Min. Stock</th>
+                        <th>Status</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @if (Model != null && Model.Any())
+                    {
+                        foreach (var item in Model)
+                        {
+                            <tr class="@(item.CurrentStock <= (item.MinimumStock ?? 0) ? "table-warning" : "")">
+                                <td><code>@item.ItemCode</code></td>
+                                <td>@item.Name</td>
+                                <td>@item.TeaType</td>
+                                <td>@item.Grade</td>
+                                <td>@(item.Origin ?? "-")</td>
+                                <td>@(item.BatchNumber ?? "-")</td>
+                                <td class="fw-bold">@item.CurrentStock @item.Unit</td>
+                                <td>@(item.MinimumStock.HasValue ? $"{item.MinimumStock} {item.Unit}" : "-")</td>
+                                <td>
+                                    <span class="badge bg-@(item.Status == "Active" ? "success" : "secondary")">
+                                        @item.Status
+                                    </span>
+                                </td>
+                                <td>
+                                    <div class="btn-group">
+                                        <a asp-area="Admin" asp-controller="TeaInventory" asp-action="Details" asp-route-id="@item.Id" 
+                                           class="btn btn-sm btn-outline-primary">
+                                            <i class="fa fa-info-circle"></i>
+                                        </a>
+                                        @if (User.HasClaim("permission", "Inventory.MasterDataManage"))
+                                        {
+                                            <a asp-area="Admin" asp-controller="TeaInventory" asp-action="Edit" asp-route-id="@item.Id" class="btn btn-sm btn-outline-secondary"><i class="fa fa-edit"></i></a>
+                                        }
+                                        @if (User.HasClaim("permission", "Inventory.Transact"))
+                                        {
+                                            <a asp-area="Admin" asp-controller="TeaInventory" asp-action="AddStock" asp-route-id="@item.Id" class="btn btn-sm btn-outline-success"><i class="fa fa-plus"></i></a>
+                                            <a asp-area="Admin" asp-controller="TeaInventory" asp-action="RemoveStock" asp-route-id="@item.Id" class="btn btn-sm btn-outline-danger"><i class="fa fa-minus"></i></a>
+                                        }
+                                    </div>
+                                </td>
+                            </tr>
+                        }
+                    }
+                    else
+                    {
+                        <tr>
+                            <td colspan="10" class="text-center py-4">
+                                <div class="alert alert-info mb-0">
+                                    <i class="fa fa-info-circle me-2"></i>No inventory items found. 
+                                    @if (User.HasClaim("permission", "Inventory.MasterDataManage"))
+                                    {
+                                        <a asp-area="Admin" asp-controller="TeaInventory" asp-action="Create" class="alert-link">Add your first item</a>
+                                    }
+                                </div>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        $(document).ready(function() {
+            // Simple table search functionality
+            $("#itemSearch").on("keyup", function() {
+                var value = $(this).val().toLowerCase();
+                $("#itemsTable tbody tr").filter(function() {
+                    $(this).toggle($(this).text().toLowerCase().indexOf(value) > -1)
+                });
+            });
+        });
+    </script>
+} 

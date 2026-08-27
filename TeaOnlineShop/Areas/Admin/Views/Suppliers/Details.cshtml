@@ -1,0 +1,176 @@
+@model TeaOnlineShop.Models.Dbase.Supplier
+
+@{
+    ViewData["Title"] = "Supplier Details";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2 class="mb-0"><i class="fa fa-truck me-2"></i>Supplier Details</h2>
+    <div>
+        <a asp-area="Admin" asp-controller="Suppliers" asp-action="Index" class="btn btn-outline-secondary">
+            <i class="fa fa-arrow-left me-2"></i>Back to List
+        </a>
+        @if (User.HasClaim("permission", "Supplier.Manage"))
+        {
+            <a asp-area="Admin" asp-controller="Suppliers" asp-action="Edit" asp-route-id="@Model.Id" class="btn btn-outline-primary ms-2"><i class="fa fa-pencil-alt me-2"></i>Edit</a>
+        }
+        @if (User.HasClaim("permission", "Inventory.Receive"))
+        {
+            <a asp-area="Admin" asp-controller="Deliveries" asp-action="Create" asp-route-supplierId="@Model.Id" class="btn btn-success ms-2"><i class="fa fa-clipboard-check me-2"></i>Create Delivery</a>
+        }
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-8 mb-4">
+        <div class="card shadow-sm h-100">
+            <div class="card-header bg-light">
+                <h5 class="mb-0">Supplier Information</h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <dl class="row">
+                            <dt class="col-sm-4">Code</dt>
+                            <dd class="col-sm-8">@Model.SupplierCode</dd>
+                            
+                            <dt class="col-sm-4">Name</dt>
+                            <dd class="col-sm-8">@Model.Name</dd>
+                            
+                            <dt class="col-sm-4">Contact Person</dt>
+                            <dd class="col-sm-8">@(Model.ContactPerson ?? "Not specified")</dd>
+                            
+                            <dt class="col-sm-4">Phone</dt>
+                            <dd class="col-sm-8">@(Model.Phone ?? "Not specified")</dd>
+                        </dl>
+                    </div>
+                    
+                    <div class="col-md-6">
+                        <dl class="row">
+                            <dt class="col-sm-4">Email</dt>
+                            <dd class="col-sm-8">@(Model.Email ?? "Not specified")</dd>
+                            
+                            <dt class="col-sm-4">Address</dt>
+                            <dd class="col-sm-8">@(Model.Address ?? "Not specified")</dd>
+                            
+                            <dt class="col-sm-4">Registration Date</dt>
+                            <dd class="col-sm-8">@Model.RegistrationDate.ToString("yyyy-MM-dd")</dd>
+                            
+                            <dt class="col-sm-4">Status</dt>
+                            <dd class="col-sm-8">
+                                @if (Model.Status == "Active")
+                                {
+                                    <span class="badge bg-success">Active</span>
+                                }
+                                else
+                                {
+                                    <span class="badge bg-danger">Inactive</span>
+                                }
+                            </dd>
+                        </dl>
+                    </div>
+                </div>
+                
+                @if (!string.IsNullOrEmpty(Model.Notes))
+                {
+                    <div class="alert alert-info mt-3">
+                        <h6 class="alert-heading"><i class="fa fa-sticky-note me-2"></i>Notes</h6>
+                        <p class="mb-0">@Model.Notes</p>
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-4 mb-4">
+        <div class="card shadow-sm h-100">
+            <div class="card-header bg-light">
+                <h5 class="mb-0">QR Code</h5>
+            </div>
+            <div class="card-body text-center">
+                <img src="https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=@Model.QRCodeData" alt="Supplier QR Code" class="img-fluid border p-2" />
+                <p class="mt-3 mb-0">Scan this QR code to quickly identify this supplier</p>
+                <p class="text-muted">QR Code Value: @Model.QRCodeData</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="card shadow-sm mb-4">
+    <div class="card-header bg-light">
+        <h5 class="mb-0">Recent Deliveries</h5>
+    </div>
+    <div class="card-body p-0">
+        @if (Model.Deliveries != null && Model.Deliveries.Any())
+        {
+            <div class="table-responsive">
+                <table class="table table-hover table-striped mb-0 table-admin">
+                    <thead>
+                        <tr>
+                            <th>Delivery Code</th>
+                            <th>Date</th>
+                            <th>Status</th>
+                            @if (User.HasClaim("permission", "Dashboard.FinancialView"))
+                            {
+                                <th>Total Amount</th>
+                            }
+                            <th class="text-end">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var delivery in Model.Deliveries.OrderByDescending(d => d.DeliveryDate).Take(5))
+                        {
+                            <tr>
+                                <td>@delivery.DeliveryCode</td>
+                                <td>@delivery.DeliveryDate.ToString("yyyy-MM-dd")</td>
+                                <td>
+                                    @if (delivery.Status == "Received")
+                                    {
+                                        <span class="badge bg-success">@delivery.Status</span>
+                                    }
+                                    else if (delivery.Status == "Pending")
+                                    {
+                                        <span class="badge bg-warning text-dark">@delivery.Status</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="badge bg-secondary">@delivery.Status</span>
+                                    }
+                                </td>
+                                @if (User.HasClaim("permission", "Dashboard.FinancialView"))
+                                {
+                                    <td>@String.Format("{0:C2}", delivery.TotalAmount)</td>
+                                }
+                                <td class="text-end">
+                                    <a asp-area="Admin" asp-controller="Deliveries" asp-action="Details" asp-route-id="@delivery.Id" class="btn btn-sm btn-outline-primary">
+                                        <i class="fa fa-eye"></i>
+                                    </a>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+            
+            <div class="p-3 text-end">
+                <a asp-area="Admin" asp-controller="Deliveries" asp-action="Index" class="btn btn-outline-primary btn-sm">
+                    <i class="fa fa-list me-2"></i>View All Deliveries
+                </a>
+            </div>
+        }
+        else
+        {
+            <div class="p-4 text-center">
+                <p class="text-muted mb-0">No deliveries found for this supplier</p>
+                @if (User.HasClaim("permission", "Inventory.Receive"))
+                {
+                <div class="mt-3">
+                    <a asp-area="Admin" asp-controller="Deliveries" asp-action="Create" asp-route-supplierId="@Model.Id" class="btn btn-outline-success btn-sm">
+                        <i class="fa fa-plus me-2"></i>Create First Delivery
+                    </a>
+                </div>
+                }
+            </div>
+        }
+    </div>
+</div> 

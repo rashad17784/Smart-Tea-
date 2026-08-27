@@ -1,0 +1,102 @@
+@model TeaOnlineShop.Models.ViewModels.StockAdjustmentViewModel
+
+@{
+    ViewData["Title"] = "Adjust Stock";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2 class="mb-0"><i class="fa fa-balance-scale me-2"></i>Adjust Stock</h2>
+    <div>
+        <a asp-area="Admin" asp-controller="TeaInventory" asp-action="Details" asp-route-id="@Model.ItemId" class="btn btn-outline-secondary">
+            <i class="fa fa-arrow-left me-2"></i>Back to Details
+        </a>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-8">
+        <div class="card shadow-sm mb-4">
+            <div class="card-header bg-light">
+                <h5 class="mb-0">Adjust Inventory Stock Level</h5>
+            </div>
+            <div class="card-body">
+                <div class="alert alert-warning">
+                    <i class="fa fa-exclamation-triangle me-2"></i>Use this feature to directly set the stock level when a significant discrepancy is found during inventory checks or audits.
+                </div>
+                
+                <div class="alert alert-info">
+                    <div class="row mb-2">
+                        <div class="col-md-3 fw-bold">Item Name:</div>
+                        <div class="col-md-9">@Model.ItemName</div>
+                    </div>
+                    <div class="row mb-2">
+                        <div class="col-md-3 fw-bold">Type / Grade:</div>
+                        <div class="col-md-9">@Model.TeaType / @Model.Grade</div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-3 fw-bold">Current Stock:</div>
+                        <div class="col-md-9">@Model.CurrentStock</div>
+                    </div>
+                </div>
+                
+                <form asp-area="Admin" asp-controller="TeaInventory" asp-action="AdjustStock" method="post">
+                    <div asp-validation-summary="ModelOnly" class="alert alert-danger"></div>
+                    <input type="hidden" asp-for="ItemId" />
+                    <input type="hidden" asp-for="ItemName" />
+                    <input type="hidden" asp-for="TeaType" />
+                    <input type="hidden" asp-for="Grade" />
+                    <input type="hidden" asp-for="CurrentStock" />
+                    
+                    <div class="form-group mb-3">
+                        <label asp-for="NewStock" class="form-label">New Stock Level</label>
+                        <input asp-for="NewStock" class="form-control" type="number" step="0.01" min="0" />
+                        <span asp-validation-for="NewStock" class="text-danger"></span>
+                        <small class="text-muted">Enter the actual stock level as counted or measured</small>
+                    </div>
+                    
+                    <div class="form-group mb-3">
+                        <label asp-for="Reason" class="form-label">Reason for Adjustment</label>
+                        <textarea asp-for="Reason" class="form-control" rows="3" required></textarea>
+                        <span asp-validation-for="Reason" class="text-danger"></span>
+                        <small class="text-muted">A detailed explanation is required for audit purposes</small>
+                    </div>
+                    
+                    <div class="form-group mt-4 d-flex justify-content-end">
+                        <a asp-area="Admin" asp-controller="TeaInventory" asp-action="Details" asp-route-id="@Model.ItemId" class="btn btn-outline-secondary me-2">
+                            Cancel
+                        </a>
+                        <button type="submit" class="btn btn-warning">
+                            <i class="fa fa-check-circle me-2"></i>Adjust Stock
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-4">
+        <div class="card shadow-sm mb-4">
+            <div class="card-header bg-light">
+                <h5 class="mb-0">Instructions</h5>
+            </div>
+            <div class="card-body">
+                <p><strong>Stock adjustment</strong> is used to correct inventory levels when there's a significant discrepancy between system records and actual stock.</p>
+                <p>Common reasons for adjustments:</p>
+                <ul>
+                    <li>Physical inventory count differences</li>
+                    <li>Unrecorded shrinkage or damage</li>
+                    <li>System errors or migration issues</li>
+                    <li>Administrative corrections</li>
+                </ul>
+                <div class="alert alert-danger">
+                    <i class="fa fa-exclamation-circle me-2"></i>This action will be recorded in the audit trail and marked as a correction.
+                </div>
+                <p class="mb-0"><small>For regular stock movements, use the <strong>Add Stock</strong> or <strong>Remove Stock</strong> features instead.</small></p>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+} 

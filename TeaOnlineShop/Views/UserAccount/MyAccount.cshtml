@@ -1,0 +1,51 @@
+@model TeaOnlineShop.Identity.ApplicationUser
+@{
+    ViewData["Title"] = "My Account";
+    ViewData["BodyClass"] = "account-page";
+    var orderCount = ViewBag.OrderCount as int? ?? 0;
+    var lastOrder = ViewBag.LastOrder as TeaOnlineShop.Models.Dbase.Order;
+    var roles = ViewBag.Roles as string ?? "Customer";
+}
+
+<section class="account-modern-section section-block">
+    <div class="container">
+        <div class="account-page-head">
+            <p class="tea-eyebrow">Account Portal</p>
+            <h1>My Account</h1>
+            <p>View your account details, recent order activity, and quick actions.</p>
+        </div>
+        <div class="row g-4 align-items-stretch">
+            <div class="col-lg-4">
+                <aside class="account-profile-card">
+                    <div class="account-avatar">@((Model.FullName ?? "U").Trim().Substring(0, 1).ToUpper())</div>
+                    <h2>@Model.FullName</h2>
+                    <p>@Model.Email</p>
+                    <span class="account-role-pill">@roles</span>
+                </aside>
+            </div>
+            <div class="col-lg-8">
+                <div class="account-details-card">
+                    <div class="row g-3">
+                        <div class="col-md-4"><div class="account-metric"><span>Total Orders</span><strong>@orderCount</strong></div></div>
+                        <div class="col-md-4"><div class="account-metric"><span>Member Since</span><strong>@Model.CreatedAtUtc.ToLocalTime().ToString("dd MMM yyyy")</strong></div></div>
+                        <div class="col-md-4"><div class="account-metric"><span>Last Order</span><strong>@(lastOrder?.CreateDate?.ToString("dd MMM yyyy") ?? "No orders")</strong></div></div>
+                    </div>
+                    <div class="account-info-grid">
+                        <div><span>Full name</span><strong>@Model.FullName</strong></div>
+                        <div><span>Email address</span><strong>@Model.Email</strong></div>
+                        <div><span>Account type</span><strong>@roles</strong></div>
+                        <div><span>Account status</span><strong>@(Model.IsActive ? "Active" : "Inactive")</strong></div>
+                    </div>
+                    <div class="account-actions">
+                        <a href="/UserAccount/Orders" class="btn btn-primary rounded-pill">View Orders</a>
+                        <a href="/Products" class="btn btn-outline-primary rounded-pill">Continue Shopping</a>
+                        @if (User.IsInRole("Administrator") || User.IsInRole("WarehouseStaff"))
+                        {
+                            <a href="/Admin" class="btn btn-outline-primary rounded-pill">Staff Area</a>
+                        }
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>

@@ -1,0 +1,372 @@
+@{
+    ViewData["Title"] = "Scan Supplier QR Code";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2 class="mb-0"><i class="fa fa-qrcode me-2"></i>Scan Supplier QR Code</h2>
+    <div>
+        <a href="/Admin/Deliveries" class="btn btn-outline-secondary">
+            <i class="fa fa-arrow-left me-2"></i>Back to List
+        </a>
+    </div>
+</div>
+
+@if (TempData["ErrorMessage"] != null)
+{
+    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+        <i class="fa fa-exclamation-circle me-2"></i>@TempData["ErrorMessage"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+}
+
+<div class="row">
+    <div class="col-lg-6 mx-auto">
+        <div class="card shadow-sm mb-4">
+            <div class="card-header bg-light">
+                <h5 class="mb-0">Camera Feed</h5>
+            </div>
+            <div class="card-body">
+                <div class="text-center mb-3">
+                    <div class="form-group mb-3">
+                        <label for="cameraSelection" class="form-label">Select Camera</label>
+                        <select id="cameraSelection" class="form-select">
+                            <option value="">Loading cameras...</option>
+                        </select>
+                    </div>
+                    
+                    <div class="btn-group mb-3">
+                        <button id="startButton" class="btn btn-primary">
+                            <i class="fa fa-camera me-2"></i>Start Camera
+                        </button>
+                        <button id="stopButton" class="btn btn-danger" disabled>
+                            <i class="fa fa-stop me-2"></i>Stop Camera
+                        </button>
+                    </div>
+                </div>
+                
+                <div id="cameraContainer" class="mb-3 text-center">
+                    <div id="qr-reader" style="width: 100%; max-width: 500px; margin: 0 auto; position: relative; overflow: hidden; border: 1px solid #ccc; border-radius: 4px;"></div>
+                    <div id="qr-reader-results" class="mt-3"></div>
+                </div>
+                
+                <div class="alert alert-info">
+                    <p class="mb-0">
+                        <i class="fa fa-info-circle me-2"></i>
+                        Point your camera at a supplier QR code to automatically find the supplier.
+                    </p>
+                </div>
+                
+                <div id="cameraError" class="alert alert-danger mt-3" style="display: none;">
+                    <h5><i class="fa fa-exclamation-circle me-2"></i>Camera Access Issues</h5>
+                    <p>Unable to access the camera. This may be due to:</p>
+                    <ul>
+                        <li>Browser permissions not granted</li>
+                        <li>No camera connected to your device</li>
+                        <li>Another application is using the camera</li>
+                    </ul>
+                    <p>Please check your browser permissions and make sure your camera is properly connected.</p>
+                    <button id="retryCamera" class="btn btn-sm btn-outline-danger">
+                        <i class="fa fa-redo me-2"></i>Retry Camera Access
+                    </button>
+                </div>
+            </div>
+        </div>
+        
+        <div class="card shadow-sm" id="supplierInfoCard" style="display: none;">
+            <div class="card-header bg-light">
+                <h5 class="mb-0">Supplier Information</h5>
+            </div>
+            <div class="card-body">
+                <div id="supplierInfoContent">
+                    <!-- Supplier info will be displayed here -->
+                </div>
+                <div class="mt-3">
+                    <a id="createDeliveryLink" href="#" class="btn btn-success">
+                        <i class="fa fa-truck me-2"></i>Create Delivery
+                    </a>
+                    <button id="scanNewButton" class="btn btn-outline-primary">
+                        <i class="fa fa-qrcode me-2"></i>Scan Another
+                    </button>
+                </div>
+            </div>
+        </div>
+        
+        <div class="card shadow-sm">
+            <div class="card-header bg-light">
+                <h5 class="mb-0">Manual Entry</h5>
+            </div>
+            <div class="card-body">
+                <p>If scanning doesn't work, you can enter the supplier code manually:</p>
+                <div class="input-group mb-3">
+                    <input type="text" id="manualCode" class="form-control" placeholder="Enter supplier code..." />
+                    <button class="btn btn-outline-primary" type="button" id="submitManualCode">
+                        <i class="fa fa-search me-2"></i>Find
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
+    <script>
+        $(document).ready(function() {
+            let html5QrCode;
+            let currentCameraId;
+            
+            // Load available cameras
+            loadCameras();
+            
+            // Handle camera selection change
+            $('#cameraSelection').on('change', function() {
+                if (html5QrCode && html5QrCode.isScanning) {
+                    html5QrCode.stop().then(() => {
+                        if ($(this).val()) {
+                            startScanner($(this).val());
+                        }
+                    });
+                } else if ($(this).val()) {
+                    startScanner($(this).val());
+                }
+            });
+            
+            // QR code detection callback
+            const qrCodeSuccessCallback = (decodedText, decodedResult) => {
+                if (decodedText) {
+                    // Play a beep sound to indicate success
+                    playBeepSound();
+                    
+                    // Stop scanning
+                    if (html5QrCode) {
+                        html5QrCode.pause();
+                    }
+                    
+                    // Show result
+                    $('#qr-reader-results').html(
+                        `<div class="alert alert-success">
+                            <p class="mb-1">QR Code detected:</p>
+                            <p class="mb-0"><strong>${decodedText}</strong></p>
+                        </div>`
+                    );
+                    
+                    // Update button states
+                    $('#startButton').prop('disabled', false);
+                    $('#stopButton').prop('disabled', true);
+                    
+                    // Fetch supplier information
+                    fetchSupplierInfo(decodedText);
+                }
+            };
+            
+            // Function to play a beep sound
+            function playBeepSound() {
+                try {
+                    const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                    const oscillator = audioContext.createOscillator();
+                    const gainNode = audioContext.createGain();
+                    
+                    oscillator.type = 'sine';
+                    oscillator.frequency.value = 1500;
+                    oscillator.connect(gainNode);
+                    gainNode.connect(audioContext.destination);
+                    
+                    gainNode.gain.value = 0.5;
+                    oscillator.start();
+                    setTimeout(() => oscillator.stop(), 200);
+                } catch (e) {
+                    console.log('Error playing beep sound', e);
+                }
+            }
+            
+            // Start camera and QR scanning
+            function startScanner(cameraId) {
+                if (!cameraId) {
+                    $('#cameraError').show();
+                    return;
+                }
+                
+                currentCameraId = cameraId;
+                $('#cameraContainer').show();
+                $('#cameraError').hide();
+                $('#qr-reader-results').empty();
+                
+                if (!html5QrCode) {
+                    html5QrCode = new Html5Qrcode("qr-reader");
+                }
+                
+                const config = {
+                    fps: 10,
+                    qrbox: { width: 250, height: 250 },
+                    aspectRatio: 1.0,
+                    disableFlip: false,
+                };
+                
+                html5QrCode.start(
+                    cameraId,
+                    config,
+                    qrCodeSuccessCallback,
+                    (errorMessage) => {
+                        // Ignore the QR code not found error as it's expected during normal scanning
+                        if (!errorMessage.includes("QR code not found")) {
+                            console.error(`QR Code scanning error: ${errorMessage}`);
+                        }
+                    }
+                ).then(() => {
+                    console.log(`QR Code scanning started with camera ${cameraId}`);
+                    $('#startButton').prop('disabled', true);
+                    $('#stopButton').prop('disabled', false);
+                }).catch((err) => {
+                    console.error(`Unable to start scanning: ${err}`);
+                    $('#cameraError').show();
+                    $('#qr-reader-results').html(
+                        `<div class="alert alert-danger">
+                            <p class="mb-0">Error starting scanner: ${err}</p>
+                        </div>`
+                    );
+                });
+            }
+            
+            // Load available cameras
+            function loadCameras() {
+                if (Html5Qrcode.isCanvasSupported() && Html5Qrcode.scriptUriFollowsPathConvention()) {
+                    Html5Qrcode.getCameras().then(cameras => {
+                        if (cameras && cameras.length > 0) {
+                            $('#cameraSelection').empty();
+                            cameras.forEach(camera => {
+                                let label = camera.label || `Camera ${camera.id}`;
+                                // Try to identify back camera for mobile devices
+                                if (label.toLowerCase().includes('back') || 
+                                    label.toLowerCase().includes('rear') ||
+                                    label.toLowerCase().includes('environment')) {
+                                    $('#cameraSelection').prepend(
+                                        `<option value="${camera.id}" selected>${label} (recommended)</option>`
+                                    );
+                                    currentCameraId = camera.id;
+                                } else {
+                                    $('#cameraSelection').append(
+                                        `<option value="${camera.id}">${label}</option>`
+                                    );
+                                }
+                            });
+                            // If no back camera was found, select the first one
+                            if (!currentCameraId) {
+                                currentCameraId = cameras[0].id;
+                                $('#cameraSelection option:first').prop('selected', true);
+                            }
+                            
+                            $('#cameraError').hide();
+                        } else {
+                            $('#cameraSelection').html('<option value="">No cameras found</option>');
+                            $('#cameraError').show();
+                        }
+                    }).catch(err => {
+                        $('#cameraSelection').html('<option value="">Error loading cameras</option>');
+                        $('#cameraError').show();
+                        console.error('Error getting cameras', err);
+                    });
+                } else {
+                    $('#cameraSelection').html('<option value="">Camera API not supported</option>');
+                    $('#cameraError').show().find('ul').html('<li>Your browser does not support camera access</li>');
+                }
+            }
+            
+            // Start scanning button
+            $('#startButton').click(function() {
+                $('#supplierInfoCard').hide();
+                $('#qr-reader-results').empty();
+                
+                const selectedCamera = $('#cameraSelection').val() || currentCameraId;
+                if (selectedCamera) {
+                    startScanner(selectedCamera);
+                } else {
+                    $('#cameraError').show();
+                }
+            });
+            
+            // Stop scanning button
+            $('#stopButton').click(function() {
+                if (html5QrCode && html5QrCode.isScanning) {
+                    html5QrCode.stop().then(() => {
+                        $('#qr-reader-results').html(
+                            `<div class="alert alert-warning">
+                                <p class="mb-0">Scanner stopped</p>
+                            </div>`
+                        );
+                        
+                        // Update button states
+                        $('#startButton').prop('disabled', false);
+                        $(this).prop('disabled', true);
+                    }).catch(err => {
+                        console.error('Error stopping scanner', err);
+                    });
+                }
+            });
+            
+            // Retry camera access
+            $('#retryCamera').click(function() {
+                loadCameras();
+            });
+            
+            // Handle scanning another QR code
+            $('#scanNewButton').click(function() {
+                $('#supplierInfoCard').hide();
+                $('#startButton').click();
+            });
+            
+            // Handle manual code submission
+            $('#submitManualCode').click(function() {
+                const code = $('#manualCode').val().trim();
+                if (code) {
+                    fetchSupplierInfo(code);
+                } else {
+                    alert('Please enter a supplier code');
+                }
+            });
+            
+            // Function to fetch supplier information
+            function fetchSupplierInfo(supplierCode) {
+                $.ajax({
+                    url: '/Admin/Suppliers/GetSupplierByCode',
+                    type: 'GET',
+                    data: { code: supplierCode },
+                    success: function(data) {
+                        if (data && data.id) {
+                            // Display supplier info
+                            $('#supplierInfoContent').html(`
+                                <div class="mb-3">
+                                    <h5 class="text-primary mb-1">${data.name}</h5>
+                                    <p class="text-muted mb-1">Code: ${data.supplierCode}</p>
+                                    <p class="text-muted mb-1">Contact: ${data.contactPerson}</p>
+                                    <p class="text-muted mb-0">
+                                        <i class="fa fa-envelope me-1"></i> ${data.email || 'N/A'} 
+                                        <i class="fa fa-phone ms-2 me-1"></i> ${data.phone || 'N/A'}
+                                    </p>
+                                </div>
+                            `);
+                            
+                            // Update create delivery link
+                            $('#createDeliveryLink').attr('href', `/Admin/Deliveries/Create?supplierCode=${supplierCode}`);
+                            
+                            // Show the card
+                            $('#supplierInfoCard').show();
+                        } else {
+                            $('#qr-reader-results').html(`
+                                <div class="alert alert-danger">
+                                    <p class="mb-0">No supplier found with code: ${supplierCode}</p>
+                                </div>
+                            `);
+                        }
+                    },
+                    error: function(xhr, status, error) {
+                        $('#qr-reader-results').html(`
+                            <div class="alert alert-danger">
+                                <p class="mb-0">Error finding supplier: ${error}</p>
+                            </div>
+                        `);
+                    }
+                });
+            }
+        });
+    </script>
+} 

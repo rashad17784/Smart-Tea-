@@ -1,0 +1,135 @@
+@model IEnumerable<TeaOnlineShop.Models.Dbase.Supplier>
+
+@{
+    ViewData["Title"] = "Suppliers";
+}
+
+<div class="container mt-4">
+    <div class="card shadow-sm">
+        <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+            <h4 class="mb-0">Suppliers</h4>
+            <div>
+                <a href="/Suppliers/Create" class="btn btn-light btn-sm" style="z-index: 100; position: relative;">
+                    <i class="icon-plus icons"></i> Add Supplier
+                </a>
+                <a href="/Suppliers/Scan" class="btn btn-info btn-sm text-white" style="z-index: 100; position: relative;">
+                    <i class="icon-camera icons"></i> Scan QR Code
+                </a>
+            </div>
+        </div>
+        <div class="card-body">
+            @if (TempData["SuccessMessage"] != null)
+            {
+                <div class="alert alert-success mb-3">
+                    @TempData["SuccessMessage"]
+                </div>
+            }
+            
+            @if (TempData["ErrorMessage"] != null)
+            {
+                <div class="alert alert-danger mb-3">
+                    @TempData["ErrorMessage"]
+                </div>
+            }
+            
+            @if (TempData["Message"] != null)
+            {
+                <div class="alert alert-info mb-3">
+                    @TempData["Message"]
+                </div>
+            }
+            
+            <div class="alert alert-info mb-3">
+                <strong>Debug Info:</strong> Found @(TempData["SupplierCount"] ?? "0") suppliers in the database.
+            </div>
+            
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Code</th>
+                            <th>Name</th>
+                            <th>Contact Person</th>
+                            <th>Phone</th>
+                            <th>Registration Date</th>
+                            <th>Status</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @if (Model != null && Model.Any())
+                        {
+                            foreach (var item in Model)
+                            {
+                                <tr>
+                                    <td>@item.SupplierCode</td>
+                                    <td>@item.Name</td>
+                                    <td>@item.ContactPerson</td>
+                                    <td>@item.Phone</td>
+                                    <td>@item.RegistrationDate.ToString("yyyy-MM-dd")</td>
+                                    <td>
+                                        @if (item.Status == "Active")
+                                        {
+                                            <span class="badge bg-success">Active</span>
+                                        }
+                                        else
+                                        {
+                                            <span class="badge bg-danger">Inactive</span>
+                                        }
+                                    </td>
+                                    <td>
+                                        <div class="btn-group btn-group-sm">
+                                            <a asp-action="Details" asp-route-id="@item.Id" class="btn btn-outline-primary">
+                                                <i class="icon-eye icons"></i>
+                                            </a>
+                                            <a asp-action="Edit" asp-route-id="@item.Id" class="btn btn-outline-secondary">
+                                                <i class="icon-pencil icons"></i>
+                                            </a>
+                                            <a asp-controller="Deliveries" asp-action="Create" asp-route-supplierId="@item.Id" class="btn btn-outline-success">
+                                                <i class="icon-note icons"></i>
+                                            </a>
+                                        </div>
+                                    </td>
+                                </tr>
+                            }
+                        }
+                        else
+                        {
+                            <tr>
+                                <td colspan="7" class="text-center py-4">
+                                    <p class="text-muted mb-0">No suppliers found</p>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        <div class="card-footer">
+            <a asp-controller="SupplierCategories" asp-action="Index" class="btn btn-outline-primary">
+                <i class="icon-layers icons"></i> Manage Categories
+            </a>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        $(document).ready(function() {
+            // Force the Add Supplier and Scan QR Code buttons to be clickable
+            $('.btn-light.btn-sm, .btn-info.btn-sm').on('click', function(e) {
+                var href = $(this).attr('href');
+                if (href) {
+                    window.location.href = href;
+                }
+            });
+            
+            // Disable any parent event handlers that might be intercepting clicks
+            $('.btn-light.btn-sm, .btn-info.btn-sm').parent().on('click', function(e) {
+                e.stopPropagation();
+            });
+            
+            console.log("Supplier buttons initialized");
+        });
+    </script>
+} 

@@ -1,0 +1,117 @@
+@model TeaOnlineShop.Models.Dbase.SupplyItem
+
+@{
+    ViewData["Title"] = "Add Supply Item";
+}
+
+<div class="container mt-4">
+    <div class="card shadow-sm">
+        <div class="card-header bg-primary text-white">
+            <h4>@ViewData["Title"]</h4>
+        </div>
+        <div class="card-body">
+            <form asp-action="CreateSupplyItem" method="post">
+                <div asp-validation-summary="ModelOnly" class="alert alert-danger" role="alert"></div>
+                
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="mb-3">
+                            <label asp-for="Name" class="form-label">Item Name</label>
+                            <input asp-for="Name" class="form-control" />
+                            <span asp-validation-for="Name" class="text-danger"></span>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label asp-for="Category" class="form-label">Category</label>
+                            <select asp-for="Category" class="form-select">
+                                <option value="Green Leaf">Green Leaf</option>
+                                <option value="Firewood">Firewood</option>
+                                <option value="Fertilizer">Fertilizer</option>
+                                <option value="Spare Parts">Spare Parts</option>
+                                <option value="Packaging">Packaging</option>
+                                <option value="Chemicals">Chemicals</option>
+                                <option value="Other">Other</option>
+                            </select>
+                            <span asp-validation-for="Category" class="text-danger"></span>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label asp-for="Unit" class="form-label">Unit of Measurement</label>
+                            <select asp-for="Unit" class="form-select">
+                                <option value="kg">Kilograms (kg)</option>
+                                <option value="g">Grams (g)</option>
+                                <option value="ton">Tons</option>
+                                <option value="l">Liters (l)</option>
+                                <option value="ml">Milliliters (ml)</option>
+                                <option value="pc">Pieces (pc)</option>
+                                <option value="box">Boxes</option>
+                                <option value="bundle">Bundles</option>
+                                <option value="bag">Bags</option>
+                                <option value="pack">Packs</option>
+                            </select>
+                            <span asp-validation-for="Unit" class="text-danger"></span>
+                        </div>
+                    </div>
+                    
+                    <div class="col-md-6">
+                        <div class="mb-3">
+                            <label asp-for="MinimumStock" class="form-label">Minimum Stock Level</label>
+                            <input asp-for="MinimumStock" class="form-control" type="number" step="0.01" />
+                            <span asp-validation-for="MinimumStock" class="text-danger"></span>
+                            <small class="text-muted">Minimum quantity to maintain (optional)</small>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label asp-for="CurrentStock" class="form-label">Current Stock Level</label>
+                            <input asp-for="CurrentStock" class="form-control" type="number" step="0.01" value="0" />
+                            <span asp-validation-for="CurrentStock" class="text-danger"></span>
+                            <small class="text-muted">Initial stock quantity</small>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label asp-for="Description" class="form-label">Description</label>
+                            <textarea asp-for="Description" class="form-control" rows="3"></textarea>
+                            <span asp-validation-for="Description" class="text-danger"></span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="d-flex justify-content-between">
+                    <a href="/Deliveries/SupplyItems" class="btn btn-outline-secondary" style="z-index: 100; position: relative;">
+                        <i class="icon-arrow-left icons"></i> Back to List
+                    </a>
+                    <button type="submit" class="btn btn-primary" style="z-index: 100; position: relative;">
+                        <i class="icon-check icons"></i> Create Item
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+    
+    <script>
+        $(document).ready(function() {
+            // Force buttons to be clickable
+            $('.btn-outline-secondary, .btn-primary').on('click', function(e) {
+                var href = $(this).attr('href');
+                if (href) {
+                    window.location.href = href;
+                }
+                // For submit buttons, allow normal form submission
+                if ($(this).is('[type="submit"]')) {
+                    return true;
+                }
+            });
+            
+            // Disable any parent event handlers that might be intercepting clicks
+            $('.btn-outline-secondary, .btn-primary').parent().on('click', function(e) {
+                e.stopPropagation();
+            });
+            
+            console.log("CreateSupplyItem buttons initialized");
+        });
+    </script>
+} 

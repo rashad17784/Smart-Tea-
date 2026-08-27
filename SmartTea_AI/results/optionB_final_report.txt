@@ -1,0 +1,67 @@
+
+╔══════════════════════════════════════════════════════════════╗
+║       SmartTea AI — Option B Validation Report              ║
+║       Walk-Forward Validation Results                       ║
+╚══════════════════════════════════════════════════════════════╝
+
+EXPERIMENT SETUP:
+──────────────────────────────────────────────────────────────
+   Validation Type   : Walk-Forward Rolling Validation
+   Grade Tested      : BOP Broken Orange Pekoe
+   Number of Windows : 4
+   Days per Window   : 30
+   Total Days Tested : 120
+   LSTM Look-back    : 30 days
+
+RESULTS PER WINDOW:
+──────────────────────────────────────────────────────────────
+   Window   Test Period              SARIMA       LSTM        Winner
+
+   W1       Rows 975 to 1005           15.000%      6.351%   LSTM
+   W2       Rows 1005 to 1035           5.243%      6.393%   SARIMA
+   W3       Rows 1035 to 1065           6.067%      5.621%   LSTM
+   W4       Rows 1065 to 1095          15.562%     10.610%   LSTM
+
+──────────────────────────────────────────────────────────────
+AVERAGE RESULTS ACROSS 4 WINDOWS:
+──────────────────────────────────────────────────────────────
+   SARIMA : 10.468% ± 4.826% standard deviation
+   LSTM   : 7.244% ± 1.968% standard deviation
+
+SUMMARY STATISTICS:
+──────────────────────────────────────────────────────────────
+   LSTM won         : 3/4 windows (75%)
+   SARIMA won       : 1/4 windows (25%)
+   Overall winner   : LSTM lower average MAPE
+   More consistent  : LSTM lower standard deviation
+   LSTM improvement : 30.8% better average MAPE than SARIMA
+
+RECOMMENDED MODEL: LSTM
+──────────────────────────────────────────────────────────────
+
+ACADEMIC CONCLUSION:
+──────────────────────────────────────────────────────────────
+   Walk-forward validation is a stronger evaluation method than
+   a single train/test split because it tests the models across
+   multiple time periods.
+
+   The results show that:
+
+   1. SARIMA achieved an average MAPE of 10.468%.
+   2. LSTM achieved an average MAPE of 7.244%.
+   3. LSTM won 3 out of 4 walk-forward windows.
+   4. The overall recommended model is LSTM.
+   5. The more consistent model is LSTM, based on standard deviation.
+
+   Therefore, the walk-forward validation results provide a more
+   reliable comparison of SARIMA and LSTM for BOP tea demand forecasting.
+
+OUTPUT FILES:
+──────────────────────────────────────────────────────────────
+   plots/optionB/B01_window_visualization.png
+   plots/optionB/B02_all_windows_forecast.png
+   plots/optionB/B03_mape_trend.png
+   results/optionB_walkforward_results.csv
+   results/optionB_final_report.txt
+
+══════════════════════════════════════════════════════════════

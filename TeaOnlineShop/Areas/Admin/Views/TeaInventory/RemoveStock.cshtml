@@ -1,0 +1,132 @@
+@model TeaOnlineShop.Models.ViewModels.StockTransactionViewModel
+@using TeaOnlineShop.Authorization
+
+@{
+    ViewData["Title"] = "Remove Stock";
+    var canViewFinancial = User.HasClaim(
+        AppPermissions.ClaimType,
+        AppPermissions.DashboardFinancialView);
+}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2 class="mb-0"><i class="fa fa-minus-circle me-2"></i>Remove Stock</h2>
+    <div>
+        <a asp-area="Admin" asp-controller="TeaInventory" asp-action="Details" asp-route-id="@Model.ItemId" class="btn btn-outline-secondary">
+            <i class="fa fa-arrow-left me-2"></i>Back to Details
+        </a>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-8">
+        <div class="card shadow-sm mb-4">
+            <div class="card-header bg-light">
+                <h5 class="mb-0">Remove Stock from Inventory</h5>
+            </div>
+            <div class="card-body">
+                <div class="alert alert-info">
+                    <div class="row mb-2">
+                        <div class="col-md-3 fw-bold">Item Name:</div>
+                        <div class="col-md-9">@Model.ItemName</div>
+                    </div>
+                    <div class="row mb-2">
+                        <div class="col-md-3 fw-bold">Type / Grade:</div>
+                        <div class="col-md-9">@Model.TeaType / @Model.Grade</div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-3 fw-bold">Current Stock:</div>
+                        <div class="col-md-9 fw-bold @(Model.CurrentStock <= 0 ? "text-danger" : "")">
+                            @Model.CurrentStock
+                            @if (Model.CurrentStock <= 0)
+                            {
+                                <span class="text-danger"> (No stock available to remove)</span>
+                            }
+                        </div>
+                    </div>
+                </div>
+                
+                <form asp-area="Admin" asp-controller="TeaInventory" asp-action="RemoveStock" method="post">
+                    <div asp-validation-summary="ModelOnly" class="alert alert-danger"></div>
+                    <input type="hidden" asp-for="ItemId" />
+                    <input type="hidden" asp-for="ItemName" />
+                    <input type="hidden" asp-for="TeaType" />
+                    <input type="hidden" asp-for="Grade" />
+                    <input type="hidden" asp-for="CurrentStock" />
+                    
+                    <div class="form-group mb-3">
+                        <label asp-for="TransactionType" class="form-label">Transaction Type</label>
+                        <select asp-for="TransactionType" asp-items="ViewBag.TransactionTypes" class="form-select"></select>
+                        <span asp-validation-for="TransactionType" class="text-danger"></span>
+                    </div>
+                    
+                    <div class="form-group mb-3">
+                        <label asp-for="Quantity" class="form-label">Quantity to Remove</label>
+                        <input asp-for="Quantity" class="form-control" type="number" step="0.01" min="0.01" max="@Model.CurrentStock" />
+                        <span asp-validation-for="Quantity" class="text-danger"></span>
+                        <small class="text-muted">Cannot exceed current stock of @Model.CurrentStock</small>
+                    </div>
+                    
+                    @if (canViewFinancial)
+                    {
+                        <div class="form-group mb-3">
+                            <label asp-for="UnitPrice" class="form-label">Unit Price (Optional)</label>
+                            <div class="input-group">
+                                <span class="input-group-text">LKR</span>
+                                <input asp-for="UnitPrice" class="form-control" type="number" step="0.01" min="0" />
+                            </div>
+                            <span asp-validation-for="UnitPrice" class="text-danger"></span>
+                            <small class="text-muted">Used for sales tracking purposes</small>
+                        </div>
+                    }
+                    
+                    <div class="form-group mb-3">
+                        <label asp-for="ReferenceNumber" class="form-label">Reference Number (Optional)</label>
+                        <input asp-for="ReferenceNumber" class="form-control" />
+                        <span asp-validation-for="ReferenceNumber" class="text-danger"></span>
+                        <small class="text-muted">E.g., order number, sales invoice, etc.</small>
+                    </div>
+                    
+                    <div class="form-group mb-3">
+                        <label asp-for="Notes" class="form-label">Notes (Optional)</label>
+                        <textarea asp-for="Notes" class="form-control" rows="3"></textarea>
+                        <span asp-validation-for="Notes" class="text-danger"></span>
+                    </div>
+                    
+                    <div class="form-group mt-4 d-flex justify-content-end">
+                        <a asp-area="Admin" asp-controller="TeaInventory" asp-action="Details" asp-route-id="@Model.ItemId" class="btn btn-outline-secondary me-2">
+                            Cancel
+                        </a>
+                        <button type="submit" class="btn btn-danger" @(Model.CurrentStock <= 0 ? "disabled" : "")>
+                            <i class="fa fa-minus-circle me-2"></i>Remove Stock
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-4">
+        <div class="card shadow-sm mb-4">
+            <div class="card-header bg-light">
+                <h5 class="mb-0">Instructions</h5>
+            </div>
+            <div class="card-body">
+                <p><strong>Removing stock</strong> decreases the available inventory of this item.</p>
+                <p>Choose the appropriate transaction type:</p>
+                <ul>
+                    <li><strong>Sale</strong> - Use when stock is sold to customers</li>
+                    <li><strong>Damage</strong> - Use when stock is damaged or expired</li>
+                    <li><strong>Transfer</strong> - Use when moving stock to another location</li>
+                </ul>
+                <p>For major stock corrections, use the <strong>Adjust Stock</strong> feature instead.</p>
+                <div class="alert alert-warning">
+                    <i class="fa fa-exclamation-triangle me-2"></i>You cannot remove more stock than is currently available.
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+} 

@@ -1,0 +1,71 @@
+{
+  "version": "2.1",
+  "strategy": "direct_multioutput",
+  "look_back": 60,
+  "max_horizon": 60,
+  "supported_horizons": [
+    30,
+    45,
+    60
+  ],
+  "grades": [
+    "BOP",
+    "BOPF",
+    "DUST",
+    "FNGS",
+    "OP"
+  ],
+  "per_grade": {
+    "BOP": {
+      "model_path": "saved_models/lstm_v2/lstm_bop.keras",
+      "scaler_path": "saved_models/lstm_v2/scaler_bop.pkl",
+      "epochs": 105,
+      "look_back": 60,
+      "max_horizon": 60,
+      "mape_30": 6.694,
+      "mape_45": 6.738,
+      "mape_60": 6.96
+    },
+    "BOPF": {
+      "model_path": "saved_models/lstm_v2/lstm_bopf.keras",
+      "scaler_path": "saved_models/lstm_v2/scaler_bopf.pkl",
+      "epochs": 64,
+      "look_back": 60,
+      "max_horizon": 60,
+      "mape_30": 6.368,
+      "mape_45": 6.751,
+      "mape_60": 7.252
+    },
+    "DUST": {
+      "model_path": "saved_models/lstm_v2/lstm_dust.keras",
+      "scaler_path": "saved_models/lstm_v2/scaler_dust.pkl",
+      "epochs": 86,
+      "look_back": 60,
+      "max_horizon": 60,
+      "mape_30": 7.209,
+      "mape_45": 7.749,
+      "mape_60": 8.207
+    },
+    "FNGS": {
+      "model_path": "saved_models/lstm_v2/lstm_fngs.keras",
+      "scaler_path": "saved_models/lstm_v2/scaler_fngs.pkl",
+      "epochs": 66,
+      "look_back": 60,
+      "max_horizon": 60,
+      "mape_30": 7.858,
+      "mape_45": 8.386,
+      "mape_60": 8.958
+    },
+    "OP": {
+      "model_path": "saved_models/lstm_v2/lstm_op.keras",
+      "scaler_path": "saved_models/lstm_v2/scaler_op.pkl",
+      "epochs": 61,
+      "look_back": 60,
+      "max_horizon": 60,
+      "mape_30": 9.506,
+      "mape_45": 10.321,
+      "mape_60": 10.847
+    }
+  },
+  "architecture": "LSTM(64) \u2192 BN \u2192 Drop \u2192 LSTM(32) \u2192 Drop \u2192 Dense(32) \u2192 Dense(60)"
+}

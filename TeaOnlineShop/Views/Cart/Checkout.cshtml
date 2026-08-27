@@ -1,0 +1,143 @@
+﻿@model TeaOnlineShop.Models.Dbase.Order
+@{
+    ViewData["Title"] = "Checkout";
+    ViewData["BodyClass"] = "checkout-page";
+
+    var products = ViewData["Products"] as List<TeaOnlineShop.Models.ViewModels.ProductCartViewModel> ?? new List<TeaOnlineShop.Models.ViewModels.ProductCartViewModel>();
+    decimal subtotal = products.Sum(p => p.RowSumPrice ?? 0);
+    decimal shipping = Model.Shipping ?? 0;
+    decimal total = subtotal + shipping;
+}
+
+<section class="checkout-modern-wrapper pb-5">
+    <div class="container">
+        <div class="checkout-page-head">
+            <h1>Checkout</h1>
+            <p>Complete the delivery details and confirm your order.</p>
+        </div>
+
+        @if (TempData["ErrorMessage"] != null)
+        {
+            <div class="alert alert-danger">@TempData["ErrorMessage"]</div>
+        }
+
+        <form asp-action="PlaceOrder" asp-controller="Cart" method="post" id="checkout-form" class="checkout-shell">
+            <div class="row g-4 align-items-start">
+                <div class="col-lg-7">
+                    <div class="checkout-card">
+                        <h3>Billing Details</h3>
+
+                        <div class="row g-3">
+                            <div class="col-12">
+                                <label asp-for="Country" class="form-label">Country <span>*</span></label>
+                                <select class="form-select" asp-for="Country" required>
+                                    <option value="">Select Country</option>
+                                    <option value="Sri Lanka">Sri Lanka</option>
+                                    <option value="United States">United States</option>
+                                    <option value="United Kingdom">United Kingdom</option>
+                                    <option value="India">India</option>
+                                    <option value="UAE">UAE</option>
+                                </select>
+                            </div>
+
+                            <div class="col-md-6">
+                                <label asp-for="FirstName" class="form-label">First Name <span>*</span></label>
+                                <input asp-for="FirstName" class="form-control" required />
+                            </div>
+
+                            <div class="col-md-6">
+                                <label asp-for="LastName" class="form-label">Last Name <span>*</span></label>
+                                <input asp-for="LastName" class="form-control" required />
+                            </div>
+
+                            <div class="col-12">
+                                <label asp-for="Address" class="form-label">Address <span>*</span></label>
+                                <input asp-for="Address" class="form-control" required />
+                            </div>
+
+                            <div class="col-md-6">
+                                <label asp-for="City" class="form-label">City <span>*</span></label>
+                                <input asp-for="City" class="form-control" required />
+                            </div>
+
+                            <div class="col-md-6">
+                                <label asp-for="Phone" class="form-label">Phone <span>*</span></label>
+                                <input asp-for="Phone" type="tel" class="form-control" required />
+                            </div>
+
+                            <div class="col-12">
+                                <label asp-for="Email" class="form-label">Email <span>*</span></label>
+                                <input asp-for="Email" type="email" class="form-control" required />
+                            </div>
+
+                            <div class="col-12">
+                                <label asp-for="Comment" class="form-label">Order Notes</label>
+                                <textarea asp-for="Comment" class="form-control" rows="4" placeholder="Special delivery instructions (optional)"></textarea>
+                            </div>
+                        </div>
+
+                        <input type="hidden" asp-for="Shipping" value="@shipping" />
+                        <input type="hidden" name="PaymentMethod" value="cash_on_delivery" />
+                    </div>
+                </div>
+
+                <div class="col-lg-5">
+                    <aside class="checkout-order-card">
+                        <h3>Your Order</h3>
+
+                        <div class="order-items-list">
+                            @if (products.Any())
+                            {
+                                foreach (var item in products)
+                                {
+                                    <div class="order-item-row">
+                                        <div>
+                                            <strong>@item.Title</strong>
+                                            <small>Qty: @item.Count</small>
+                                        </div>
+                                        <span>$@((item.RowSumPrice ?? 0).ToString("F2"))</span>
+                                    </div>
+                                }
+                            }
+                            else
+                            {
+                                <div class="order-empty">No items in cart.</div>
+                            }
+                        </div>
+
+                        <div class="order-total-box">
+                            <div class="summary-row">
+                                <span>Subtotal</span>
+                                <span>$@subtotal.ToString("F2")</span>
+                            </div>
+                            <div class="summary-row">
+                                <span>Shipping</span>
+                                <span>$@shipping.ToString("F2")</span>
+                            </div>
+                            <div class="summary-row grand">
+                                <span>Total</span>
+                                <span>$@total.ToString("F2")</span>
+                            </div>
+                        </div>
+
+                        <div class="payment-box">
+                            <h4>Payment Method</h4>
+
+                            <div class="payment-option-card active">
+                                <div class="d-flex align-items-start gap-3">
+                                    <i class="fa fa-money fs-4 mt-1" aria-hidden="true"></i>
+                                    <div>
+                                        <strong>Cash on Delivery</strong>
+                                        <p class="text-muted mb-0 mt-1">Pay the stated total when the order is delivered. No card information is collected by this site.</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <button type="submit" class="btn btn-primary w-100 rounded-pill mt-3" id="place-order-btn">Place Order</button>
+                    </aside>
+                </div>
+            </div>
+        </form>
+    </div>
+</section>

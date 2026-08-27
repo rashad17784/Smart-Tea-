@@ -1,0 +1,73 @@
+@model TeaOnlineShop.Models.ViewModels.DemandForecastEvaluationViewModel
+@using System.Text.Json
+@{
+    ViewData["Title"] = "Actual vs Forecast";
+    var labels = Model.Rows.Select(x => x.Date.ToString("dd MMM")).ToList();
+    var predicted = Model.Rows.Select(x => x.PredictedKg).ToList();
+    var actual = Model.Rows.Select(x => x.ActualKg).ToList();
+}
+
+<div class="container-fluid">
+    <partial name="_AiDashboardNav" />
+
+    <div class="d-flex flex-wrap justify-content-between align-items-start gap-3 mb-4">
+        <div>
+            <h2 class="mb-1"><i class="fa fa-scale-balanced text-primary me-2"></i>Actual vs Forecast</h2>
+            <p class="text-muted mb-0">Self-evaluation for @Model.Grade · @Model.HorizonDays-day forecast · @Model.Model @(!string.IsNullOrWhiteSpace(Model.ModelVersion) ? $"v{Model.ModelVersion}" : "")</p>
+        </div>
+        <a asp-action="DemandForecast" class="btn btn-outline-secondary">Back to demand forecasts</a>
+    </div>
+
+    <div class="alert @(Model.DataSource == "operational_sql" ? "alert-success" : "alert-info")">
+        <strong>Input evidence:</strong> @Model.SourceLabel<br />
+        <span class="small">@Model.SourceNote</span>
+    </div>
+
+    <div class="row g-3 mb-4">
+        <div class="col-md-4"><div class="card border-0 shadow-sm h-100"><div class="card-body"><div class="text-muted small text-uppercase">Expected test MAPE</div><h3 class="mt-2 mb-0">@(Model.ExpectedMape?.ToString("0.###") ?? "-")%</h3></div></div></div>
+        <div class="col-md-4"><div class="card border-0 shadow-sm h-100"><div class="card-body"><div class="text-muted small text-uppercase">Observed MAPE</div><h3 class="mt-2 mb-0">@(Model.ActualMape?.ToString("0.###") ?? "Awaiting actuals")@(Model.ActualMape.HasValue ? "%" : "")</h3></div></div></div>
+        <div class="col-md-4"><div class="card border-0 shadow-sm h-100"><div class="card-body"><div class="text-muted small text-uppercase">Actual days available</div><h3 class="mt-2 mb-0">@Model.CompletedDays / @Model.Rows.Count</h3></div></div></div>
+    </div>
+
+    <div class="card border-0 shadow-sm mb-4">
+        <div class="card-header bg-white"><strong>Forecast comparison chart</strong></div>
+        <div class="card-body"><div style="height:360px"><canvas id="evaluationChart"></canvas></div></div>
+    </div>
+
+    <div class="card border-0 shadow-sm">
+        <div class="card-header bg-white"><strong>Daily evaluation evidence</strong></div>
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+                <thead class="table-light"><tr><th>Day</th><th>Date</th><th>Predicted</th><th>Actual</th><th>Absolute % error</th></tr></thead>
+                <tbody>
+                @foreach (var row in Model.Rows)
+                {
+                    <tr>
+                        <td>+@row.DayNumber</td><td>@row.Date.ToString("dd MMM yyyy")</td>
+                        <td>@row.PredictedKg.ToString("0.00") kg</td>
+                        <td>@(row.ActualKg?.ToString("0.00") ?? "Pending")@(row.ActualKg.HasValue ? " kg" : "")</td>
+                        <td>@(row.AbsolutePercentageError?.ToString("0.00") ?? "-")@(row.AbsolutePercentageError.HasValue ? "%" : "")</td>
+                    </tr>
+                }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        new Chart(document.getElementById('evaluationChart'), {
+            type: 'line',
+            data: {
+                labels: @Html.Raw(JsonSerializer.Serialize(labels)),
+                datasets: [
+                    { label: 'Predicted demand', data: @Html.Raw(JsonSerializer.Serialize(predicted)), borderColor: '#0d6efd', tension: .25 },
+                    { label: 'Actual demand', data: @Html.Raw(JsonSerializer.Serialize(actual)), borderColor: '#198754', tension: .25 }
+                ]
+            },
+            options: { responsive: true, maintainAspectRatio: false, interaction: { mode: 'index', intersect: false }, plugins: { legend: { position: 'bottom' } } }
+        });
+    </script>
+}

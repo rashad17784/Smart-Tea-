@@ -1,0 +1,9 @@
+﻿{
+    "status":  "healthy",
+    "lstm_v2":  "loaded (30/45/60d direct multi-output)",
+    "lstm_v1":  "loaded (fallback)",
+    "lr":  "loaded (price single-step)",
+    "multistep":  "loaded (price 7/14/30 days)",
+    "anomaly":  "loaded (model + business rules)",
+    "api_version":  "2.2.0"
+}

@@ -1,0 +1,100 @@
+﻿@using System.IO
+@model List<TeaOnlineShop.Models.Dbase.Product>
+@{
+    ViewData["Title"] = "Shop";
+    ViewData["BodyClass"] = "shop-page";
+    var products = Model ?? new List<TeaOnlineShop.Models.Dbase.Product>();
+
+    const string fallbackImage = "/images/placeholder-tea.svg";
+    string SafeImagePath(string? rawName)
+    {
+        var fileName = System.IO.Path.GetFileName(rawName ?? string.Empty);
+        if (string.IsNullOrWhiteSpace(fileName))
+        {
+            return fallbackImage;
+        }
+
+        return $"/images/banners/{fileName}";
+    }
+}
+
+<section class="shop_hero">
+    <div class="container">
+        <div class="shop_hero_content">
+            <p class="shop_eyebrow">Tea Collection</p>
+            <h1>Shop Premium Ceylon Tea</h1>
+            <p>Browse handpicked blends and estate specialties curated for daily wellness and refined taste.</p>
+        </div>
+    </div>
+</section>
+
+<section class="shop_catalog pb-5">
+    <div class="container">
+        <div class="modern-shop-toolbar">
+            <div class="result_count"><strong>@products.Count</strong> products found</div>
+            <div class="toolbar_actions">
+                <a class="btn btn-outline-primary rounded-pill" href="/">Back to Home</a>
+            </div>
+        </div>
+
+        <div class="row g-4">
+            @if (products.Any())
+            {
+                foreach (var item in products)
+                {
+                    var hasDiscount = item.Discount.HasValue && item.Discount.Value > 0 && item.Price.HasValue && item.Price.Value > 0;
+                    decimal finalPrice = (item.Price ?? 0) - (item.Discount ?? 0);
+                    decimal discountPercentage = hasDiscount ? ((item.Discount ?? 0) / (item.Price ?? 1)) * 100 : 0;
+                    var imagePath = SafeImagePath(item.ImageName);
+
+                    <div class="col-lg-4 col-md-6">
+                        <article class="modern-shop-card">
+                            <a class="shop-card-image" href="/Products/ProductDetails/@item.Id">
+                                <img src="@imagePath" alt="@item.Title" onerror="this.onerror=null;this.src='@fallbackImage';">
+                                @if (hasDiscount)
+                                {
+                                    <span class="discount-pill">-@discountPercentage.ToString("F0")%</span>
+                                }
+                            </a>
+
+                            <div class="shop-card-body">
+                                <h3><a href="/Products/ProductDetails/@item.Id">@item.Title</a></h3>
+                                <p>@(string.IsNullOrWhiteSpace(item.Description) ? "Premium tea product from our curated line." : item.Description)</p>
+
+                                <div class="price-row">
+                                    @if (hasDiscount)
+                                    {
+                                        <span class="new-price">$@finalPrice.ToString("F2")</span>
+                                        <span class="old-price">$@((item.Price ?? 0).ToString("F2"))</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="new-price">$@((item.Price ?? 0).ToString("F2"))</span>
+                                    }
+                                </div>
+
+                                <div class="shop-card-actions">
+                                    <a class="btn btn-outline-primary rounded-pill" href="/Products/ProductDetails/@item.Id">View Details</a>
+                                    <button type="button" class="btn btn-primary rounded-pill" onclick="addToCart(@item.Id, 1)">
+                                        Add To Cart
+                                    </button>
+                                </div>
+                            </div>
+                        </article>
+                    </div>
+                }
+            }
+            else
+            {
+                <div class="col-12">
+                    <div class="empty-shop-card">
+                        <h4>No products available right now</h4>
+                        <p>New tea products will appear here once they are added to inventory.</p>
+                        <a class="btn btn-primary rounded-pill" href="/">Go to Home</a>
+                    </div>
+                </div>
+            }
+        </div>
+    </div>
+</section>
+

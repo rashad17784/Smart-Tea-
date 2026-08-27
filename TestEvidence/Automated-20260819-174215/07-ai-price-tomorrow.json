@@ -1,0 +1,8 @@
+﻿{
+    "predicted_price":  103.86,
+    "current_price":  105.0,
+    "change_pct":  -1.09,
+    "trend":  "STABLE",
+    "model":  "Linear Regression",
+    "expected_mape":  2.994
+}

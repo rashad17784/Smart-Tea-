@@ -1,0 +1,111 @@
+﻿@model IEnumerable<TeaOnlineShop.Models.Dbase.Banner>
+
+@{
+    ViewData["Title"] = "Banner Management";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2 class="mb-0"><i class="fa fa-images me-2"></i>Banner Management</h2>
+    <a href="/Admin/Banners/Create" class="btn btn-primary">
+        <i class="fa fa-plus me-2"></i>Add New Banner
+    </a>
+</div>
+
+<div class="card shadow-sm">
+    <div class="card-header bg-light">
+        <div class="d-flex justify-content-between align-items-center">
+            <h5 class="mb-0">All Banners</h5>
+            <div>
+                <input type="text" id="bannerSearch" class="form-control form-control-sm" placeholder="Search banners..." style="width: 200px;">
+            </div>
+        </div>
+    </div>
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table table-hover table-striped mb-0 table-admin">
+                <thead>
+                    <tr>
+                        <th style="width: 15%">
+                            <i class="fa fa-heading me-2 text-muted"></i>@Html.DisplayNameFor(model => model.Title)
+                        </th>
+                        <th style="width: 20%">
+                            <i class="fa fa-align-left me-2 text-muted"></i>@Html.DisplayNameFor(model => model.SubTitle)
+                        </th>
+                        <th style="width: 15%">
+                            <i class="fa fa-image me-2 text-muted"></i>@Html.DisplayNameFor(model => model.ImageName)
+                        </th>
+                        <th style="width: 10%">
+                            <i class="fa fa-sort-numeric-down me-2 text-muted"></i>@Html.DisplayNameFor(model => model.Priority)
+                        </th>
+                        <th style="width: 15%">
+                            <i class="fa fa-link me-2 text-muted"></i>@Html.DisplayNameFor(model => model.Link)
+                        </th>
+                        <th style="width: 10%">
+                            <i class="fa fa-map-marker-alt me-2 text-muted"></i>@Html.DisplayNameFor(model => model.Positon)
+                        </th>
+                        <th style="width: 15%" class="text-end">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                @foreach (var item in Model) {
+                    <tr>
+                        <td>
+                            <span class="fw-medium">@Html.DisplayFor(modelItem => item.Title)</span>
+                        </td>
+                        <td>
+                            <small>@Html.DisplayFor(modelItem => item.SubTitle)</small>
+                        </td>
+                        <td>
+                            <img class="img-thumbnail" src="/images/banners/@item.ImageName" style="max-width:80px; max-height:60px; object-fit:cover;"/>
+                        </td>
+                        <td>
+                            <span class="badge bg-secondary">@Html.DisplayFor(modelItem => item.Priority)</span>
+                        </td>
+                        <td>
+                            <small><code>@Html.DisplayFor(modelItem => item.Link)</code></small>
+                        </td>
+                        <td>
+                            <span class="badge bg-info text-dark">@Html.DisplayFor(modelItem => item.Positon)</span>
+                        </td>
+                        <td>
+                            <div class="d-flex justify-content-end action-buttons">
+                                <a href="/Admin/Banners/Edit/@item.Id" class="btn btn-sm btn-outline-primary me-1" title="Edit">
+                                    <i class="fa fa-pencil-alt"></i>
+                                </a>
+                                <a href="/Admin/Banners/Details/@item.Id" class="btn btn-sm btn-outline-info me-1" title="Details">
+                                    <i class="fa fa-info-circle"></i>
+                                </a>
+                                <a href="/Admin/Banners/Delete/@item.Id" class="btn btn-sm btn-outline-danger" title="Delete">
+                                    <i class="fa fa-trash"></i>
+                                </a>
+                            </div>
+                        </td>
+                    </tr>
+                }
+                </tbody>
+            </table>
+        </div>
+    </div>
+    <div class="card-footer d-flex justify-content-between">
+        <small class="text-muted">Showing @Model.Count() banners</small>
+        <div>
+            <span class="badge bg-info text-dark me-2">Slider</span>
+            <span class="badge bg-info text-dark me-2">Banner1</span>
+            <span class="badge bg-info text-dark">Banner2</span>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        $(document).ready(function() {
+            // Filter table as user types in search box
+            $("#bannerSearch").on("keyup", function() {
+                var value = $(this).val().toLowerCase();
+                $("table tbody tr").filter(function() {
+                    $(this).toggle($(this).text().toLowerCase().indexOf(value) > -1)
+                });
+            });
+        });
+    </script>
+}

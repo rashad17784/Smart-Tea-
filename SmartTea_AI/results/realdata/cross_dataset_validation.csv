@@ -1,0 +1,4 @@
+Dataset,Period,Frequency,N_Test,LR_MAPE,XGB_MAPE,LR_R2,XGB_R2,Winner
+Synthetic (daily),2021-2023,Daily,213,2.994,3.463,0.804,0.716,LR
+FRED (real),1992-2026,Monthly,81,3.7169,4.5095,0.8153,0.7353,LR
+World Bank (real),1960-2025,Monthly,156,3.9093,10.3588,0.7767,-0.4674,LR

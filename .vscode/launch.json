@@ -1,0 +1,23 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "SmartTea Web (Release)",
+      "type": "coreclr",
+      "request": "launch",
+      "preLaunchTask": "SmartTea: Prepare complete system",
+      "program": "${workspaceFolder}/TeaOnlineShop/bin/Release/net8.0/TeaOnlineShop.dll",
+      "args": [],
+      "cwd": "${workspaceFolder}/TeaOnlineShop",
+      "stopAtEntry": false,
+      "env": {
+        "ASPNETCORE_ENVIRONMENT": "Development",
+        "ASPNETCORE_URLS": "http://localhost:5255"
+      },
+      "serverReadyAction": {
+        "action": "openExternally",
+        "pattern": "\\bNow listening on:\\s+(https?://\\S+)"
+      }
+    }
+  ]
+}

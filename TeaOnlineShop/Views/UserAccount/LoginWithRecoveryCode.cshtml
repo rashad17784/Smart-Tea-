@@ -1,0 +1,40 @@
+@model TeaOnlineShop.Models.ViewModels.RecoveryCodeLoginViewModel
+@{
+    ViewData["Title"] = "Recovery code sign in";
+    ViewData["BodyClass"] = "auth-page";
+}
+
+<section class="tea-auth-section">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-lg-5 col-md-8">
+                <div class="tea-auth-card">
+                    <div class="tea-auth-head text-center">
+                        <p class="tea-eyebrow">Secure Recovery</p>
+                        <h1>Use Recovery Code</h1>
+                        <p>Enter one unused recovery code. Each code works only once.</p>
+                    </div>
+                    <form asp-action="LoginWithRecoveryCode" method="post" class="tea-auth-form">
+                        <div asp-validation-summary="ModelOnly" class="text-danger mb-2"></div>
+                        <input asp-for="RememberMe" type="hidden" />
+                        <input asp-for="ReturnUrl" type="hidden" />
+                        <div class="mb-3">
+                            <label asp-for="RecoveryCode" class="form-label"></label>
+                            <input asp-for="RecoveryCode"
+                                   class="form-control"
+                                   autocomplete="one-time-code"
+                                   autocapitalize="none"
+                                   autofocus />
+                            <span asp-validation-for="RecoveryCode" class="text-danger"></span>
+                        </div>
+                        <button type="submit" class="btn btn-primary w-100 rounded-pill">Verify and Sign In</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+@section Scripts {
+    @{ await Html.RenderPartialAsync("_ValidationScriptsPartial"); }
+}

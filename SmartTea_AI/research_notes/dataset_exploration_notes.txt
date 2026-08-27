@@ -1,0 +1,129 @@
+
+╔══════════════════════════════════════════════════════════════╗
+║         SmartTea AI — Research Phase Notes                   ║
+║         Dataset Exploration and Implementation Planning      ║
+╚══════════════════════════════════════════════════════════════╝
+
+DATE: 2026-06-23
+
+═══════════════════════════════════════════════════════════════
+SECTION 1: REAL DATASETS — BOTH LOADED SUCCESSFULLY
+═══════════════════════════════════════════════════════════════
+
+Dataset 1: World Bank Commodity Price Data (Pink Sheet)
+──────────────────────────────────────────────────────────────
+   Source    : World Bank Group
+   URL       : CMO-Historical-Data-Monthly.xlsx
+   File      : data/worldbank_tea_price_clean.csv
+   Rows      : 792 monthly observations
+   Period    : 1960-01-01 to 2025-12-01
+   Column    : Tea, Colombo (Sri Lankan origin)
+   Unit      : USD per kg
+   Status    : ✅ LOADED AND CLEAN
+
+Dataset 2: FRED Federal Reserve Tea Price
+──────────────────────────────────────────────────────────────
+   Source    : Federal Reserve Bank of St. Louis
+   URL       : fred.stlouisfed.org/series/PTEAUSDM
+   File      : data/fred_tea_price_clean.csv
+   Rows      : 414 monthly observations
+   Period    : 1992-01-01 to 2026-06-01
+   Column    : PTEAUSDM (Global tea benchmark)
+   Unit      : USD per metric tonne
+   Status    : ✅ LOADED AND CLEAN
+
+═══════════════════════════════════════════════════════════════
+SECTION 2: DATASET STATISTICS
+═══════════════════════════════════════════════════════════════
+
+World Bank Tea (Colombo) USD/kg:
+   Mean      : 1.8734
+   Std Dev   : 1.0807
+   Min       : 0.4342
+   Max       : 4.4900
+   Skewness  : 0.6696
+   Years     : 65 years (1960-2025)
+
+FRED Global Tea USD/tonne:
+   Mean      : 256.3126
+   Std Dev   : 60.1537
+   Min       : 143.3701
+   Max       : 403.0323
+   Skewness  : 0.2792
+   Years     : 34 years (1992-2026)
+
+═══════════════════════════════════════════════════════════════
+SECTION 3: COMPLETE IMPLEMENTATION PLAN
+═══════════════════════════════════════════════════════════════
+
+Task A: Anomaly Detection
+──────────────────────────────────────────────────────────────
+   Algorithm    : Isolation Forest (scikit-learn)
+   Dataset 1    : tea_demand_timeseries.csv (synthetic)
+                  → Detect unusual daily demand events
+   Dataset 2    : tea_price_regression.csv (synthetic)
+                  → Detect unusual price events
+   Dataset 3    : fred_tea_price_clean.csv (real)
+                  → Detect real historical price anomalies
+   Dataset 4    : worldbank_tea_price_clean.csv (real)
+                  → Cross-validate anomaly findings
+   Notebook     : AnomalyDetection.ipynb
+   Expected     : ~5% anomaly rate in each dataset
+
+Task B: Multi-Step Forecasting
+──────────────────────────────────────────────────────────────
+   Strategy     : Direct multi-output (7 separate models)
+   Horizons     : 1, 2, 3, 4, 5, 6, 7 days ahead
+   Models       : Linear Regression + XGBoost
+   Dataset      : tea_price_regression.csv (synthetic)
+   Notebook     : MultiStep_Forecasting.ipynb
+   Expected     : MAPE increases from ~3% (Day1) to ~7% (Day7)
+
+Task C: Real Data Validation
+──────────────────────────────────────────────────────────────
+   Models       : Linear Regression + XGBoost (from Part 2)
+   Primary data : fred_tea_price_clean.csv
+   Secondary    : worldbank_tea_price_clean.csv
+   Method       : Same methodology as synthetic Part 2
+   Notebook     : RealData_Validation.ipynb
+   Goal         : Confirm LR vs XGBoost findings on real data
+
+═══════════════════════════════════════════════════════════════
+SECTION 4: KEY RESEARCH FINDINGS
+═══════════════════════════════════════════════════════════════
+
+Finding 1: World Bank Coverage
+   → 65 years of Sri Lankan Colombo tea prices
+   → Captures all major commodity market cycles
+   → Price range: 0.43 to 4.49 USD/kg
+
+Finding 2: FRED Coverage
+   → 34 years of global tea benchmark prices
+   → 16 months with >15% price change (potential anomalies)
+   → Clearly shows 2008 crash and 2022 surge
+
+Finding 3: Both datasets show consistent price patterns
+   → 1997-1998: Price spike then crash (Asian crisis)
+   → 2008-2009: Commodity crash
+   → 2010-2011: Commodity super-cycle peak
+   → 2022: Post-COVID + Ukraine war surge
+
+Finding 4: Data is ready for all 3 implementation tasks
+
+═══════════════════════════════════════════════════════════════
+SECTION 5: FILES CREATED IN RESEARCH PHASE
+═══════════════════════════════════════════════════════════════
+
+Data files:
+   data/worldbank_tea_price_clean.csv         ✅ 792 rows
+   data/fred_tea_price_clean.csv              ✅ 414 rows
+   data/fred_tea_price_with_changes.csv       ✅
+
+Plot files:
+   plots/research/R01_real_datasets_overview.png  ✅
+   plots/research/R02_real_vs_synthetic.png       ✅
+   plots/research/R03_multistep_planning.png      ✅
+
+Notes:
+   research_notes/dataset_exploration_notes.txt  ✅
+═══════════════════════════════════════════════════════════════

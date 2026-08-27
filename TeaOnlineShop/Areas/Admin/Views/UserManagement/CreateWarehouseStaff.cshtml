@@ -1,0 +1,38 @@
+@model TeaOnlineShop.Models.ViewModels.CreateWarehouseUserViewModel
+@{
+    ViewData["Title"] = "Add Warehouse Staff";
+}
+
+<div class="admin-page-card">
+    <div class="mb-4">
+        <h1 class="mb-1"><i class="fa fa-user-plus me-2"></i>Add Warehouse Staff</h1>
+        <p class="text-muted mb-0">This internal role cannot be selected during public registration.</p>
+    </div>
+    <form asp-action="CreateWarehouseStaff" method="post" class="row g-3">
+        <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+        <div class="col-md-6">
+            <label asp-for="FullName" class="form-label"></label>
+            <input asp-for="FullName" class="form-control" />
+            <span asp-validation-for="FullName" class="text-danger"></span>
+        </div>
+        <div class="col-md-6">
+            <label asp-for="Email" class="form-label"></label>
+            <input asp-for="Email" class="form-control" />
+            <span asp-validation-for="Email" class="text-danger"></span>
+        </div>
+        <div class="col-md-6">
+            <label asp-for="TemporaryPassword" class="form-label"></label>
+            <input asp-for="TemporaryPassword" class="form-control" autocomplete="new-password" />
+            <span asp-validation-for="TemporaryPassword" class="text-danger"></span>
+            <small class="form-text text-muted">At least 12 characters with uppercase, lowercase, number, and symbol.</small>
+        </div>
+        <div class="col-12 d-flex gap-2">
+            <button type="submit" class="btn btn-primary">Create Warehouse Account</button>
+            <a asp-action="Index" class="btn btn-outline-secondary">Cancel</a>
+        </div>
+    </form>
+</div>
+
+@section Scripts {
+    @{ await Html.RenderPartialAsync("_ValidationScriptsPartial"); }
+}

@@ -1,0 +1,171 @@
+@model TeaOnlineShop.Models.ViewModels.TeaInventoryCreateViewModel
+
+@{
+    ViewData["Title"] = "Create Item";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2 class="mb-0"><i class="fa fa-leaf me-2"></i>Create New Inventory Item</h2>
+    <div>
+        <a asp-area="Admin" asp-controller="TeaInventory" asp-action="Index" class="btn btn-outline-secondary">
+            <i class="fa fa-arrow-left me-2"></i>Back to List
+        </a>
+    </div>
+</div>
+
+<form asp-area="Admin" asp-controller="TeaInventory" asp-action="Create" method="post">
+    <div asp-validation-summary="ModelOnly" class="alert alert-danger"></div>
+    
+    <div class="row">
+        <div class="col-md-6">
+            <div class="card shadow-sm mb-4">
+                <div class="card-header bg-light">
+                    <h5 class="mb-0">Basic Information</h5>
+                </div>
+                <div class="card-body">
+                    <div class="form-group mb-3">
+                        <label asp-for="ItemCode" class="form-label"></label>
+                        <input asp-for="ItemCode" class="form-control text-uppercase" placeholder="For example: TEA-BOP" autocomplete="off" />
+                        <div class="form-text">Permanent unique code used by the stock ledger and controlled data imports.</div>
+                        <span asp-validation-for="ItemCode" class="text-danger"></span>
+                    </div>
+
+                    <div class="form-group mb-3">
+                        <label asp-for="Name" class="form-label">Name</label>
+                        <input asp-for="Name" class="form-control" />
+                        <span asp-validation-for="Name" class="text-danger"></span>
+                    </div>
+                    
+                    <div class="form-group mb-3">
+                        <label asp-for="TeaType" class="form-label">Tea Type</label>
+                        <select asp-for="TeaType" asp-items="ViewBag.TeaTypes" class="form-select"></select>
+                        <span asp-validation-for="TeaType" class="text-danger"></span>
+                    </div>
+                    
+                    <div class="form-group mb-3">
+                        <label asp-for="Grade" class="form-label">Grade</label>
+                        <select asp-for="Grade" asp-items="ViewBag.Grades" class="form-select"></select>
+                        <span asp-validation-for="Grade" class="text-danger"></span>
+                    </div>
+                    
+                    <div class="form-group mb-3">
+                        <label asp-for="Unit" class="form-label">Unit</label>
+                        <select asp-for="Unit" class="form-select">
+                            <option value="kg">kg</option>
+                            <option value="g">g</option>
+                            <option value="lb">lb</option>
+                            <option value="oz">oz</option>
+                        </select>
+                        <span asp-validation-for="Unit" class="text-danger"></span>
+                    </div>
+                    
+                    <div class="form-group mb-3">
+                        <label asp-for="Origin" class="form-label">Origin</label>
+                        <input asp-for="Origin" class="form-control" />
+                        <span asp-validation-for="Origin" class="text-danger"></span>
+                    </div>
+                    
+                    <div class="form-group mb-3">
+                        <label asp-for="HarvestSeason" class="form-label">Harvest Season</label>
+                        <input asp-for="HarvestSeason" class="form-control" />
+                        <span asp-validation-for="HarvestSeason" class="text-danger"></span>
+                    </div>
+                    
+                    <div class="form-group mb-3">
+                        <label asp-for="HarvestDate" class="form-label">Harvest Date</label>
+                        <input asp-for="HarvestDate" class="form-control" type="date" />
+                        <span asp-validation-for="HarvestDate" class="text-danger"></span>
+                    </div>
+                    
+                    <div class="form-group mb-3">
+                        <label asp-for="Description" class="form-label">Description</label>
+                        <textarea asp-for="Description" class="form-control" rows="3"></textarea>
+                        <span asp-validation-for="Description" class="text-danger"></span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-6">
+            <div class="card shadow-sm mb-4">
+                <div class="card-header bg-light">
+                    <h5 class="mb-0">Stock Information</h5>
+                </div>
+                <div class="card-body">
+                    <div class="form-group mb-3">
+                        <label asp-for="BatchNumber" class="form-label">Batch Number</label>
+                        <input asp-for="BatchNumber" class="form-control" />
+                        <span asp-validation-for="BatchNumber" class="text-danger"></span>
+                    </div>
+                    
+                    <div class="form-group mb-3">
+                        <label asp-for="InitialStock" class="form-label"></label>
+                        <input asp-for="InitialStock" class="form-control" type="number" step="0.01" min="0" />
+                        <span asp-validation-for="InitialStock" class="text-danger"></span>
+                    </div>
+                    
+                    <div class="form-group mb-3">
+                        <label asp-for="MinimumStock" class="form-label">Minimum Stock</label>
+                        <input asp-for="MinimumStock" class="form-control" type="number" step="0.01" min="0" />
+                        <span asp-validation-for="MinimumStock" class="text-danger"></span>
+                    </div>
+                    
+                    <div class="form-group mb-3">
+                        <label asp-for="ReorderLevel" class="form-label">Reorder Level</label>
+                        <input asp-for="ReorderLevel" class="form-control" type="number" step="0.01" min="0" />
+                        <span asp-validation-for="ReorderLevel" class="text-danger"></span>
+                    </div>
+                    
+                    <div class="form-group mb-3">
+                        <label asp-for="ReorderQuantity" class="form-label">Reorder Quantity</label>
+                        <input asp-for="ReorderQuantity" class="form-control" type="number" step="0.01" min="0" />
+                        <span asp-validation-for="ReorderQuantity" class="text-danger"></span>
+                    </div>
+                    
+                    <div class="form-group mb-3">
+                        <label asp-for="UnitCost" class="form-label">Unit Cost</label>
+                        <div class="input-group">
+                            <span class="input-group-text">$</span>
+                            <input asp-for="UnitCost" class="form-control" type="number" step="0.01" min="0" />
+                        </div>
+                        <span asp-validation-for="UnitCost" class="text-danger"></span>
+                    </div>
+                    
+                    <div class="form-group mb-3">
+                        <label asp-for="RetailPrice" class="form-label">Retail Price</label>
+                        <div class="input-group">
+                            <span class="input-group-text">$</span>
+                            <input asp-for="RetailPrice" class="form-control" type="number" step="0.01" min="0" />
+                        </div>
+                        <span asp-validation-for="RetailPrice" class="text-danger"></span>
+                    </div>
+                    
+                    <div class="form-group mb-3">
+                        <label asp-for="Status" class="form-label">Status</label>
+                        <select asp-for="Status" class="form-select">
+                            <option value="Active">Active</option>
+                            <option value="Inactive">Inactive</option>
+                        </select>
+                        <span asp-validation-for="Status" class="text-danger"></span>
+                    </div>
+                    
+                    <div class="form-group mb-3">
+                        <label class="form-label">QR Code Data</label>
+                        <input class="form-control" value="Generated securely after creation" readonly />
+                        <small class="text-muted">The server generates a unique, auditable QR identifier after validation succeeds.</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="mb-4 d-flex justify-content-end">
+        <button type="submit" class="btn btn-primary">
+            <i class="fa fa-save me-2"></i>Create Item
+        </button>
+    </div>
+</form>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+} 

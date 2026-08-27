@@ -1,0 +1,73 @@
+﻿{
+    "current_price":  105.0,
+    "horizon_days":  7,
+    "forecast":  [
+                     {
+                         "day":  "Day+1",
+                         "day_number":  1,
+                         "predicted":  103.87,
+                         "change_pct":  -1.08,
+                         "trend":  "STABLE",
+                         "expected_mape":  2.831
+                     },
+                     {
+                         "day":  "Day+2",
+                         "day_number":  2,
+                         "predicted":  101.67,
+                         "change_pct":  -3.17,
+                         "trend":  "FALLING",
+                         "expected_mape":  2.881
+                     },
+                     {
+                         "day":  "Day+3",
+                         "day_number":  3,
+                         "predicted":  101.96,
+                         "change_pct":  -2.89,
+                         "trend":  "FALLING",
+                         "expected_mape":  2.913
+                     },
+                     {
+                         "day":  "Day+4",
+                         "day_number":  4,
+                         "predicted":  103.42,
+                         "change_pct":  -1.51,
+                         "trend":  "STABLE",
+                         "expected_mape":  3.1
+                     },
+                     {
+                         "day":  "Day+5",
+                         "day_number":  5,
+                         "predicted":  105.09,
+                         "change_pct":  0.08,
+                         "trend":  "STABLE",
+                         "expected_mape":  2.96
+                     },
+                     {
+                         "day":  "Day+6",
+                         "day_number":  6,
+                         "predicted":  105.34,
+                         "change_pct":  0.33,
+                         "trend":  "STABLE",
+                         "expected_mape":  3.099
+                     },
+                     {
+                         "day":  "Day+7",
+                         "day_number":  7,
+                         "predicted":  103.79,
+                         "change_pct":  -1.15,
+                         "trend":  "STABLE",
+                         "expected_mape":  2.907
+                     }
+                 ],
+    "summary":  {
+                    "avg_price":  103.59,
+                    "min_price":  101.67,
+                    "max_price":  105.34,
+                    "overall_trend":  "STABLE",
+                    "overall_change_pct":  -1.15
+                },
+    "model":  "Linear Regression (Direct)",
+    "model_version":  "2.0",
+    "strategy":  "direct_multi_horizon",
+    "expected_mape":  2.956
+}

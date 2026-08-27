@@ -1,0 +1,128 @@
+@model List<TeaOnlineShop.Models.Dbase.TeaInventoryItem>
+
+@{
+    ViewData["Title"] = "Low Stock Items";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2 class="mb-0"><i class="fa fa-exclamation-triangle me-2 text-warning"></i>Low Stock Items</h2>
+    <div>
+        <a asp-area="Admin" asp-controller="TeaInventory" asp-action="Index" class="btn btn-outline-secondary">
+            <i class="fa fa-arrow-left me-2"></i>Back to Inventory
+        </a>
+    </div>
+</div>
+
+@if (TempData["SuccessMessage"] != null)
+{
+    <div class="alert alert-success alert-dismissible fade show" role="alert">
+        <i class="fa fa-check-circle me-2"></i>@TempData["SuccessMessage"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+}
+
+@if (TempData["ErrorMessage"] != null)
+{
+    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+        <i class="fa fa-exclamation-circle me-2"></i>@TempData["ErrorMessage"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+}
+
+<div class="card shadow-sm">
+    <div class="card-header bg-light">
+        <div class="row align-items-center">
+            <div class="col">
+                <h5 class="mb-0">Items Below Minimum Stock Level</h5>
+            </div>
+            <div class="col-auto">
+                <input type="text" id="itemSearch" class="form-control" placeholder="Search items..." />
+            </div>
+        </div>
+    </div>
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table table-hover mb-0" id="itemsTable">
+                <thead class="table-light">
+                    <tr>
+                        <th>Name</th>
+                        <th>Type</th>
+                        <th>Grade</th>
+                        <th>Current Stock</th>
+                        <th>Minimum Stock</th>
+                        <th>Shortage</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @if (Model != null && Model.Any())
+                    {
+                        foreach (var item in Model)
+                        {
+                            var shortage = (item.MinimumStock ?? 0) - item.CurrentStock;
+                            <tr>
+                                <td>@item.Name</td>
+                                <td>@item.TeaType</td>
+                                <td>@item.Grade</td>
+                                <td>
+                                    <span class="text-danger fw-bold">@item.CurrentStock @item.Unit</span>
+                                </td>
+                                <td>@(item.MinimumStock?.ToString() ?? "N/A") @(item.MinimumStock.HasValue ? item.Unit : "")</td>
+                                <td>
+                                    @if (item.MinimumStock.HasValue && shortage > 0)
+                                    {
+                                        <span class="text-danger fw-bold">@shortage @item.Unit</span>
+                                    }
+                                    else
+                                    {
+                                        <span>N/A</span>
+                                    }
+                                </td>
+                                <td>
+                                    <div class="btn-group btn-group-sm">
+                                        <a asp-area="Admin" asp-controller="TeaInventory" asp-action="Details" asp-route-id="@item.Id" 
+                                           class="btn btn-outline-primary">
+                                            <i class="fa fa-info-circle"></i>
+                                        </a>
+                                        @if (User.HasClaim("permission", "Inventory.Transact"))
+                                        {
+                                            <a asp-area="Admin" asp-controller="TeaInventory" asp-action="AddStock" asp-route-id="@item.Id" class="btn btn-success"><i class="fa fa-plus"></i></a>
+                                        }
+                                        @if (User.HasClaim("permission", "Inventory.MasterDataManage"))
+                                        {
+                                            <a asp-area="Admin" asp-controller="TeaInventory" asp-action="Edit" asp-route-id="@item.Id" class="btn btn-outline-secondary"><i class="fa fa-edit"></i></a>
+                                        }
+                                    </div>
+                                </td>
+                            </tr>
+                        }
+                    }
+                    else
+                    {
+                        <tr>
+                            <td colspan="7" class="text-center py-4">
+                                <div class="alert alert-info mb-0">
+                                    <i class="fa fa-info-circle me-2"></i>No low stock items found. All inventory items are above their minimum stock levels.
+                                </div>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        $(document).ready(function() {
+            // Simple table search
+            $("#itemSearch").on("keyup", function() {
+                var value = $(this).val().toLowerCase();
+                $("#itemsTable tbody tr").filter(function() {
+                    $(this).toggle($(this).text().toLowerCase().indexOf(value) > -1)
+                });
+            });
+        });
+    </script>
+} 

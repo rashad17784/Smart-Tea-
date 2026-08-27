@@ -1,0 +1,368 @@
+﻿@using System.IO
+@{
+    ViewData["Title"] = "Home";
+    ViewData["BodyClass"] = "home-page";
+
+    var banners = ViewData["banners"] as List<TeaOnlineShop.Models.Dbase.Banner> ?? new List<TeaOnlineShop.Models.Dbase.Banner>();
+    var sliderBanners = banners.Where(x => x.Positon == "Slider").OrderBy(x => x.Priority).ToList();
+    var featuredBanners = banners.Where(x => x.Positon == "Banner1").OrderBy(x => x.Priority).ToList();
+    var promoBanners = banners.Where(x => x.Positon == "Banner2").OrderBy(x => x.Priority).ToList();
+
+    var bestSellingProducts = ViewData["bestSellingProducts"] as List<TeaOnlineShop.Models.Dbase.Product> ?? new List<TeaOnlineShop.Models.Dbase.Product>();
+    var newArrivals = ViewData["newArrivals"] as List<TeaOnlineShop.Models.Dbase.Product> ?? new List<TeaOnlineShop.Models.Dbase.Product>();
+
+    const string fallbackImage = "/images/placeholder-tea.svg";
+    var blockedLegacyRoutes = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
+    {
+        "/index.html",
+        "/shop.html",
+        "/product-details.html",
+        "/cart.html",
+        "/checkout.html",
+        "/blog.html",
+        "/blog-details.html"
+    };
+
+    string SafeImagePath(string? rawName)
+    {
+        var fileName = System.IO.Path.GetFileName(rawName ?? string.Empty);
+        if (string.IsNullOrWhiteSpace(fileName))
+        {
+            return fallbackImage;
+        }
+
+        return $"/images/banners/{fileName}";
+    }
+
+    string SafeBannerLink(string? rawLink)
+    {
+        if (string.IsNullOrWhiteSpace(rawLink))
+        {
+            return "/Products";
+        }
+
+        var link = rawLink.Trim();
+        if (link.StartsWith("http://", StringComparison.OrdinalIgnoreCase) ||
+            link.StartsWith("https://", StringComparison.OrdinalIgnoreCase))
+        {
+            return "/Products";
+        }
+
+        var cleanPath = link.Split('?', '#')[0];
+        if (!cleanPath.StartsWith('/'))
+        {
+            cleanPath = "/" + cleanPath;
+        }
+
+        if (blockedLegacyRoutes.Contains(cleanPath))
+        {
+            return "/Products";
+        }
+
+        return link;
+    }
+}
+
+<section class="tea-hero-slider-wrap">
+    <div class="slider_area slick_slider_activation tea-hero-slider" data-slick='{
+        "slidesToShow": 1,
+        "slidesToScroll": 1,
+        "arrows": true,
+        "dots": true,
+        "autoplay": true,
+        "autoplaySpeed": 5000,
+        "speed": 700,
+        "fade": true,
+        "infinite": true
+    }'>
+        @if (sliderBanners.Any())
+        {
+            foreach (var item in sliderBanners)
+            {
+                var slideImage = SafeImagePath(item.ImageName);
+                <div class="tea-hero-slide" data-bgimg="@slideImage">
+                    <div class="container">
+                        <div class="row">
+                            <div class="col-lg-7 col-md-9">
+                                <div class="tea-hero-card">
+                                    <p class="tea-hero-chip">Featured Collection</p>
+                                    <h1>@item.Title</h1>
+                                    <p>@item.SubTitle</p>
+                                    <div class="tea-hero-actions">
+                                        <a class="btn btn-primary rounded-pill" href="/Products">Explore Teas</a>
+                                        <a class="btn btn-outline-light rounded-pill" href="/Home/About">Learn More</a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            }
+        }
+        else
+        {
+            <div class="tea-hero-slide tea-hero-slide-fallback">
+                <div class="container">
+                    <div class="row">
+                        <div class="col-lg-7 col-md-9">
+                            <div class="tea-hero-card">
+                                <p class="tea-hero-chip">Premium Tea</p>
+                                <h1>The Finest Ceylon Tea</h1>
+                                <p>Pure, fresh, and ethically sourced tea for every tea lover.</p>
+                                <div class="tea-hero-actions">
+                                    <a class="btn btn-primary rounded-pill" href="/Products">Shop Now</a>
+                                    <a class="btn btn-outline-light rounded-pill" href="/Home/About">About Us</a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+</section>
+
+<section class="tea-benefits-section section-block">
+    <div class="container">
+        <div class="row g-3">
+            <div class="col-lg-3 col-md-6">
+                <article class="tea-benefit-card">
+                    <i class="icon-cursor icons"></i>
+                    <div>
+                        <h3>Fast Delivery</h3>
+                        <p>Island-wide delivery in 1 to 3 days.</p>
+                    </div>
+                </article>
+            </div>
+            <div class="col-lg-3 col-md-6">
+                <article class="tea-benefit-card">
+                    <i class="icon-refresh icons"></i>
+                    <div>
+                        <h3>Easy Returns</h3>
+                        <p>Simple replacement for damaged items.</p>
+                    </div>
+                </article>
+            </div>
+            <div class="col-lg-3 col-md-6">
+                <article class="tea-benefit-card">
+                    <i class="icon-lock icons"></i>
+                    <div>
+                        <h3>Secure Checkout</h3>
+                        <p>Protected payments and private data flow.</p>
+                    </div>
+                </article>
+            </div>
+            <div class="col-lg-3 col-md-6">
+                <article class="tea-benefit-card">
+                    <i class="icon-badge icons"></i>
+                    <div>
+                        <h3>Best Value</h3>
+                        <p>Premium tea quality at fair prices.</p>
+                    </div>
+                </article>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="tea-featured-section section-block">
+    <div class="container">
+        <div class="tea-section-head text-center">
+            <p class="tea-eyebrow">Collections</p>
+            <h2>Featured Tea Selections</h2>
+        </div>
+
+        <div class="row g-4">
+            @if (featuredBanners.Any())
+            {
+                foreach (var item in featuredBanners)
+                {
+                    var bannerImage = SafeImagePath(item.ImageName);
+                    <div class="col-lg-6">
+                        <article class="tea-feature-card">
+                            <img src="@bannerImage" alt="@item.Title" onerror="this.onerror=null;this.src='@fallbackImage';" />
+                            <div class="tea-feature-overlay">
+                                <p>@item.SubTitle</p>
+                                <h3>@item.Title</h3>
+                                <a class="btn btn-outline-light rounded-pill" href="@SafeBannerLink(item.Link)">Shop Collection</a>
+                            </div>
+                        </article>
+                    </div>
+                }
+            }
+            else
+            {
+                <div class="col-12">
+                    <div class="tea-empty-state">Featured collections will appear here once banners are configured.</div>
+                </div>
+            }
+        </div>
+    </div>
+</section>
+
+<section class="tea-product-section section-block">
+    <div class="container">
+        <div class="tea-section-row">
+            <div class="tea-section-head">
+                <p class="tea-eyebrow">Top Picks</p>
+                <h2>Best Selling Teas</h2>
+            </div>
+            <a href="/Products" class="btn btn-outline-primary rounded-pill">View All</a>
+        </div>
+
+        <div class="row g-4">
+            @if (bestSellingProducts.Any())
+            {
+                foreach (var product in bestSellingProducts)
+                {
+                    var hasDiscount = product.Discount.HasValue && product.Discount.Value > 0 && product.Price.HasValue && product.Price.Value > 0;
+                    var currentPrice = (product.Price ?? 0) - (product.Discount ?? 0);
+                    var imagePath = SafeImagePath(product.ImageName);
+
+                    <div class="col-xl-3 col-lg-4 col-md-6">
+                        <article class="tea-product-card">
+                            <a class="tea-product-image" href="/Products/ProductDetails/@product.Id">
+                                <img src="@imagePath" alt="@product.Title" onerror="this.onerror=null;this.src='@fallbackImage';" />
+                                @if (hasDiscount)
+                                {
+                                    <span class="tea-discount-chip">Sale</span>
+                                }
+                            </a>
+                            <div class="tea-product-body">
+                                <h3><a href="/Products/ProductDetails/@product.Id">@product.Title</a></h3>
+                                <p>@(string.IsNullOrWhiteSpace(product.Description) ? "Premium tea from our curated collection." : product.Description)</p>
+                                <div class="tea-price-row">
+                                    @if (hasDiscount)
+                                    {
+                                        <span class="tea-old-price">$@((product.Price ?? 0).ToString("F2"))</span>
+                                        <span class="tea-new-price">$@currentPrice.ToString("F2")</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="tea-new-price">$@((product.Price ?? 0).ToString("F2"))</span>
+                                    }
+                                </div>
+                                <button type="button" class="btn btn-primary w-100 rounded-pill" onclick="addToCart(@product.Id, 1)">
+                                    Add To Cart
+                                </button>
+                            </div>
+                        </article>
+                    </div>
+                }
+            }
+            else
+            {
+                <div class="col-12">
+                    <div class="tea-empty-state">No best-selling products available right now.</div>
+                </div>
+            }
+        </div>
+    </div>
+</section>
+
+<section class="tea-promo-section section-block">
+    <div class="container">
+        <div class="row g-4">
+            @if (promoBanners.Any())
+            {
+                foreach (var item in promoBanners)
+                {
+                    var bannerImage = SafeImagePath(item.ImageName);
+                    <div class="col-lg-6">
+                        <article class="tea-promo-card">
+                            <img src="@bannerImage" alt="@item.Title" onerror="this.onerror=null;this.src='@fallbackImage';" />
+                            <div class="tea-promo-content">
+                                <p>@item.SubTitle</p>
+                                <h3>@item.Title</h3>
+                                <a class="btn btn-primary rounded-pill" href="@SafeBannerLink(item.Link)">Explore Offer</a>
+                            </div>
+                        </article>
+                    </div>
+                }
+            }
+            else
+            {
+                <div class="col-12">
+                    <div class="tea-empty-state">Promotional banners are not configured yet.</div>
+                </div>
+            }
+        </div>
+    </div>
+</section>
+
+<section class="tea-product-section section-block">
+    <div class="container">
+        <div class="tea-section-row">
+            <div class="tea-section-head">
+                <p class="tea-eyebrow">Fresh Stock</p>
+                <h2>New Arrivals</h2>
+            </div>
+            <a href="/Products" class="btn btn-outline-primary rounded-pill">All Products</a>
+        </div>
+
+        <div class="row g-4">
+            @if (newArrivals.Any())
+            {
+                foreach (var product in newArrivals)
+                {
+                    var hasDiscount = product.Discount.HasValue && product.Discount.Value > 0 && product.Price.HasValue && product.Price.Value > 0;
+                    var currentPrice = (product.Price ?? 0) - (product.Discount ?? 0);
+                    var imagePath = SafeImagePath(product.ImageName);
+
+                    <div class="col-xl-3 col-lg-4 col-md-6">
+                        <article class="tea-product-card">
+                            <a class="tea-product-image" href="/Products/ProductDetails/@product.Id">
+                                <img src="@imagePath" alt="@product.Title" onerror="this.onerror=null;this.src='@fallbackImage';" />
+                                @if (hasDiscount)
+                                {
+                                    <span class="tea-discount-chip">Sale</span>
+                                }
+                            </a>
+                            <div class="tea-product-body">
+                                <h3><a href="/Products/ProductDetails/@product.Id">@product.Title</a></h3>
+                                <p>@(string.IsNullOrWhiteSpace(product.Description) ? "Premium tea from our curated collection." : product.Description)</p>
+                                <div class="tea-price-row">
+                                    @if (hasDiscount)
+                                    {
+                                        <span class="tea-old-price">$@((product.Price ?? 0).ToString("F2"))</span>
+                                        <span class="tea-new-price">$@currentPrice.ToString("F2")</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="tea-new-price">$@((product.Price ?? 0).ToString("F2"))</span>
+                                    }
+                                </div>
+                                <button type="button" class="btn btn-primary w-100 rounded-pill" onclick="addToCart(@product.Id, 1)">
+                                    Add To Cart
+                                </button>
+                            </div>
+                        </article>
+                    </div>
+                }
+            }
+            else
+            {
+                <div class="col-12">
+                    <div class="tea-empty-state">No new arrivals available right now.</div>
+                </div>
+            }
+        </div>
+    </div>
+</section>
+
+<section class="tea-newsletter section-block">
+    <div class="container">
+        <div class="tea-newsletter-wrap">
+            <div>
+                <p class="tea-eyebrow">Newsletter</p>
+                <h2>Get Tea Updates and Offers</h2>
+                <p class="mb-0">Subscribe for product launches, estate stories, and special discounts.</p>
+            </div>
+            <form class="tea-newsletter-form" onsubmit="event.preventDefault(); showToast('Thanks for subscribing.', 'success');">
+                <input type="email" placeholder="Enter your email address" aria-label="Email address" required>
+                <button type="submit">Subscribe</button>
+            </form>
+        </div>
+    </div>
+</section>
+

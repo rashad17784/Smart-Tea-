@@ -1,0 +1,106 @@
+@{
+    var currentAction = ViewContext.RouteData.Values["action"]?.ToString() ?? "Index";
+    var sectionTitle = currentAction switch
+    {
+        "DemandForecast" => "Demand Forecast",
+        "GreenLeafPriceForecast" => "Green Leaf Price Forecast",
+        "AnomalyDetection" => "Anomaly Detection",
+        "AlertsHistory" => "Alerts History",
+        _ => "Overview"
+    };
+
+    string ActiveClass(string action) =>
+        string.Equals(currentAction, action, StringComparison.OrdinalIgnoreCase)
+            ? "active"
+            : string.Empty;
+    var canViewFinancial = User.HasClaim("permission", "Dashboard.FinancialView");
+    var canViewOperations = User.HasClaim("permission", "AI.OperationalView");
+}
+
+<nav aria-label="breadcrumb">
+    <ol class="breadcrumb small mb-3">
+        <li class="breadcrumb-item">
+            <a asp-area="Admin" asp-controller="Home" asp-action="Index">Admin</a>
+        </li>
+        @if (string.Equals(currentAction, "Index", StringComparison.OrdinalIgnoreCase))
+        {
+            <li class="breadcrumb-item active" aria-current="page">AI Dashboard</li>
+        }
+        else
+        {
+            <li class="breadcrumb-item">
+                @if (canViewFinancial)
+                {
+                    <a asp-area="Admin" asp-controller="AiDashboard" asp-action="Index">AI Dashboard</a>
+                }
+                else
+                {
+                    <span>AI Operations</span>
+                }
+            </li>
+            <li class="breadcrumb-item active" aria-current="page">@sectionTitle</li>
+        }
+    </ol>
+</nav>
+
+<nav class="overflow-auto mb-4" aria-label="AI Dashboard sections">
+    <ul class="nav nav-pills flex-nowrap gap-2 pb-1">
+        @if (canViewFinancial)
+        {
+        <li class="nav-item">
+            <a asp-area="Admin"
+               asp-controller="AiDashboard"
+               asp-action="Index"
+               class="nav-link text-nowrap @ActiveClass("Index")"
+               aria-current="@(currentAction == "Index" ? "page" : null)">
+                <i class="fa fa-gauge-high me-1"></i>Overview
+            </a>
+        </li>
+        }
+        @if (canViewOperations)
+        {
+        <li class="nav-item">
+            <a asp-area="Admin"
+               asp-controller="AiDashboard"
+               asp-action="DemandForecast"
+               class="nav-link text-nowrap @ActiveClass("DemandForecast")"
+               aria-current="@(currentAction == "DemandForecast" ? "page" : null)">
+                <i class="fa fa-chart-line me-1"></i>Demand Forecast
+            </a>
+        </li>
+        }
+        @if (canViewFinancial)
+        {
+        <li class="nav-item">
+            <a asp-area="Admin"
+               asp-controller="AiDashboard"
+               asp-action="GreenLeafPriceForecast"
+               class="nav-link text-nowrap @ActiveClass("GreenLeafPriceForecast")"
+               aria-current="@(currentAction == "GreenLeafPriceForecast" ? "page" : null)">
+                <i class="fa fa-money-bill-trend-up me-1"></i>Green Leaf Price
+            </a>
+        </li>
+        }
+        @if (canViewOperations)
+        {
+        <li class="nav-item">
+            <a asp-area="Admin"
+               asp-controller="AiDashboard"
+               asp-action="AnomalyDetection"
+               class="nav-link text-nowrap @ActiveClass("AnomalyDetection")"
+               aria-current="@(currentAction == "AnomalyDetection" ? "page" : null)">
+                <i class="fa fa-triangle-exclamation me-1"></i>Anomaly Detection
+            </a>
+        </li>
+        <li class="nav-item">
+            <a asp-area="Admin"
+               asp-controller="AiDashboard"
+               asp-action="AlertsHistory"
+               class="nav-link text-nowrap @ActiveClass("AlertsHistory")"
+               aria-current="@(currentAction == "AlertsHistory" ? "page" : null)">
+                <i class="fa fa-clock-rotate-left me-1"></i>Alerts History
+            </a>
+        </li>
+        }
+    </ul>
+</nav>

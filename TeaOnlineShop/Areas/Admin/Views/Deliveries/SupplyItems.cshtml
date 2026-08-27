@@ -1,0 +1,145 @@
+@model IEnumerable<TeaOnlineShop.Models.Dbase.SupplyItem>
+
+@{
+    ViewData["Title"] = "Supply Items";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2 class="mb-0"><i class="fa fa-boxes me-2"></i>Supply Items</h2>
+    <div>
+        @if (User.HasClaim("permission", "Inventory.MasterDataManage"))
+        {
+            <a href="/Admin/Deliveries/CreateSupplyItem" class="btn btn-primary"><i class="fa fa-plus me-2"></i>Add New Item</a>
+        }
+    </div>
+</div>
+
+<div class="card shadow-sm">
+    <div class="card-header bg-light">
+        <div class="d-flex justify-content-between align-items-center">
+            <h5 class="mb-0">All Supply Items</h5>
+            <div>
+                <input type="text" id="itemSearch" class="form-control form-control-sm" placeholder="Search items..." style="width: 200px;">
+            </div>
+        </div>
+    </div>
+    <div class="card-body p-0">
+        @if (TempData["Message"] != null)
+        {
+            <div class="alert alert-success m-3">
+                @TempData["Message"]
+            </div>
+        }
+        
+        @if (TempData["ErrorMessage"] != null)
+        {
+            <div class="alert alert-danger m-3">
+                @TempData["ErrorMessage"]
+            </div>
+        }
+        
+        <div class="table-responsive">
+            <table class="table table-hover table-striped mb-0 table-admin">
+                <thead>
+                    <tr>
+                        <th style="width: 10%">Item Code</th>
+                        <th style="width: 20%">
+                            <i class="fa fa-box me-2 text-muted"></i>Name
+                        </th>
+                        <th style="width: 15%">
+                            <i class="fa fa-tag me-2 text-muted"></i>Category
+                        </th>
+                        <th style="width: 10%">
+                            <i class="fa fa-ruler me-2 text-muted"></i>Unit
+                        </th>
+                        <th style="width: 15%">
+                            <i class="fa fa-exclamation-triangle me-2 text-muted"></i>Min Stock
+                        </th>
+                        <th style="width: 15%">
+                            <i class="fa fa-cubes me-2 text-muted"></i>Current Stock
+                        </th>
+                        <th style="width: 20%" class="text-end">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @if (Model != null && Model.Any())
+                    {
+                        foreach (var item in Model)
+                        {
+                            decimal current = item.CurrentStock;
+                            decimal minimum = item.MinimumStock ?? 0;
+                            
+                            var stockStatus = current <= minimum ? "bg-danger" : 
+                                            (current <= minimum * 1.5m ? "bg-warning" : "bg-success");
+                            
+                            <tr>
+                                <td><code>@item.ItemCode</code></td>
+                                <td>
+                                    <div class="fw-medium">@item.Name</div>
+                                    @if (!string.IsNullOrEmpty(item.Description))
+                                    {
+                                        <small class="text-muted">@item.Description</small>
+                                    }
+                                </td>
+                                <td>@item.Category</td>
+                                <td>@item.Unit</td>
+                                <td>@item.MinimumStock</td>
+                                <td>
+                                    <div class="d-flex align-items-center">
+                                        <div class="me-2">@item.CurrentStock</div>
+                                        <div class="progress" style="height: 8px; width: 60px;">
+                                            <div class="progress-bar @stockStatus" role="progressbar" 
+                                                 style="width: @(Math.Min(100, (int)((item.CurrentStock * 100) / Math.Max(1, (item.MinimumStock ?? 0) * 2))))%"></div>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td>
+                                    <div class="d-flex justify-content-end action-buttons">
+                                        @if (User.HasClaim("permission", "Inventory.MasterDataManage"))
+                                        {
+                                            <a href="/Admin/Deliveries/EditSupplyItem/@item.Id" class="btn btn-sm btn-outline-primary me-1" title="Edit"><i class="fa fa-pencil-alt"></i></a>
+                                        }
+                                        @if (User.HasClaim("permission", "Inventory.Receive"))
+                                        {
+                                            <a href="/Admin/Deliveries/Create" class="btn btn-sm btn-outline-success" title="Create Delivery for this Item"><i class="fa fa-truck-loading"></i></a>
+                                        }
+                                    </div>
+                                </td>
+                            </tr>
+                        }
+                    }
+                    else
+                    {
+                        <tr>
+                            <td colspan="7" class="text-center py-4">
+                                <p class="text-muted mb-0">No supply items found</p>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+    <div class="card-footer">
+        <div class="d-flex justify-content-between align-items-center">
+            <a href="/Admin/Deliveries" class="btn btn-outline-secondary">
+                <i class="fa fa-dolly me-2"></i>Back to Deliveries
+            </a>
+            <small class="text-muted">Showing @Model.Count() items</small>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        $(document).ready(function() {
+            // Filter table as user types in search box
+            $("#itemSearch").on("keyup", function() {
+                var value = $(this).val().toLowerCase();
+                $("table tbody tr").filter(function() {
+                    $(this).toggle($(this).text().toLowerCase().indexOf(value) > -1)
+                });
+            });
+        });
+    </script>
+} 

@@ -1,0 +1,569 @@
+@model TeaOnlineShop.Models.ViewModels.AiDemandForecastPageViewModel
+
+@{
+    ViewData["Title"] = "Demand Forecast";
+    var teaGrades = Model.TeaGrades.Count > 0
+        ? Model.TeaGrades
+        : new List<string> { "BOP", "BOPF", "DUST", "FNGS", "OP" };
+    var forecastHorizons = Model.ForecastHorizons.Count > 0
+        ? Model.ForecastHorizons
+        : new List<int> { 30, 45, 60 };
+}
+
+<div class="container-fluid">
+    <partial name="_AiDashboardNav" />
+
+    <div class="d-flex flex-wrap justify-content-between align-items-start gap-3 mb-4">
+        <div>
+            <h2 class="mb-1">
+                <i class="fa fa-chart-line text-primary me-2"></i>Demand Forecast
+            </h2>
+            <p class="text-muted mb-0">
+                Forecast production demand by tea grade and compare it with recent demand.
+            </p>
+        </div>
+        <span class="badge @(Model.AiAvailable ? "bg-success" : "bg-warning text-dark") px-3 py-2">
+            AI API @(Model.AiAvailable ? "online" : "offline")
+        </span>
+    </div>
+
+    @if (!Model.AiAvailable)
+    {
+        <div class="alert alert-warning">
+            <i class="fa fa-triangle-exclamation me-2"></i>
+            @(string.IsNullOrWhiteSpace(Model.AiMessage)
+                ? "The AI service is unavailable. Start the Python API to generate forecasts."
+                : Model.AiMessage)
+        </div>
+    }
+
+    <div class="card shadow-sm border-0 mb-4">
+        <div class="card-header bg-primary text-white py-3">
+            <div class="d-flex flex-wrap justify-content-between align-items-center gap-2">
+                <div>
+                    <h5 class="mb-1">Generate Demand Forecast</h5>
+                    <small id="demandPanelSubtitle">Select a tea grade and forecast period.</small>
+                </div>
+                <i class="fa fa-wand-magic-sparkles fa-lg" aria-hidden="true"></i>
+            </div>
+        </div>
+        <div class="card-body">
+            <div class="row g-3 align-items-end">
+                <div class="col-lg-4 col-md-6">
+                    <label for="demandGrade" class="form-label">Tea grade</label>
+                    <select id="demandGrade" class="form-select">
+                        @foreach (var grade in teaGrades)
+                        {
+                            <option value="@grade">@grade</option>
+                        }
+                    </select>
+                </div>
+                <div class="col-lg-4 col-md-6">
+                    <label for="demandHorizon" class="form-label">Forecast period</label>
+                    <select id="demandHorizon" class="form-select">
+                        @foreach (var horizon in forecastHorizons)
+                        {
+                            <option value="@horizon">@horizon days</option>
+                        }
+                    </select>
+                </div>
+                @if (User.HasClaim("permission", "AI.RunPredictions"))
+                {
+                <div class="col-lg-4 col-md-12">
+                    <button id="generateDemandForecast"
+                            class="btn btn-primary w-100"
+                            type="button"
+                            onclick="loadDemandForecast()"
+                            disabled="@(!Model.AiAvailable)">
+                        <i class="fa fa-chart-line me-2"></i>Generate Forecast
+                    </button>
+                </div>
+                }
+            </div>
+
+            @if (!User.HasClaim("permission", "AI.RunPredictions"))
+            {
+                <div class="alert alert-info mt-3 mb-0">Warehouse access is read-only. Existing demand forecasts and operational history remain available below.</div>
+            }
+
+            <div id="demandLoading"
+                 class="text-center py-5"
+                 style="display:none;"
+                 role="status"
+                 aria-live="polite">
+                <div class="spinner-border text-primary"></div>
+                <p class="mb-0 mt-2">Forecasting demand...</p>
+            </div>
+
+            <div id="demandError"
+                 class="alert alert-danger mt-3 mb-0"
+                 style="display:none;"
+                 role="alert"></div>
+
+            <div id="demandResults" style="display:none;">
+                <div id="demandComparison"
+                     class="alert alert-info mt-4 mb-3"
+                     role="status"></div>
+
+                <div class="border rounded p-3 mb-3" style="height:390px;">
+                    <canvas id="demandChart"></canvas>
+                </div>
+
+                <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
+                    <div id="demandInfo" class="text-muted small"></div>
+                    <div class="d-flex flex-wrap gap-2">
+                        <button id="exportDemandPdf"
+                                type="button"
+                                class="btn btn-outline-danger btn-sm"
+                                onclick="exportDemandPdf()"
+                                disabled>
+                            <i class="fa fa-file-pdf me-1"></i>Export PDF
+                        </button>
+                        <button id="exportDemandCsv"
+                                type="button"
+                                class="btn btn-outline-success btn-sm"
+                                onclick="exportDemandCsv()"
+                                disabled>
+                            <i class="fa fa-file-csv me-1"></i>Export Excel (CSV)
+                        </button>
+                    </div>
+                </div>
+
+                <div class="table-responsive">
+                    <table class="table table-sm table-bordered align-middle mb-0">
+                        <thead class="table-primary">
+                            <tr>
+                                <th scope="col">Forecast day</th>
+                                <th scope="col">Predicted demand (kg)</th>
+                                <th scope="col">Difference from recent average</th>
+                            </tr>
+                        </thead>
+                        <tbody id="demandForecastTableBody"></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="card shadow-sm border-0">
+        <div class="card-header bg-white py-3">
+            <h5 class="mb-1">
+                <i class="fa fa-clock-rotate-left text-secondary me-2"></i>Forecast History
+            </h5>
+            <small class="text-muted">Recently generated demand forecasts.</small>
+        </div>
+        <div class="card-body p-0">
+            @if (Model.History.Count == 0)
+            {
+                <div class="text-center text-muted py-5 px-3">
+                    <i class="fa fa-folder-open fa-2x mb-3"></i>
+                    <p class="mb-0">No demand forecasts have been generated yet.</p>
+                </div>
+            }
+            else
+            {
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle mb-0">
+                        <thead class="table-light">
+                            <tr>
+                                <th scope="col">Generated</th>
+                                <th scope="col">Tea grade</th>
+                                <th scope="col">Period</th>
+                                <th scope="col">Model</th>
+                                <th scope="col">MAPE</th>
+                                <th scope="col" class="text-end">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var item in Model.History)
+                            {
+                                <tr>
+                                    <td>@item.TimestampUtc.ToLocalTime().ToString("dd MMM yyyy, HH:mm")</td>
+                                    <td><span class="badge bg-light text-dark border">@item.Grade</span></td>
+                                    <td>@item.HorizonDays days</td>
+                                    <td>
+                                        @item.Model
+                                        @if (!string.IsNullOrWhiteSpace(item.ModelVersion))
+                                        {
+                                            <span class="text-muted">v@item.ModelVersion</span>
+                                        }
+                                    </td>
+                                    <td>@item.ExpectedMape.ToString("0.###")%</td>
+                                    <td class="text-end">
+                                        @if (!string.IsNullOrWhiteSpace(item.DataSource))
+                                        {
+                                            <a asp-action="DemandEvaluation"
+                                               asp-route-id="@item.Id"
+                                               class="btn btn-outline-primary btn-sm"
+                                               title="Compare forecast with actual demand">
+                                                <i class="fa fa-scale-balanced"></i>
+                                            </a>
+                                        }
+                                        <a asp-action="ExportDemandPdf"
+                                           asp-route-id="@item.Id"
+                                           class="btn btn-outline-danger btn-sm"
+                                           title="Export this forecast as PDF">
+                                            <i class="fa fa-file-pdf"></i>
+                                        </a>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            }
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        var demandChart = null;
+        var latestDemandForecast = null;
+
+        function setDemandBusy(isBusy) {
+            document.getElementById('demandLoading').style.display =
+                isBusy ? 'block' : 'none';
+            var button = document.getElementById('generateDemandForecast');
+            if (button) {
+                button.disabled =
+                    isBusy || @Model.AiAvailable.ToString().ToLowerInvariant() === false;
+            }
+        }
+
+        function showDemandError(message) {
+            var error = document.getElementById('demandError');
+            error.textContent = message || 'The demand forecast request failed.';
+            error.style.display = 'block';
+        }
+
+        function hideDemandError() {
+            var error = document.getElementById('demandError');
+            error.textContent = '';
+            error.style.display = 'none';
+        }
+
+        function loadDemandForecast() {
+            hideDemandError();
+            document.getElementById('demandResults').style.display = 'none';
+            document.getElementById('exportDemandPdf').disabled = true;
+            document.getElementById('exportDemandCsv').disabled = true;
+
+            var grade = document.getElementById('demandGrade').value;
+            var horizon = parseInt(
+                document.getElementById('demandHorizon').value, 10);
+            document.getElementById('demandPanelSubtitle').textContent =
+                'Generating a ' + horizon + '-day forecast for ' + grade + '.';
+            setDemandBusy(true);
+
+            if (demandChart) {
+                demandChart.destroy();
+                demandChart = null;
+            }
+
+            $.ajax({
+                url: '/Admin/AiDashboard/GetDemandHistory',
+                type: 'GET',
+                data: { grade: grade, days: 60 },
+                success: function (historyData) {
+                    if (!historyData.sufficient) {
+                        setDemandBusy(false);
+                        showDemandError(historyData.message || 'Insufficient demand history.');
+                        return;
+                    }
+
+                    $.ajax({
+                        url: '/Admin/AiDashboard/GetDemandForecast',
+                        type: 'POST',
+                        contentType: 'application/json',
+                        data: JSON.stringify({
+                            grade: grade,
+                            last_60_days_demand: historyData.history,
+                            horizon_days: horizon,
+                            data_source: historyData.dataSource,
+                            source_label: historyData.sourceLabel,
+                            source_note: historyData.sourceNote,
+                            source_start_date: historyData.startDate,
+                            source_end_date: historyData.endDate
+                        }),
+                        success: function (data) {
+                            setDemandBusy(false);
+                            if (!data.success) {
+                                showDemandError(data.message || 'Forecast failed.');
+                                return;
+                            }
+
+                            var predictions = data.predictions || data.Predictions || [];
+                            if (!predictions.length) {
+                                showDemandError('The AI service returned no forecast values.');
+                                return;
+                            }
+
+                            latestDemandForecast = {
+                                grade: grade,
+                                horizon: horizon,
+                                historical: data.inputHistory || data.InputHistory || historyData.history,
+                                predictions: predictions,
+                                model: data.model || data.Model || 'LSTM',
+                                modelVersion: data.modelVersion || data.ModelVersion || '',
+                                mape: data.mape == null ? '' : data.mape,
+                                historyId: data.historyId || data.HistoryId || '',
+                                dataSource: data.dataSource || data.DataSource || historyData.dataSource,
+                                sourceLabel: data.sourceLabel || data.SourceLabel || historyData.sourceLabel,
+                                sourceNote: data.sourceNote || data.SourceNote || historyData.sourceNote
+                            };
+                            renderDemandResults(latestDemandForecast);
+                        },
+                        error: function (xhr) {
+                            setDemandBusy(false);
+                            var message = xhr.responseJSON && xhr.responseJSON.message
+                                ? xhr.responseJSON.message
+                                : (xhr.responseText || 'AI service unavailable.');
+                            showDemandError('Error: ' + message);
+                        }
+                    });
+                },
+                error: function (xhr) {
+                    setDemandBusy(false);
+                    var message = xhr.responseJSON && xhr.responseJSON.message
+                        ? xhr.responseJSON.message
+                        : (xhr.responseText || 'Could not load demand history.');
+                    showDemandError('Error: ' + message);
+                }
+            });
+        }
+
+        function renderDemandResults(result) {
+            var comparisonDays = Math.min(
+                result.predictions.length, result.historical.length);
+            var recent = result.historical.slice(-comparisonDays);
+            var recentAverage = average(recent);
+            var forecastAverage = average(result.predictions);
+            var changePct = recentAverage === 0
+                ? 0
+                : ((forecastAverage - recentAverage) / recentAverage) * 100;
+            var direction = changePct > 0 ? 'increase' :
+                (changePct < 0 ? 'decrease' : 'no change');
+
+            document.getElementById('demandComparison').innerHTML =
+                '<strong>Previous demand comparison:</strong> ' +
+                'recent average <strong>' + recentAverage.toFixed(2) +
+                ' kg/day</strong>, forecast average <strong>' +
+                forecastAverage.toFixed(2) + ' kg/day</strong>. ' +
+                'Expected ' + direction + ': <strong>' +
+                (changePct > 0 ? '+' : '') + changePct.toFixed(2) + '%</strong>.';
+
+            var rows = '';
+            for (var i = 0; i < result.predictions.length; i++) {
+                var predicted = Number(result.predictions[i]);
+                var difference = predicted - recentAverage;
+                rows +=
+                    '<tr>' +
+                    '<td><strong>Day +' + (i + 1) + '</strong></td>' +
+                    '<td>' + predicted.toFixed(2) + ' kg</td>' +
+                    '<td class="' + (difference >= 0 ? 'text-danger' : 'text-success') + '">' +
+                    (difference >= 0 ? '+' : '') + difference.toFixed(2) + ' kg' +
+                    '</td>' +
+                    '</tr>';
+            }
+            document.getElementById('demandForecastTableBody').innerHTML = rows;
+
+            document.getElementById('demandInfo').textContent =
+                'Model: ' + result.model +
+                (result.modelVersion ? ' v' + result.modelVersion : '') +
+                (result.mape !== '' ? ' | MAPE: ' + result.mape + '%' : '') +
+                ' | Input: ' + result.sourceLabel +
+                ' | Horizon: ' + result.predictions.length + ' days';
+
+            drawDemandChart(
+                result.grade,
+                result.historical,
+                result.predictions);
+
+            document.getElementById('demandResults').style.display = 'block';
+            document.getElementById('exportDemandPdf').disabled = false;
+            document.getElementById('exportDemandCsv').disabled = false;
+            document.getElementById('demandPanelSubtitle').textContent =
+                result.predictions.length + '-day production demand forecast for ' +
+                result.grade + '.';
+        }
+
+        function drawDemandChart(grade, historical, forecast) {
+            var context = document.getElementById('demandChart').getContext('2d');
+            var historicalToShow = historical.slice(-30);
+            var historicalLabels = [];
+            var forecastLabels = [];
+            var historicalPadding = [];
+            var forecastPadding = [];
+
+            for (var i = historicalToShow.length; i > 0; i--) {
+                historicalLabels.push('Day -' + i);
+            }
+            for (var j = 0; j < forecast.length; j++) {
+                forecastLabels.push('Day +' + (j + 1));
+                historicalPadding.push(null);
+            }
+            for (var k = 0; k < historicalToShow.length; k++) {
+                forecastPadding.push(null);
+            }
+
+            demandChart = new Chart(context, {
+                type: 'line',
+                data: {
+                    labels: historicalLabels.concat(forecastLabels),
+                    datasets: [
+                        {
+                            label: 'Recent demand',
+                            data: historicalToShow.concat(historicalPadding),
+                            borderColor: '#0d6efd',
+                            backgroundColor: 'rgba(13,110,253,0.10)',
+                            fill: true,
+                            tension: 0.3,
+                            pointRadius: 1.5
+                        },
+                        {
+                            label: 'AI forecast',
+                            data: forecastPadding.concat(forecast),
+                            borderColor: '#fd7e14',
+                            backgroundColor: 'rgba(253,126,20,0.10)',
+                            borderDash: [6, 4],
+                            fill: true,
+                            tension: 0.3,
+                            pointRadius: 1.5
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    interaction: {
+                        mode: 'index',
+                        intersect: false
+                    },
+                    plugins: {
+                        title: {
+                            display: true,
+                            text: grade + ' demand forecast'
+                        },
+                        legend: {
+                            position: 'bottom'
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: false,
+                            title: {
+                                display: true,
+                                text: 'Demand (kg)'
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        function average(values) {
+            if (!values.length) {
+                return 0;
+            }
+            var total = 0;
+            for (var i = 0; i < values.length; i++) {
+                total += Number(values[i]);
+            }
+            return total / values.length;
+        }
+
+        function exportDemandPdf() {
+            if (!latestDemandForecast) {
+                return;
+            }
+
+            if (latestDemandForecast.historyId) {
+                window.location.href = '/Admin/AiDashboard/ExportDemandPdf?id=' +
+                    encodeURIComponent(latestDemandForecast.historyId);
+                return;
+            }
+
+            var popup = window.open('', '_blank', 'width=900,height=700');
+            if (!popup) {
+                showDemandError(
+                    'The print window was blocked. Allow pop-ups and try again.');
+                return;
+            }
+
+            var rows = '';
+            for (var i = 0; i < latestDemandForecast.predictions.length; i++) {
+                rows += '<tr><td>Day +' + (i + 1) + '</td><td>' +
+                    Number(latestDemandForecast.predictions[i]).toFixed(2) +
+                    ' kg</td></tr>';
+            }
+
+            popup.document.write(
+                '<!doctype html><html><head><title>Demand Forecast</title>' +
+                '<style>body{font-family:Arial,sans-serif;margin:32px;color:#212529}' +
+                'h1{margin-bottom:4px}p{color:#6c757d}' +
+                'table{width:100%;border-collapse:collapse;margin-top:20px}' +
+                'th,td{border:1px solid #ced4da;padding:8px;text-align:left}' +
+                'th{background:#e7f1ff}</style></head><body>' +
+                '<h1>SmartTea Demand Forecast</h1>' +
+                '<p>Tea grade: ' + latestDemandForecast.grade +
+                ' | Period: ' + latestDemandForecast.predictions.length +
+                ' days | Model: ' + latestDemandForecast.model + '</p>' +
+                '<table><thead><tr><th>Forecast day</th>' +
+                '<th>Predicted demand</th></tr></thead><tbody>' +
+                rows + '</tbody></table></body></html>');
+            popup.document.close();
+            popup.focus();
+            window.setTimeout(function () {
+                popup.print();
+            }, 250);
+        }
+
+        function exportDemandCsv() {
+            if (!latestDemandForecast) {
+                return;
+            }
+
+            var lines = [
+                ['Tea Grade', latestDemandForecast.grade],
+                ['Forecast Period', latestDemandForecast.predictions.length + ' days'],
+                ['Model', latestDemandForecast.model],
+                ['Model Version', latestDemandForecast.modelVersion || ''],
+                ['Expected MAPE', latestDemandForecast.mape + '%'],
+                ['Input Source', latestDemandForecast.sourceLabel || 'Unspecified'],
+                ['Data Provenance', latestDemandForecast.sourceNote || ''],
+                [],
+                ['Forecast Day', 'Predicted Demand (kg)']
+            ];
+
+            for (var i = 0; i < latestDemandForecast.predictions.length; i++) {
+                lines.push([
+                    'Day +' + (i + 1),
+                    Number(latestDemandForecast.predictions[i]).toFixed(2)
+                ]);
+            }
+
+            var csv = lines.map(function (row) {
+                return row.map(csvCell).join(',');
+            }).join('\r\n');
+            var blob = new Blob(['\ufeff' + csv], {
+                type: 'text/csv;charset=utf-8;'
+            });
+            var url = URL.createObjectURL(blob);
+            var link = document.createElement('a');
+            link.href = url;
+            link.download =
+                'demand-forecast-' + latestDemandForecast.grade + '.csv';
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            URL.revokeObjectURL(url);
+        }
+
+        function csvCell(value) {
+            var text = value == null ? '' : String(value);
+            return '"' + text.replace(/"/g, '""') + '"';
+        }
+    </script>
+}

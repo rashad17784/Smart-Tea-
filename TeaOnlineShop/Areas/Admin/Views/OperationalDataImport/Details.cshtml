@@ -1,0 +1,101 @@
+@model TeaOnlineShop.Models.ViewModels.OperationalDataImportDetailsViewModel
+@{
+    ViewData["Title"] = "Operational Import Review";
+    var b = Model.Batch;
+    var certifiedOperationalSource = TeaOnlineShop.Services.OperationalDataImportRules.IsCertifiedOperationalSource(
+        b.SourceAuthenticityCertified,
+        b.SourceSystem,
+        b.SourceDocumentReference,
+        b.FileName,
+        b.Notes);
+    string Badge(string status) => status switch { "Approved" => "bg-success", "PendingApproval" => "bg-warning text-dark", "ValidationFailed" => "bg-danger", "Rejected" => "bg-dark", _ => "bg-secondary" };
+}
+
+<div class="d-flex flex-wrap justify-content-between align-items-start gap-3 mb-4">
+    <div><div class="text-muted small mb-1">Operational import / @b.BatchNumber</div><h1 class="h3 mb-1">Factory History Review</h1><p class="text-muted mb-0">Evidence, mapping, validation, reconciliation and approval trail.</p></div>
+    <div class="d-flex flex-wrap gap-2">@if (User.HasClaim("permission", "OperationalData.Import.Approve")) { <a asp-action="Original" asp-route-id="@b.Id" class="btn btn-outline-secondary"><i class="fa fa-download me-2"></i>Original evidence</a> }<a asp-action="ValidationErrors" asp-route-id="@b.Id" class="btn btn-outline-secondary"><i class="fa fa-file-csv me-2"></i>Errors CSV</a><a asp-action="Index" class="btn btn-outline-primary">Register</a></div>
+</div>
+
+@if (TempData["Success"] is string success) { <div class="alert alert-success">@success</div> }
+@if (TempData["Error"] is string error) { <div class="alert alert-danger">@error</div> }
+
+<div class="row g-3 mb-4">
+    <div class="col-md-6 col-xl-3"><div class="card h-100 shadow-sm border-0"><div class="card-body"><div class="text-muted small text-uppercase">Status</div><div class="mt-2"><span class="badge @Badge(b.Status) fs-6">@b.Status</span></div><div class="small text-muted mt-2">Reconciliation: @b.ReconciliationStatus</div></div></div></div>
+    <div class="col-md-6 col-xl-3"><div class="card h-100 shadow-sm border-0"><div class="card-body"><div class="text-muted small text-uppercase">Source evidence</div><div class="fw-bold mt-1">@b.SourceSystem</div><div class="small text-muted text-break">@b.SourceDocumentReference</div><div class="small text-muted">SHA-256: <span title="@b.FileSha256">@b.FileSha256[..12]…</span></div></div></div></div>
+    <div class="col-md-6 col-xl-3">
+        <div class="card h-100 shadow-sm border-0">
+            <div class="card-body">
+                <div class="text-muted small text-uppercase">Source period</div>
+                <div class="fw-bold mt-1">@b.SourcePeriodStartUtc.ToString("yyyy-MM-dd")</div>
+                <div>to @b.SourcePeriodEndUtc.ToString("yyyy-MM-dd")</div>
+                @if (certifiedOperationalSource)
+                {
+                    <div class="small text-success mt-1">
+                        <i class="fa fa-circle-check me-1"></i>Genuine operational source certified
+                    </div>
+                }
+                else if (TeaOnlineShop.Services.OperationalDataImportRules.IsClearlyNonOperationalSource(
+                    b.SourceSystem, b.SourceDocumentReference, b.FileName, b.Notes))
+                {
+                    <div class="small text-danger fw-semibold mt-1">
+                        <i class="fa fa-circle-xmark me-1"></i>Non-operational provenance detected
+                    </div>
+                }
+                else
+                {
+                    <div class="small text-danger fw-semibold mt-1">
+                        <i class="fa fa-circle-xmark me-1"></i>Source authenticity not certified
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+    <div class="col-md-6 col-xl-3"><div class="card h-100 shadow-sm border-0"><div class="card-body"><div class="text-muted small text-uppercase">Rows</div><div class="fw-bold fs-4 mt-1">@b.ValidRowCount / @b.ParsedRowCount</div><div class="small text-muted">valid / parsed · @b.DuplicateRowCount duplicate</div></div></div></div>
+</div>
+
+<div class="card shadow-sm border-0 mb-4">
+    <div class="card-header bg-white"><strong>Control-total reconciliation</strong></div>
+    <div class="table-responsive"><table class="table align-middle mb-0"><thead><tr><th>Control</th><th>Declared by source owner</th><th>System calculated</th><th>Result</th></tr></thead><tbody>
+        <tr><td>Data rows</td><td>@b.ExpectedRowCount</td><td>@b.ParsedRowCount</td><td><span class="badge @(b.ExpectedRowCount == b.ParsedRowCount ? "bg-success" : "bg-danger")">@(b.ExpectedRowCount == b.ParsedRowCount ? "Matched" : "Mismatch")</span></td></tr>
+        <tr><td>Inbound quantity</td><td>@b.ExpectedInboundKg.ToString("N4") kg</td><td>@b.CalculatedInboundKg.ToString("N4") kg</td><td><span class="badge @(TeaOnlineShop.Services.OperationalDataImportRules.TotalsMatch(b.ExpectedInboundKg, b.CalculatedInboundKg) ? "bg-success" : "bg-danger")">@(TeaOnlineShop.Services.OperationalDataImportRules.TotalsMatch(b.ExpectedInboundKg, b.CalculatedInboundKg) ? "Matched" : "Mismatch")</span></td></tr>
+        <tr><td>Outbound quantity</td><td>@b.ExpectedOutboundKg.ToString("N4") kg</td><td>@b.CalculatedOutboundKg.ToString("N4") kg</td><td><span class="badge @(TeaOnlineShop.Services.OperationalDataImportRules.TotalsMatch(b.ExpectedOutboundKg, b.CalculatedOutboundKg) ? "bg-success" : "bg-danger")">@(TeaOnlineShop.Services.OperationalDataImportRules.TotalsMatch(b.ExpectedOutboundKg, b.CalculatedOutboundKg) ? "Matched" : "Mismatch")</span></td></tr>
+    </tbody></table></div>
+</div>
+
+@if (b.Errors.Any())
+{
+    <div class="card shadow-sm border-danger mb-4"><div class="card-header bg-danger text-white"><strong>Validation findings for this page</strong></div><div class="table-responsive"><table class="table table-sm align-middle mb-0"><thead><tr><th>Row</th><th>Field</th><th>Code</th><th>Finding</th></tr></thead><tbody>@foreach (var e in b.Errors) { <tr><td>@(e.RowNumber == 0 ? "Batch" : e.RowNumber)</td><td>@e.FieldName</td><td><code>@e.ErrorCode</code></td><td>@e.Message</td></tr> }</tbody></table></div></div>
+}
+
+@if (Model.GradeSummaries.Any())
+{
+    <div class="card shadow-sm border-0 mb-4"><div class="card-header bg-white"><strong>Coverage by tea grade</strong></div><div class="table-responsive"><table class="table align-middle mb-0"><thead><tr><th>Grade</th><th>Rows</th><th>Demand rows</th><th>Inbound</th><th>Outbound</th><th>Source coverage</th></tr></thead><tbody>@foreach (var s in Model.GradeSummaries) { <tr><td><strong>@s.Grade</strong></td><td>@s.Rows</td><td>@s.DemandRows</td><td>@s.InboundKg.ToString("N4") kg</td><td>@s.OutboundKg.ToString("N4") kg</td><td>@s.FirstEventUtc.ToString("yyyy-MM-dd") – @s.LastEventUtc.ToString("yyyy-MM-dd") <span class="text-muted">(@s.DistinctEventDates dates)</span></td></tr> }</tbody></table></div></div>
+}
+
+<div class="card shadow-sm border-0 mb-4">
+    <div class="card-header bg-white d-flex justify-content-between"><strong>Staged rows</strong><span class="small text-muted">Page @Model.Page of @Model.TotalPages · @Model.PageSize rows/page</span></div>
+    <div class="table-responsive"><table class="table table-hover table-sm align-middle mb-0"><thead><tr><th>Row</th><th>Source ID / date</th><th>Grade / item</th><th>Movement</th><th>Quantity</th><th>References</th><th>Location</th><th>Status</th></tr></thead><tbody>
+    @foreach (var row in b.Rows) { <tr><td>@row.RowNumber</td><td><strong>@row.SourceRecordId</strong><div class="small text-muted">@(row.OriginalTransactionAtUtc == default ? "Invalid date" : row.OriginalTransactionAtUtc.ToString("u"))</div></td><td>@row.TeaGrade<div class="small text-muted">@row.ItemCode</div></td><td>@row.TransactionType</td><td class="text-nowrap">@row.QuantityChangeKg.ToString("+0.####;-0.####;0") kg<div class="small text-muted">@row.QuantityKg.ToString("N4") @row.OriginalUnit</div></td><td>@row.SourceReferenceNumber<div class="small text-muted">@row.SupplierOrProductionReference</div></td><td>@row.WarehouseCode / @row.BinCode</td><td><span class="badge @(row.Status == "Published" ? "bg-success" : row.Status == "Validated" ? "bg-primary" : "bg-danger")">@row.Status</span></td></tr> }
+    </tbody></table></div>
+    @if (Model.TotalPages > 1) { <div class="card-footer bg-white d-flex justify-content-between"><a asp-action="Details" asp-route-id="@b.Id" asp-route-page="@(Model.Page - 1)" class="btn btn-sm btn-outline-secondary @(Model.Page <= 1 ? "disabled" : "")">Previous</a><a asp-action="Details" asp-route-id="@b.Id" asp-route-page="@(Model.Page + 1)" class="btn btn-sm btn-outline-secondary @(Model.Page >= Model.TotalPages ? "disabled" : "")">Next</a></div> }
+</div>
+
+<div class="row g-4">
+    <div class="col-xl-7"><div class="card shadow-sm border-0 h-100"><div class="card-header bg-white"><strong>Append-only audit trail</strong></div><div class="card-body"><div class="list-group list-group-flush">@foreach (var a in b.AuditEvents) { <div class="list-group-item px-0"><div class="d-flex justify-content-between gap-3"><strong>@a.Action</strong><span class="small text-muted text-nowrap">@a.OccurredAtUtc.ToLocalTime().ToString("g")</span></div><div class="small text-muted">@a.FromStatus → @a.ToStatus · @a.ActorName</div><details class="small mt-1"><summary>Audit detail</summary><pre class="small bg-light border rounded p-2 mt-2 text-wrap mb-0">@a.Details</pre></details></div> }</div></div></div></div>
+    <div class="col-xl-5">
+        @if (Model.CanApprove)
+        {
+            <div class="card shadow-sm border-success mb-4"><div class="card-header bg-success text-white"><strong>Independent approval</strong></div><div class="card-body"><p>Publication creates immutable, traceable operational-history events. It does <strong>not</strong> change live stock balances.</p><form asp-action="Approve" asp-route-id="@b.Id" method="post">@Html.AntiForgeryToken()<button class="btn btn-success w-100" type="submit"><i class="fa fa-shield-check me-2"></i>Approve and publish atomically</button></form></div></div>
+        }
+        else if (b.Status == "PendingApproval" && Model.SubmittedByCurrentUser)
+        {
+            <div class="alert alert-warning"><strong>Dual control:</strong> you submitted this batch, so another administrator must approve it.</div>
+        }
+        @if (Model.CanReject)
+        {
+            <div class="card shadow-sm border-0"><div class="card-header bg-white"><strong>Reject batch</strong></div><div class="card-body"><form asp-action="Reject" asp-route-id="@b.Id" method="post">@Html.AntiForgeryToken()<label for="reason" class="form-label">Specific reason</label><textarea id="reason" name="reason" class="form-control mb-3" minlength="10" maxlength="1000" required></textarea><button class="btn btn-outline-danger w-100" type="submit">Reject and retain evidence</button></form></div></div>
+        }
+        @if (b.Status == "Approved") { <div class="alert alert-success"><strong>Published.</strong> @b.ParsedRowCount verified events are available to the operational-history reader. Approved by @b.ApprovedByName on @b.ApprovedAtUtc?.ToLocalTime().ToString("g").</div> }
+        @if (b.Status == "Rejected") { <div class="alert alert-dark"><strong>Rejected:</strong> @b.RejectionReason</div> }
+    </div>
+</div>

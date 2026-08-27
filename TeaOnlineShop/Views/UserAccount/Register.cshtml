@@ -1,0 +1,65 @@
+@model TeaOnlineShop.Models.ViewModels.RegisterViewModel
+@{
+    ViewData["Title"] = "Register";
+    ViewData["BodyClass"] = "auth-page";
+}
+
+<section class="tea-auth-section">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-lg-8 col-md-10">
+                <div class="tea-auth-card tea-register-card">
+                    <div class="tea-auth-head text-center">
+                        <p class="tea-eyebrow">Create Account</p>
+                        <h1>Join SmartTeaShop</h1>
+                        <p>Create your customer account to track tea orders and manage your profile.</p>
+                    </div>
+
+                    <form asp-action="Register" method="post" class="tea-auth-form needs-validation" novalidate>
+                        <div asp-validation-summary="ModelOnly" class="text-danger mb-2"></div>
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <label asp-for="FullName" class="form-label"></label>
+                                <input asp-for="FullName" class="form-control" placeholder="Enter full name" required />
+                                <span asp-validation-for="FullName" class="text-danger"></span>
+                            </div>
+                            <div class="col-md-6">
+                                <label asp-for="Email" class="form-label"></label>
+                                <input asp-for="Email" class="form-control" placeholder="name@example.com" required />
+                                <span asp-validation-for="Email" class="text-danger"></span>
+                            </div>
+                            <div class="col-md-6">
+                                <label asp-for="Password" class="form-label"></label>
+                                <input asp-for="Password" class="form-control" id="password" placeholder="Minimum 12 characters" required />
+                                <span asp-validation-for="Password" class="text-danger"></span>
+                            </div>
+                            <div class="col-md-6">
+                                <label asp-for="ConfirmPassword" class="form-label"></label>
+                                <input asp-for="ConfirmPassword" class="form-control" id="confirmPassword" placeholder="Repeat password" required />
+                                <span asp-validation-for="ConfirmPassword" class="text-danger"></span>
+                            </div>
+                            <div class="col-12">
+                                <div class="tea-register-note">
+                                    Public registration creates a customer account. Staff access is provisioned securely by an administrator.
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="tea-auth-meta mt-3">
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" id="termsCheck" required />
+                                <label class="form-check-label" for="termsCheck">I agree to the terms and privacy policy</label>
+                            </div>
+                            <a href="/UserAccount/Login">Already registered?</a>
+                        </div>
+                        <button type="submit" class="btn btn-primary w-100 rounded-pill mt-3">Create Customer Account</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+@section Scripts {
+    @{ await Html.RenderPartialAsync("_ValidationScriptsPartial"); }
+}

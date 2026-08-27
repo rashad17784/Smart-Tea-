@@ -1,0 +1,2116 @@
+/* ===================================================================
+   SmartTeaShop Premium Customer UI
+   Final visual layer for public shop pages. No workflow changes.
+=================================================================== */
+
+:root {
+  --shop-bg: #eef2f4;
+  --shop-bg-soft: #f8fafb;
+  --shop-surface: #ffffff;
+  --shop-surface-muted: #f4f7f6;
+  --shop-text: #111827;
+  --shop-heading: #101820;
+  --shop-muted: #667085;
+  --shop-border: #dce4e8;
+  --shop-border-strong: #c7d2da;
+  --shop-primary: #0f766e;
+  --shop-primary-dark: #0b5f59;
+  --shop-primary-soft: #e6f3f1;
+  --shop-success: #15803d;
+  --shop-danger: #b42318;
+  --shop-warning: #b7791f;
+  --shop-brass: #a87524;
+  --shop-dark: #101820;
+  --shop-dark-2: #182420;
+  --shop-radius: 8px;
+  --shop-shadow-sm: 0 8px 22px rgba(17, 24, 39, 0.07);
+  --shop-shadow-md: 0 16px 42px rgba(17, 24, 39, 0.12);
+  --shop-shadow-lg: 0 28px 70px rgba(17, 24, 39, 0.16);
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body.tea-app-body {
+  min-height: 100vh;
+  color: var(--shop-text);
+  background:
+    radial-gradient(circle at 8% -8%, rgba(15, 118, 110, 0.08), transparent 28rem),
+    linear-gradient(180deg, #f9fbfb 0%, var(--shop-bg) 100%);
+  font-family: "Manrope", "Segoe UI", ui-sans-serif, system-ui, sans-serif;
+  font-size: 0.96rem;
+  letter-spacing: 0;
+}
+
+body.tea-app-body h1,
+body.tea-app-body h2,
+body.tea-app-body h3,
+body.tea-app-body h4,
+body.tea-app-body h5,
+body.tea-app-body h6 {
+  color: var(--shop-heading);
+  font-family: "Playfair Display", Georgia, serif;
+  font-weight: 800;
+  letter-spacing: 0;
+}
+
+body.tea-app-body p {
+  color: var(--shop-muted);
+}
+
+body.tea-app-body a {
+  color: var(--shop-primary);
+  text-decoration: none;
+}
+
+body.tea-app-body a:hover,
+body.tea-app-body a:focus {
+  color: var(--shop-primary-dark);
+}
+
+.container {
+  max-width: 1240px;
+}
+
+.btn {
+  border-radius: var(--shop-radius) !important;
+  font-weight: 800;
+  letter-spacing: 0;
+  box-shadow: none !important;
+}
+
+.btn-primary {
+  color: #fff !important;
+  background: var(--shop-primary) !important;
+  border-color: var(--shop-primary) !important;
+}
+
+.btn-primary:hover,
+.btn-primary:focus {
+  color: #fff !important;
+  background: var(--shop-primary-dark) !important;
+  border-color: var(--shop-primary-dark) !important;
+}
+
+.btn-outline-primary {
+  color: var(--shop-primary) !important;
+  background: transparent !important;
+  border-color: rgba(15, 118, 110, 0.46) !important;
+}
+
+.btn-outline-primary:hover,
+.btn-outline-primary:focus {
+  color: #fff !important;
+  background: var(--shop-primary) !important;
+  border-color: var(--shop-primary) !important;
+}
+
+.btn-outline-light {
+  color: #fff !important;
+  border-color: rgba(255, 255, 255, 0.72) !important;
+}
+
+.btn-outline-light:hover,
+.btn-outline-light:focus {
+  color: var(--shop-dark) !important;
+  background: #fff !important;
+}
+
+.rounded-pill {
+  border-radius: var(--shop-radius) !important;
+}
+
+/* Header */
+.tea-site-header .main_header {
+  position: sticky;
+  top: 0;
+  z-index: 1040;
+  background: linear-gradient(135deg, var(--shop-dark) 0%, var(--shop-dark-2) 100%) !important;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  box-shadow: 0 12px 30px rgba(17, 24, 39, 0.22);
+  backdrop-filter: none;
+}
+
+.tea-site-header .container-fluid {
+  padding-left: clamp(0.85rem, 2vw, 2rem);
+  padding-right: clamp(0.85rem, 2vw, 2rem);
+}
+
+.tea-header-shell {
+  min-height: 72px;
+  max-width: 1320px;
+  margin: 0 auto;
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.brand_link {
+  min-width: 0;
+}
+
+.brand_mark {
+  width: 38px;
+  height: 38px;
+  border-radius: var(--shop-radius);
+  color: #fff;
+  background: var(--shop-primary);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  box-shadow: 0 10px 22px rgba(15, 118, 110, 0.25);
+}
+
+.brand_text strong {
+  color: #fff;
+  font-family: "Manrope", "Segoe UI", sans-serif;
+  font-size: 1.06rem;
+  font-weight: 850;
+}
+
+.brand_text small {
+  color: rgba(255, 255, 255, 0.62);
+  font-size: 0.63rem;
+}
+
+.tea-site-header .main_menu nav > ul {
+  gap: 0.2rem;
+}
+
+.tea-site-header .main_menu nav > ul > li > a {
+  color: rgba(255, 255, 255, 0.74) !important;
+  background: transparent;
+  border-radius: var(--shop-radius);
+  padding: 0.62rem 0.78rem;
+  font-size: 0.72rem !important;
+  font-weight: 850;
+  letter-spacing: 0.09em;
+}
+
+.tea-site-header .main_menu nav > ul > li > a:hover,
+.tea-site-header .main_menu nav > ul > li > a.active {
+  color: #fff !important;
+  background: rgba(255, 255, 255, 0.09);
+}
+
+.tea-site-header .header_account > ul {
+  align-items: center;
+}
+
+.tea-site-header .header_account > ul > li > a,
+.tea-site-header .canvas_open a {
+  width: 40px;
+  height: 40px;
+  color: rgba(255, 255, 255, 0.86);
+  background: rgba(255, 255, 255, 0.07);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+}
+
+.tea-site-header .header_account > ul > li > a:hover,
+.tea-site-header .canvas_open a:hover {
+  color: #fff;
+  background: rgba(255, 255, 255, 0.12);
+  border-color: rgba(255, 255, 255, 0.22);
+  transform: none;
+}
+
+.tea-site-header .header_account > ul > li span.item_count {
+  top: -5px;
+  right: -6px;
+  min-width: 19px;
+  height: 19px;
+  line-height: 16px;
+  color: #fff;
+  background: var(--shop-brass);
+  border: 2px solid var(--shop-dark);
+}
+
+.tea-site-header .dropdown_account_link {
+  border: 1px solid var(--shop-border);
+  border-radius: var(--shop-radius);
+  box-shadow: var(--shop-shadow-md);
+}
+
+.tea-site-header .dropdown_account_link li a {
+  color: var(--shop-text);
+  border-radius: 6px;
+}
+
+.tea-site-header .dropdown_account_link li a:hover {
+  background: var(--shop-primary-soft);
+  color: var(--shop-primary-dark);
+}
+
+.offcanvas_menu_wrapper {
+  background: linear-gradient(180deg, var(--shop-dark) 0%, #14251f 100%) !important;
+}
+
+.offcanvas_menu_wrapper .brand_mark {
+  color: #fff;
+  background: var(--shop-primary);
+}
+
+.offcanvas_main_menu li a {
+  border-radius: var(--shop-radius);
+}
+
+.offcanvas_main_menu li a:hover {
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.page_search_box {
+  background: rgba(16, 24, 32, 0.72);
+  backdrop-filter: blur(8px);
+}
+
+.page_search_box form {
+  border: 1px solid var(--shop-border) !important;
+  border-radius: var(--shop-radius);
+  box-shadow: var(--shop-shadow-md);
+}
+
+.page_search_box input {
+  min-height: 52px;
+  color: var(--shop-text);
+}
+
+/* Home */
+.section-block {
+  padding: clamp(2.2rem, 5vw, 4.5rem) 0;
+}
+
+.tea-hero-slider .tea-hero-slide {
+  min-height: clamp(520px, 72vh, 760px);
+  background-position: center;
+}
+
+.tea-hero-slider .tea-hero-slide::before {
+  background:
+    linear-gradient(90deg, rgba(16, 24, 32, 0.74) 0%, rgba(16, 24, 32, 0.48) 48%, rgba(16, 24, 32, 0.16) 100%),
+    linear-gradient(0deg, rgba(16, 24, 32, 0.18), rgba(16, 24, 32, 0.18));
+}
+
+.tea-hero-card {
+  max-width: 650px;
+  padding: clamp(1.3rem, 3vw, 2.2rem);
+  color: #fff;
+  background: rgba(16, 24, 32, 0.52);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  border-radius: var(--shop-radius);
+  box-shadow: var(--shop-shadow-lg);
+  backdrop-filter: blur(10px);
+}
+
+.tea-hero-chip,
+.tea-eyebrow {
+  color: #075e59;
+  background: #dff3f0;
+  border: 1px solid #9fd8d1;
+  border-radius: 999px;
+  padding: 0.28rem 0.62rem;
+  display: inline-flex;
+  width: fit-content;
+}
+
+.tea-hero-chip {
+  color: #fff;
+  background: var(--shop-primary);
+  border-color: rgba(255, 255, 255, 0.16);
+}
+
+.tea-hero-card h1 {
+  color: #fff;
+  font-size: clamp(2.1rem, 4.4vw, 4.1rem);
+}
+
+.tea-hero-card p {
+  color: rgba(255, 255, 255, 0.86);
+}
+
+.tea-benefit-card,
+.tea-product-card,
+.modern-shop-card,
+.tea-value-card,
+.tea-journey-card,
+.tea-journey-list,
+.tea-auth-card,
+.cart-table-card,
+.cart-summary-card,
+.checkout-card,
+.checkout-order-card,
+.pd-gallery-wrap,
+.pd-info-card,
+.pd-tab-card,
+.comment-card,
+.comment-form-card,
+.related-product-card,
+.tea-confirm-card,
+.tea-privacy-card {
+  background: var(--shop-surface) !important;
+  border: 1px solid var(--shop-border) !important;
+  border-radius: var(--shop-radius) !important;
+  box-shadow: var(--shop-shadow-sm) !important;
+}
+
+.tea-benefit-card:hover,
+.tea-product-card:hover,
+.modern-shop-card:hover,
+.tea-feature-card:hover,
+.tea-promo-card:hover,
+.related-product-card:hover {
+  transform: none !important;
+  border-color: var(--shop-border-strong) !important;
+  box-shadow: var(--shop-shadow-md) !important;
+}
+
+.tea-benefit-card i,
+.tea-value-card i {
+  color: var(--shop-primary);
+}
+
+.tea-section-head h2,
+.tea-section-row h2 {
+  font-size: clamp(1.55rem, 3vw, 2.35rem);
+}
+
+.tea-feature-card,
+.tea-promo-card {
+  border-radius: var(--shop-radius);
+  border: 1px solid var(--shop-border);
+  box-shadow: var(--shop-shadow-sm);
+}
+
+.tea-feature-overlay,
+.tea-promo-content {
+  background: linear-gradient(0deg, rgba(16, 24, 32, 0.88) 0%, rgba(16, 24, 32, 0.58) 58%, rgba(16, 24, 32, 0.08) 100%);
+}
+
+.tea-product-image,
+.shop-card-image,
+.related-product-image {
+  background: #eef3f2;
+  aspect-ratio: 4 / 3;
+  height: auto !important;
+}
+
+.tea-product-image img,
+.shop-card-image img,
+.related-product-image img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  padding: 1rem;
+}
+
+.tea-product-body h3,
+.shop-card-body h3,
+.related-product-body h5 {
+  font-family: "Manrope", "Segoe UI", sans-serif;
+  font-weight: 850;
+}
+
+.tea-product-body h3 a,
+.shop-card-body h3 a,
+.related-product-body h5 a {
+  color: var(--shop-heading);
+}
+
+.tea-new-price,
+.new-price,
+.pd-price-new {
+  color: var(--shop-primary-dark) !important;
+}
+
+.tea-old-price,
+.old-price,
+.pd-price-old {
+  color: #8a98a3;
+}
+
+.tea-discount-chip,
+.discount-pill,
+.pd-discount-badge {
+  color: #fff;
+  background: var(--shop-danger) !important;
+  border-radius: 999px;
+}
+
+.tea-newsletter-wrap {
+  background: linear-gradient(135deg, var(--shop-dark) 0%, var(--shop-primary-dark) 100%);
+  border-radius: var(--shop-radius);
+}
+
+.tea-newsletter-form input {
+  border-radius: var(--shop-radius);
+}
+
+.tea-newsletter-form button {
+  color: #fff;
+  background: var(--shop-primary);
+  border-radius: var(--shop-radius);
+}
+
+/* Shop and product pages */
+.shop_hero,
+.pd-hero,
+.cart-modern-wrapper,
+.checkout-modern-wrapper,
+.tea-auth-section,
+.tea-about-hero,
+.tea-confirm-section {
+  padding-top: clamp(2rem, 5vw, 4rem);
+}
+
+.shop_hero_content,
+.cart-page-head,
+.checkout-page-head {
+  max-width: 760px;
+}
+
+.shop_hero_content h1,
+.cart-page-head h1,
+.checkout-page-head h1,
+.tea-auth-head h1 {
+  font-size: clamp(2rem, 4vw, 3.2rem);
+}
+
+.modern-shop-toolbar {
+  border-radius: var(--shop-radius) !important;
+  background: var(--shop-surface) !important;
+  border: 1px solid var(--shop-border) !important;
+}
+
+.shop-card-actions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.6rem;
+}
+
+.pd-gallery-main {
+  background: #f4f7f6;
+  border-radius: var(--shop-radius);
+}
+
+.pd-gallery-main img {
+  width: 100%;
+  max-height: 560px;
+  object-fit: contain;
+  padding: 1rem;
+}
+
+.pd-thumb {
+  border-radius: var(--shop-radius);
+  border: 1px solid var(--shop-border);
+  background: #fff;
+}
+
+.pd-thumb.active {
+  border-color: var(--shop-primary);
+  box-shadow: 0 0 0 0.16rem rgba(15, 118, 110, 0.12);
+}
+
+.pd-stock.in {
+  color: var(--shop-success);
+  background: #e9f6ee;
+  border: 1px solid #c8e9d4;
+}
+
+.pd-stock.out {
+  color: var(--shop-danger);
+  background: #fff0ee;
+  border: 1px solid #f4c3be;
+}
+
+.pd-qty {
+  border: 1px solid var(--shop-border);
+  border-radius: var(--shop-radius);
+}
+
+.pd-tags a {
+  color: #075e59;
+  background: #dff3f0;
+  border: 1px solid #9fd8d1;
+  border-radius: 999px;
+}
+
+.pd-tab-card .nav-tabs .nav-link {
+  color: var(--shop-muted);
+  font-weight: 800;
+}
+
+.pd-tab-card .nav-tabs .nav-link.active {
+  color: var(--shop-primary-dark);
+  border-color: var(--shop-border) var(--shop-border) #fff;
+}
+
+/* Cart and checkout */
+.cart-product-cell img {
+  width: 76px;
+  height: 76px;
+  object-fit: contain;
+  background: #f4f7f6;
+  border-radius: var(--shop-radius);
+  border: 1px solid var(--shop-border);
+}
+
+.modern-cart-table {
+  min-width: 720px;
+}
+
+.modern-cart-table thead {
+  color: #475467;
+  background: var(--shop-surface-muted);
+  font-size: 0.76rem;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.modern-cart-table td,
+.modern-cart-table th {
+  border-color: var(--shop-border);
+}
+
+.modern-qty-input,
+.form-control,
+.form-select {
+  border-color: var(--shop-border-strong) !important;
+  border-radius: var(--shop-radius) !important;
+  min-height: 44px;
+}
+
+.modern-qty-input:focus,
+.form-control:focus,
+.form-select:focus {
+  border-color: var(--shop-primary) !important;
+  box-shadow: 0 0 0 0.2rem rgba(15, 118, 110, 0.14) !important;
+}
+
+.remove-row-btn {
+  color: var(--shop-danger);
+  background: #fff0ee;
+  border: 1px solid #f4c3be;
+  border-radius: var(--shop-radius);
+}
+
+.cart-actions-row {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 0.75rem;
+}
+
+.cart-summary-card,
+.checkout-order-card {
+  position: sticky;
+  top: 92px;
+}
+
+.summary-row,
+.order-item-row {
+  border-color: var(--shop-border) !important;
+}
+
+.payment-option-card {
+  border: 1px solid var(--shop-border);
+  border-radius: var(--shop-radius);
+  background: var(--shop-surface);
+}
+
+.payment-option-card.active {
+  border-color: var(--shop-primary);
+  background: var(--shop-primary-soft);
+}
+
+.progress-bar {
+  background-color: var(--shop-primary);
+}
+
+/* Auth, about, confirmation, footer */
+.tea-auth-card,
+.tea-confirm-card,
+.tea-privacy-card {
+  padding: clamp(1rem, 3vw, 1.6rem);
+}
+
+.tea-register-note,
+.tea-empty-state,
+.empty-shop-card,
+.empty-cart-card,
+.empty-comment-card {
+  border-radius: var(--shop-radius);
+  border: 1px dashed var(--shop-border-strong);
+  background: #f8fbfa;
+}
+
+.tea-about-stat {
+  border-radius: var(--shop-radius);
+}
+
+.tea-footer {
+  margin-top: 2rem;
+  background: linear-gradient(135deg, var(--shop-dark) 0%, #14231f 100%) !important;
+}
+
+.tea-footer .footer_brand h4,
+.tea-footer h4,
+.tea-footer a:hover {
+  color: #fff;
+}
+
+.tea-footer .footer_menu ul li a,
+.tea-footer .footer_contact_list p,
+.tea-footer .footer_contact_list a {
+  color: rgba(255, 255, 255, 0.82);
+}
+
+.tea-footer .footer_social ul li a {
+  border-radius: var(--shop-radius);
+}
+
+/* Mini cart and toast */
+.mini_cart {
+  background: #fff;
+  border-left: 1px solid var(--shop-border);
+  box-shadow: -18px 0 50px rgba(17, 24, 39, 0.18);
+}
+
+.mini_cart .cart_item {
+  border-color: var(--shop-border);
+}
+
+.mini_cart .cart_img img {
+  border-radius: var(--shop-radius);
+  object-fit: contain;
+  background: #f4f7f6;
+}
+
+.mini_cart_footer .cart_button a {
+  color: #fff;
+  background: var(--shop-primary);
+  border-radius: var(--shop-radius);
+}
+
+.tea-toast {
+  border-radius: var(--shop-radius);
+}
+
+.tea-toast-success,
+.tea-toast-info {
+  background: var(--shop-primary);
+}
+
+.tea-toast-error {
+  background: var(--shop-danger);
+}
+
+/* Responsive */
+@media (max-width: 1199.98px) {
+  .tea-header-shell {
+    min-height: 68px;
+  }
+}
+
+@media (max-width: 991.98px) {
+  .tea-site-header .site_brand {
+    margin-right: auto;
+  }
+
+  .brand_text small {
+    display: block;
+  }
+
+  .cart-summary-card,
+  .checkout-order-card {
+    position: static;
+  }
+
+  .shop-card-actions {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 767.98px) {
+  body.tea-app-body {
+    font-size: 0.92rem;
+  }
+
+  .tea-header-shell {
+    min-height: 62px;
+  }
+
+  .brand_mark {
+    width: 34px;
+    height: 34px;
+  }
+
+  .brand_text strong {
+    font-size: 0.94rem;
+    max-width: 148px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .brand_text small {
+    display: none;
+  }
+
+  .tea-site-header .header_account > ul {
+    gap: 0.25rem;
+  }
+
+  .tea-site-header .header_account > ul > li > a,
+  .tea-site-header .canvas_open a {
+    width: 36px;
+    height: 36px;
+  }
+
+  .tea-hero-slider .tea-hero-slide {
+    min-height: 560px;
+  }
+
+  .tea-hero-card {
+    margin: 0.75rem;
+  }
+
+  .tea-hero-actions,
+  .tea-section-row,
+  .cart-actions-row,
+  .tea-about-cta {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .tea-hero-actions .btn,
+  .tea-section-row .btn,
+  .cart-actions-row .btn,
+  .tea-about-cta .btn {
+    width: 100%;
+  }
+
+  .tea-product-image,
+  .shop-card-image,
+  .related-product-image {
+    aspect-ratio: 1 / 0.82;
+  }
+
+  .tea-feature-card,
+  .tea-promo-card,
+  .tea-feature-card img,
+  .tea-promo-card img {
+    min-height: 260px;
+  }
+
+  .tea-newsletter-wrap,
+  .checkout-card,
+  .checkout-order-card,
+  .cart-summary-card,
+  .cart-table-card,
+  .pd-info-card,
+  .pd-gallery-wrap {
+    padding: 1rem;
+  }
+
+  .table-responsive {
+    border: 1px solid var(--shop-border);
+    border-radius: var(--shop-radius);
+  }
+
+  .mini_cart {
+    width: min(92vw, 360px);
+  }
+}
+
+@media (max-width: 420px) {
+  .tea-site-header .container-fluid {
+    padding-left: 0.55rem;
+    padding-right: 0.55rem;
+  }
+
+  .brand_text strong {
+    max-width: 118px;
+  }
+
+  .tea-site-header .header_search {
+    display: none;
+  }
+
+  .tea-hero-slider .tea-hero-slide {
+    min-height: 520px;
+  }
+
+  .tea-hero-card h1 {
+    font-size: 2rem;
+  }
+}
+
+/* ===================================================================
+   Final customer UI contrast + alignment pass
+   CSS only: keeps existing routes, forms, buttons and JS workflows.
+=================================================================== */
+
+body.tea-app-body {
+  --shop-page-gutter: clamp(1rem, 4vw, 2.2rem);
+  --shop-section-gap: clamp(2.5rem, 5vw, 4.25rem);
+  background:
+    radial-gradient(circle at 10% -12%, rgba(15, 118, 110, 0.10), transparent 30rem),
+    radial-gradient(circle at 92% 18%, rgba(168, 117, 36, 0.08), transparent 24rem),
+    linear-gradient(180deg, #f7faf9 0%, #eef3f2 42%, #f8fafb 100%);
+}
+
+body.tea-app-body .tea-main-content {
+  overflow: hidden;
+}
+
+body.tea-app-body .container {
+  width: min(100% - calc(var(--shop-page-gutter) * 2), 1240px);
+  padding-left: 0;
+  padding-right: 0;
+}
+
+body.tea-app-body .section-block {
+  padding: var(--shop-section-gap) 0;
+}
+
+body.tea-app-body .tea-benefits-section {
+  padding-top: clamp(2.4rem, 4vw, 3.5rem);
+  padding-bottom: clamp(1.7rem, 3vw, 2.6rem);
+  background: linear-gradient(180deg, #f5f8f8 0%, #edf3f2 100%);
+}
+
+body.tea-app-body .tea-featured-section,
+body.tea-app-body .tea-product-section,
+body.tea-app-body .tea-promo-section,
+body.tea-app-body .tea-newsletter {
+  background: transparent;
+}
+
+/* Header contrast and industrial-grade alignment */
+body.tea-app-body .tea-site-header .main_header {
+  background: linear-gradient(135deg, #091318 0%, #10201b 58%, #15261f 100%) !important;
+}
+
+body.tea-app-body .tea-header-shell {
+  min-height: 76px;
+  justify-content: space-between;
+}
+
+body.tea-app-body .site_brand {
+  flex: 0 0 auto;
+}
+
+body.tea-app-body .brand_mark {
+  background: linear-gradient(135deg, #0f766e, #159b86);
+}
+
+body.tea-app-body .brand_text strong {
+  color: #ffffff !important;
+  letter-spacing: 0.01em;
+}
+
+body.tea-app-body .brand_text small {
+  color: #bac7c2 !important;
+  letter-spacing: 0.12em;
+}
+
+body.tea-app-body .tea-site-header .main_menu {
+  flex: 1 1 auto;
+  display: flex !important;
+  justify-content: center;
+}
+
+body.tea-app-body .tea-site-header .main_menu nav > ul {
+  align-items: center;
+  gap: clamp(0.45rem, 1.2vw, 1rem);
+}
+
+body.tea-app-body .tea-site-header .main_menu nav > ul > li > a {
+  color: #dce5e2 !important;
+  font-size: 0.78rem !important;
+  line-height: 1;
+}
+
+body.tea-app-body .tea-site-header .main_menu nav > ul > li > a:hover,
+body.tea-app-body .tea-site-header .main_menu nav > ul > li > a:focus {
+  color: #ffffff !important;
+  background: rgba(255, 255, 255, 0.10);
+}
+
+body.tea-app-body .tea-site-header .header_account {
+  flex: 0 0 auto;
+}
+
+body.tea-app-body .tea-site-header .header_account > ul {
+  justify-content: flex-end;
+  gap: 0.5rem;
+}
+
+body.tea-app-body .tea-site-header .header_account > ul > li > a,
+body.tea-app-body .tea-site-header .canvas_open a {
+  color: #eff7f5 !important;
+  background: rgba(255, 255, 255, 0.08);
+  border-color: rgba(255, 255, 255, 0.20);
+}
+
+body.tea-app-body .tea-site-header .header_account > ul > li > a i,
+body.tea-app-body .tea-site-header .canvas_open a i {
+  color: inherit !important;
+}
+
+/* Hero readability */
+body.tea-app-body .tea-hero-slider-wrap {
+  background: #101820;
+}
+
+body.tea-app-body .tea-hero-slider .tea-hero-slide {
+  min-height: clamp(600px, 74vh, 790px);
+  display: flex !important;
+  align-items: center;
+}
+
+body.tea-app-body .tea-hero-slider .tea-hero-slide::before {
+  background:
+    linear-gradient(90deg, rgba(6, 14, 19, 0.72) 0%, rgba(8, 19, 22, 0.50) 45%, rgba(8, 19, 22, 0.25) 100%),
+    linear-gradient(0deg, rgba(6, 14, 19, 0.24), rgba(6, 14, 19, 0.24)) !important;
+}
+
+body.tea-app-body .tea-hero-card {
+  max-width: 590px;
+  margin-left: clamp(0rem, 5vw, 3.2rem);
+  padding: clamp(1.45rem, 3vw, 2.45rem);
+  background:
+    linear-gradient(135deg, rgba(14, 25, 31, 0.92), rgba(17, 35, 31, 0.80)),
+    rgba(16, 24, 32, 0.88) !important;
+  border: 1px solid rgba(212, 224, 220, 0.22) !important;
+  box-shadow: 0 26px 70px rgba(0, 0, 0, 0.35) !important;
+}
+
+body.tea-app-body .tea-hero-card h1,
+body.tea-app-body .tea-hero-card h2,
+body.tea-app-body .tea-feature-overlay h3,
+body.tea-app-body .tea-promo-content h3,
+body.tea-app-body .tea-newsletter-wrap h2 {
+  color: #ffffff !important;
+  text-shadow: 0 2px 18px rgba(0, 0, 0, 0.28);
+}
+
+body.tea-app-body .tea-hero-card h1 {
+  max-width: 9.5em;
+  margin-bottom: 0.85rem;
+  font-size: clamp(2.4rem, 4.6vw, 4.65rem);
+  line-height: 0.98;
+}
+
+body.tea-app-body .tea-hero-card p:not(.tea-hero-chip),
+body.tea-app-body .tea-feature-overlay p,
+body.tea-app-body .tea-promo-content p,
+body.tea-app-body .tea-newsletter-wrap p {
+  color: #dce7e4 !important;
+}
+
+body.tea-app-body .tea-hero-chip,
+body.tea-app-body .tea-eyebrow {
+  color: #065f5b !important;
+  background: #dff6f1 !important;
+  border-color: #9eddd4 !important;
+  font-family: "Manrope", "Segoe UI", sans-serif;
+  font-size: 0.72rem;
+  font-weight: 900;
+  letter-spacing: 0.10em;
+  text-transform: uppercase;
+}
+
+body.tea-app-body .tea-hero-chip {
+  color: #ffffff !important;
+  background: linear-gradient(135deg, #0f766e, #159b86) !important;
+  border-color: rgba(255, 255, 255, 0.20) !important;
+}
+
+body.tea-app-body .tea-hero-actions {
+  gap: 0.75rem;
+  align-items: center;
+}
+
+body.tea-app-body .tea-hero-actions .btn {
+  min-height: 46px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.72rem 1.15rem;
+}
+
+body.tea-app-body .tea-hero-slider .slick-dots {
+  bottom: clamp(1.4rem, 4vw, 2.3rem);
+}
+
+body.tea-app-body .tea-hero-slider .slick-dots li button {
+  width: 11px;
+  height: 11px;
+  background: rgba(255, 255, 255, 0.72);
+  border: 1px solid rgba(255, 255, 255, 0.85);
+}
+
+body.tea-app-body .tea-hero-slider .slick-dots li.slick-active button {
+  background: #111827;
+  border-color: #ffffff;
+}
+
+/* Cards and grids */
+body.tea-app-body .tea-benefits-section .row,
+body.tea-app-body .tea-product-section .row,
+body.tea-app-body .shop-page .row {
+  align-items: stretch;
+}
+
+body.tea-app-body .tea-benefit-card {
+  height: 100%;
+  min-height: 128px;
+  align-items: center;
+  padding: 1.25rem 1.35rem;
+}
+
+body.tea-app-body .tea-benefit-card h3,
+body.tea-app-body .tea-product-body h3,
+body.tea-app-body .shop-card-body h3,
+body.tea-app-body .related-product-body h5 {
+  color: #14211d !important;
+  font-family: "Manrope", "Segoe UI", sans-serif !important;
+}
+
+body.tea-app-body .tea-benefit-card p,
+body.tea-app-body .tea-product-body p,
+body.tea-app-body .shop-card-body p {
+  color: #667985 !important;
+}
+
+body.tea-app-body .tea-section-head {
+  margin-bottom: clamp(1.3rem, 3vw, 2rem);
+}
+
+body.tea-app-body .tea-section-head h2,
+body.tea-app-body .tea-section-row h2 {
+  color: #111827 !important;
+  line-height: 1.05;
+}
+
+body.tea-app-body .tea-section-row {
+  align-items: flex-end;
+  gap: 1rem;
+  margin-bottom: clamp(1.4rem, 3vw, 2rem);
+}
+
+body.tea-app-body .tea-product-card,
+body.tea-app-body .modern-shop-card,
+body.tea-app-body .related-product-card {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+body.tea-app-body .tea-product-body,
+body.tea-app-body .shop-card-body,
+body.tea-app-body .related-product-body {
+  flex: 1 1 auto;
+  display: flex;
+  flex-direction: column;
+}
+
+body.tea-app-body .tea-product-body p,
+body.tea-app-body .shop-card-body p {
+  display: -webkit-box;
+  min-height: 2.7em;
+  overflow: hidden;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+}
+
+body.tea-app-body .tea-price-row,
+body.tea-app-body .shop-card-price,
+body.tea-app-body .related-product-price {
+  margin-top: auto;
+}
+
+body.tea-app-body .tea-product-image,
+body.tea-app-body .shop-card-image,
+body.tea-app-body .related-product-image {
+  background:
+    radial-gradient(circle at 50% 20%, #ffffff 0%, #f5f8f7 45%, #e8efed 100%) !important;
+  border-bottom: 1px solid var(--shop-border);
+}
+
+body.tea-app-body .tea-product-image img,
+body.tea-app-body .shop-card-image img,
+body.tea-app-body .related-product-image img {
+  filter: drop-shadow(0 18px 22px rgba(17, 24, 39, 0.12));
+}
+
+body.tea-app-body .tea-feature-card,
+body.tea-app-body .tea-promo-card {
+  min-height: clamp(340px, 34vw, 440px);
+  background: #e9efed;
+}
+
+body.tea-app-body .tea-feature-card img,
+body.tea-app-body .tea-promo-card img {
+  object-fit: contain;
+  padding: 1.3rem;
+  background: linear-gradient(180deg, #ffffff 0%, #eef3f2 100%);
+}
+
+body.tea-app-body .tea-feature-overlay,
+body.tea-app-body .tea-promo-content {
+  padding: clamp(1rem, 2.2vw, 1.45rem);
+  background: linear-gradient(0deg, rgba(9, 19, 24, 0.94) 0%, rgba(9, 19, 24, 0.62) 58%, rgba(9, 19, 24, 0.04) 100%) !important;
+}
+
+body.tea-app-body .tea-new-price,
+body.tea-app-body .new-price,
+body.tea-app-body .pd-price-new {
+  color: #0b5f59 !important;
+  font-weight: 900;
+}
+
+body.tea-app-body .tea-old-price,
+body.tea-app-body .old-price,
+body.tea-app-body .pd-price-old {
+  color: #7b8794 !important;
+}
+
+/* Shop/product/cart page alignment */
+body.tea-app-body .shop_hero,
+body.tea-app-body .pd-hero,
+body.tea-app-body .cart-modern-wrapper,
+body.tea-app-body .checkout-modern-wrapper,
+body.tea-app-body .tea-auth-section,
+body.tea-app-body .tea-about-hero,
+body.tea-app-body .tea-confirm-section {
+  padding-left: var(--shop-page-gutter);
+  padding-right: var(--shop-page-gutter);
+}
+
+body.tea-app-body .shop_hero_content,
+body.tea-app-body .cart-page-head,
+body.tea-app-body .checkout-page-head,
+body.tea-app-body .tea-auth-head {
+  margin-left: auto;
+  margin-right: auto;
+  text-align: center;
+}
+
+body.tea-app-body .shop_hero_content h1,
+body.tea-app-body .cart-page-head h1,
+body.tea-app-body .checkout-page-head h1,
+body.tea-app-body .tea-auth-head h1,
+body.tea-app-body .pd-title {
+  color: #111827 !important;
+}
+
+body.tea-app-body .modern-shop-toolbar,
+body.tea-app-body .cart-table-card,
+body.tea-app-body .cart-summary-card,
+body.tea-app-body .checkout-card,
+body.tea-app-body .checkout-order-card,
+body.tea-app-body .pd-gallery-wrap,
+body.tea-app-body .pd-info-card,
+body.tea-app-body .pd-tab-card {
+  border-color: #d5e0df !important;
+}
+
+body.tea-app-body .form-control,
+body.tea-app-body .form-select,
+body.tea-app-body input,
+body.tea-app-body textarea,
+body.tea-app-body select {
+  color: #17212b !important;
+}
+
+body.tea-app-body .form-control::placeholder,
+body.tea-app-body input::placeholder,
+body.tea-app-body textarea::placeholder {
+  color: #7b8794 !important;
+}
+
+/* Footer contrast */
+body.tea-app-body .tea-footer,
+body.tea-app-body .tea-footer p {
+  color: #d7e3df !important;
+}
+
+body.tea-app-body .tea-footer .footer_brand h4 {
+  color: #ffffff !important;
+}
+
+/* Responsive polish */
+@media (max-width: 1199.98px) {
+  body.tea-app-body .tea-site-header .main_menu nav > ul {
+    gap: 0.35rem;
+  }
+}
+
+@media (max-width: 991.98px) {
+  body.tea-app-body .tea-site-header .main_menu {
+    display: none !important;
+  }
+
+  body.tea-app-body .tea-header-shell {
+    min-height: 68px;
+  }
+
+  body.tea-app-body .tea-hero-slider .tea-hero-slide {
+    min-height: 590px;
+  }
+
+  body.tea-app-body .tea-hero-card {
+    margin-left: 0;
+  }
+
+  body.tea-app-body .tea-benefit-card {
+    min-height: 116px;
+  }
+}
+
+@media (max-width: 767.98px) {
+  body.tea-app-body {
+    --shop-page-gutter: 0.9rem;
+    --shop-section-gap: 2.35rem;
+  }
+
+  body.tea-app-body .tea-header-shell {
+    gap: 0.55rem;
+  }
+
+  body.tea-app-body .tea-site-header .header_account > ul {
+    gap: 0.32rem;
+  }
+
+  body.tea-app-body .tea-hero-slider .tea-hero-slide {
+    min-height: 540px;
+    align-items: flex-end;
+    padding-bottom: 3.2rem;
+  }
+
+  body.tea-app-body .tea-hero-slider .tea-hero-slide::before {
+    background:
+      linear-gradient(0deg, rgba(6, 14, 19, 0.82) 0%, rgba(6, 14, 19, 0.48) 62%, rgba(6, 14, 19, 0.30) 100%) !important;
+  }
+
+  body.tea-app-body .tea-hero-card {
+    width: 100%;
+    margin: 0;
+    padding: 1.15rem;
+  }
+
+  body.tea-app-body .tea-hero-card h1 {
+    max-width: 100%;
+    font-size: clamp(2rem, 10vw, 3rem);
+  }
+
+  body.tea-app-body .tea-hero-actions {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  body.tea-app-body .tea-benefits-section .row {
+    gap: 0.85rem 0;
+  }
+
+  body.tea-app-body .tea-benefit-card {
+    min-height: auto;
+    padding: 1rem;
+  }
+
+  body.tea-app-body .tea-section-head,
+  body.tea-app-body .tea-section-row {
+    text-align: center;
+    align-items: center;
+  }
+
+  body.tea-app-body .tea-eyebrow {
+    margin-left: auto;
+    margin-right: auto;
+  }
+
+  body.tea-app-body .tea-feature-card,
+  body.tea-app-body .tea-promo-card {
+    min-height: 320px;
+  }
+
+  body.tea-app-body .tea-feature-card img,
+  body.tea-app-body .tea-promo-card img {
+    padding: 1rem;
+  }
+}
+
+@media (max-width: 480px) {
+  body.tea-app-body .brand_mark {
+    width: 32px;
+    height: 32px;
+    font-size: 0.78rem;
+  }
+
+  body.tea-app-body .brand_text strong {
+    max-width: 132px;
+    font-size: 0.9rem;
+  }
+
+  body.tea-app-body .tea-site-header .header_account > ul > li > a,
+  body.tea-app-body .tea-site-header .canvas_open a {
+    width: 34px;
+    height: 34px;
+  }
+
+  body.tea-app-body .tea-site-header .account_link {
+    display: none;
+  }
+
+  body.tea-app-body .tea-hero-slider .tea-hero-slide {
+    min-height: 500px;
+  }
+
+  body.tea-app-body .tea-product-image,
+  body.tea-app-body .shop-card-image,
+  body.tea-app-body .related-product-image {
+    aspect-ratio: 1 / 0.86;
+  }
+}
+
+/* ===================================================================
+   Production alignment pass v2
+   Fixes legacy theme leakage into dropdown/menu/card alignment.
+=================================================================== */
+
+@media (min-width: 992px) {
+  body.tea-app-body .tea-header-shell {
+    display: grid;
+    grid-template-columns: minmax(220px, 1fr) auto minmax(220px, 1fr);
+    align-items: center;
+    column-gap: clamp(1rem, 2vw, 2rem);
+  }
+
+  body.tea-app-body .tea-site-header .site_brand {
+    justify-self: start;
+  }
+
+  body.tea-app-body .tea-site-header .main_menu {
+    justify-self: center;
+    width: auto;
+  }
+
+  body.tea-app-body .tea-site-header .header_account {
+    justify-self: end;
+  }
+}
+
+body.tea-app-body .tea-site-header .account_link {
+  position: relative;
+}
+
+body.tea-app-body .tea-site-header .dropdown_account_link {
+  width: 228px !important;
+  min-width: 228px !important;
+  max-width: calc(100vw - 2rem);
+  top: calc(100% + 14px) !important;
+  right: 0 !important;
+  left: auto !important;
+  padding: 0.45rem !important;
+  margin: 0 !important;
+  overflow: hidden !important;
+  text-align: left !important;
+  background: #ffffff !important;
+  border: 1px solid #d9e4e2 !important;
+  border-radius: 12px !important;
+  box-shadow: 0 22px 48px rgba(15, 23, 42, 0.20) !important;
+  transform: translateY(4px);
+}
+
+body.tea-app-body .tea-site-header .dropdown_account_link::before {
+  content: "";
+  position: absolute;
+  top: -7px;
+  right: 28px;
+  width: 14px;
+  height: 14px;
+  background: #ffffff;
+  border-left: 1px solid #d9e4e2;
+  border-top: 1px solid #d9e4e2;
+  transform: rotate(45deg);
+}
+
+body.tea-app-body .tea-site-header .dropdown_account_link li {
+  display: block !important;
+  width: 100% !important;
+  margin: 0 !important;
+  padding: 0 !important;
+}
+
+body.tea-app-body .tea-site-header .header_account ul.dropdown_account_link li > a,
+body.tea-app-body .tea-site-header .dropdown_account_link li a {
+  width: 100% !important;
+  min-width: 0 !important;
+  height: auto !important;
+  min-height: 42px !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: flex-start !important;
+  padding: 0.72rem 0.85rem !important;
+  margin: 0 !important;
+  color: #15212b !important;
+  background: transparent !important;
+  border: 0 !important;
+  border-radius: 8px !important;
+  box-shadow: none !important;
+  font-family: "Manrope", "Segoe UI", sans-serif !important;
+  font-size: 0.92rem !important;
+  font-weight: 800 !important;
+  line-height: 1.2 !important;
+  letter-spacing: 0 !important;
+  text-transform: none !important;
+  white-space: nowrap !important;
+  transform: none !important;
+}
+
+body.tea-app-body .tea-site-header .header_account ul.dropdown_account_link li > a:hover,
+body.tea-app-body .tea-site-header .header_account ul.dropdown_account_link li > a:focus {
+  color: #075e59 !important;
+  background: #e8f4f2 !important;
+  transform: none !important;
+}
+
+body.tea-app-body .tea-site-header .header_account > ul > li.account_link:hover > ul.dropdown_account_link {
+  visibility: visible !important;
+  max-height: 320px !important;
+}
+
+/* Front-end rhythm and exact section alignment */
+body.tea-app-body .tea-hero-slider .tea-hero-slide > .container,
+body.tea-app-body .tea-benefits-section > .container,
+body.tea-app-body .tea-featured-section > .container,
+body.tea-app-body .tea-product-section > .container,
+body.tea-app-body .tea-promo-section > .container,
+body.tea-app-body .tea-newsletter > .container {
+  position: relative;
+}
+
+body.tea-app-body .tea-hero-slider .tea-hero-slide > .container {
+  display: flex;
+  align-items: center;
+  min-height: inherit;
+}
+
+body.tea-app-body .tea-hero-slider .tea-hero-slide .row {
+  width: 100%;
+  align-items: center;
+}
+
+body.tea-app-body .tea-hero-card {
+  margin-top: 0;
+  margin-bottom: 0;
+}
+
+body.tea-app-body .tea-benefits-section {
+  margin-top: 0;
+}
+
+body.tea-app-body .tea-benefit-card {
+  display: grid !important;
+  grid-template-columns: 46px 1fr;
+  column-gap: 1rem;
+  text-align: left !important;
+}
+
+body.tea-app-body .tea-benefit-card i {
+  width: 46px !important;
+  height: 46px;
+  display: grid;
+  place-items: center;
+  color: #0f766e !important;
+  background: #e6f4f2;
+  border: 1px solid #c8e6e1;
+  border-radius: 12px;
+  font-size: 1.35rem !important;
+}
+
+body.tea-app-body .tea-benefit-card h3 {
+  margin: 0 0 0.35rem !important;
+  font-size: 1rem !important;
+  line-height: 1.25 !important;
+}
+
+body.tea-app-body .tea-benefit-card p {
+  margin: 0 !important;
+  line-height: 1.55 !important;
+}
+
+body.tea-app-body .tea-section-head.text-center {
+  display: grid;
+  justify-items: center;
+}
+
+body.tea-app-body .tea-section-head h2 {
+  max-width: 760px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+body.tea-app-body .tea-product-section .row,
+body.tea-app-body .tea-featured-section .row,
+body.tea-app-body .tea-promo-section .row {
+  row-gap: 1.5rem;
+}
+
+body.tea-app-body .tea-product-card,
+body.tea-app-body .modern-shop-card {
+  min-height: 100%;
+}
+
+body.tea-app-body .tea-product-body,
+body.tea-app-body .shop-card-body {
+  padding: 1.05rem 1.1rem 1.15rem !important;
+}
+
+body.tea-app-body .tea-product-body h3,
+body.tea-app-body .shop-card-body h3 {
+  min-height: 2.5em;
+  margin-bottom: 0.5rem !important;
+  line-height: 1.25 !important;
+}
+
+body.tea-app-body .tea-price-row,
+body.tea-app-body .shop-card-price {
+  min-height: 30px;
+  display: flex;
+  align-items: baseline;
+  gap: 0.45rem;
+  flex-wrap: wrap;
+}
+
+body.tea-app-body .tea-product-body .btn,
+body.tea-app-body .shop-card-actions .btn,
+body.tea-app-body .shop-card-actions a {
+  min-height: 42px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+body.tea-app-body .tea-feature-card,
+body.tea-app-body .tea-promo-card {
+  display: flex;
+  align-items: stretch;
+  overflow: hidden;
+}
+
+body.tea-app-body .tea-feature-card img,
+body.tea-app-body .tea-promo-card img {
+  width: 100%;
+  height: 100%;
+}
+
+body.tea-app-body .tea-newsletter-wrap {
+  display: grid !important;
+  grid-template-columns: minmax(0, 1fr) minmax(320px, 560px);
+  gap: clamp(1rem, 3vw, 2rem);
+  align-items: center;
+}
+
+body.tea-app-body .tea-newsletter-form {
+  justify-self: end;
+}
+
+body.tea-app-body .shop-page .modern-shop-card,
+body.tea-app-body .shop-page .modern-shop-toolbar,
+body.tea-app-body .pd-info-card,
+body.tea-app-body .pd-gallery-wrap,
+body.tea-app-body .cart-table-card,
+body.tea-app-body .checkout-card {
+  box-shadow: 0 12px 32px rgba(15, 23, 42, 0.08) !important;
+}
+
+body.tea-app-body .shop-page .row {
+  row-gap: 1.5rem;
+}
+
+body.tea-app-body .shop-card-actions {
+  margin-top: auto;
+}
+
+@media (max-width: 991.98px) {
+  body.tea-app-body .tea-header-shell {
+    display: flex;
+  }
+
+  body.tea-app-body .tea-site-header .dropdown_account_link {
+    right: -44px !important;
+  }
+
+  body.tea-app-body .tea-newsletter-wrap {
+    grid-template-columns: 1fr;
+  }
+
+  body.tea-app-body .tea-newsletter-form {
+    justify-self: stretch;
+    width: 100%;
+  }
+}
+
+@media (max-width: 767.98px) {
+  body.tea-app-body .tea-benefit-card {
+    grid-template-columns: 42px 1fr;
+  }
+
+  body.tea-app-body .tea-benefit-card i {
+    width: 42px !important;
+    height: 42px;
+  }
+
+  body.tea-app-body .tea-product-body h3,
+  body.tea-app-body .shop-card-body h3 {
+    min-height: auto;
+  }
+
+  body.tea-app-body .tea-feature-card,
+  body.tea-app-body .tea-promo-card {
+    min-height: 300px;
+  }
+}
+
+@media (max-width: 480px) {
+  body.tea-app-body .tea-site-header .account_link {
+    display: list-item !important;
+  }
+
+  body.tea-app-body .tea-site-header .dropdown_account_link {
+    right: -48px !important;
+    width: min(228px, calc(100vw - 1rem)) !important;
+    min-width: min(228px, calc(100vw - 1rem)) !important;
+  }
+
+  body.tea-app-body .tea-site-header .dropdown_account_link::before {
+    right: 58px;
+  }
+
+  body.tea-app-body .tea-hero-actions .btn {
+    width: 100%;
+  }
+}
+
+/* ===================================================================
+   Production palette + public account pages v3
+   Stronger premium front-end contrast with compact, clickable menus.
+=================================================================== */
+
+body.tea-app-body {
+  --shop-primary: #0e7c74;
+  --shop-primary-dark: #075f5a;
+  --shop-accent: #b98a2f;
+  --shop-ink: #0e171b;
+  --shop-ink-2: #13231f;
+  --shop-panel: #ffffff;
+  --shop-line: #d7e1df;
+  color: #17212b;
+  background:
+    radial-gradient(circle at 12% 2%, rgba(14, 124, 116, 0.08), transparent 24rem),
+    radial-gradient(circle at 90% 18%, rgba(185, 138, 47, 0.07), transparent 22rem),
+    linear-gradient(180deg, #f7faf9 0%, #eef4f3 44%, #f8fafb 100%) !important;
+}
+
+body.tea-app-body .btn-primary {
+  background: linear-gradient(135deg, #0e7c74, #0b6b64) !important;
+  border-color: #0e7c74 !important;
+}
+
+body.tea-app-body .btn-primary:hover,
+body.tea-app-body .btn-primary:focus {
+  background: linear-gradient(135deg, #075f5a, #064e49) !important;
+  border-color: #075f5a !important;
+}
+
+body.tea-app-body .btn-outline-primary {
+  color: #075f5a !important;
+  border-color: rgba(14, 124, 116, 0.48) !important;
+}
+
+body.tea-app-body .btn-outline-primary:hover,
+body.tea-app-body .btn-outline-primary:focus {
+  color: #ffffff !important;
+  background: #0e7c74 !important;
+  border-color: #0e7c74 !important;
+}
+
+body.tea-app-body .tea-site-header .main_header {
+  background:
+    linear-gradient(90deg, rgba(255, 255, 255, 0.03), transparent 34%, rgba(14, 124, 116, 0.08)),
+    linear-gradient(135deg, #081216 0%, #0d1c19 52%, #13281f 100%) !important;
+  border-bottom-color: rgba(255, 255, 255, 0.11);
+}
+
+body.tea-app-body .tea-site-header .header_account > ul > li > a {
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.05);
+}
+
+body.tea-app-body .tea-site-header .header_account > ul > li > a:hover {
+  background: rgba(14, 124, 116, 0.34);
+  border-color: rgba(149, 221, 211, 0.42);
+}
+
+body.tea-app-body .tea-site-header .header_account > ul > li span.item_count {
+  background: #c88d2d !important;
+  color: #111827 !important;
+  border-color: #071216 !important;
+  font-weight: 950;
+}
+
+body.tea-app-body .tea-site-header .dropdown_account_link {
+  width: 216px !important;
+  min-width: 216px !important;
+  padding: 0.38rem !important;
+  background: #ffffff !important;
+}
+
+body.tea-app-body .tea-site-header .header_account ul.dropdown_account_link li > a,
+body.tea-app-body .tea-site-header .dropdown_account_link li a {
+  min-height: 38px !important;
+  padding: 0.62rem 0.78rem !important;
+  color: #14212a !important;
+  font-size: 0.88rem !important;
+  font-weight: 850 !important;
+}
+
+body.tea-app-body .tea-site-header .header_account ul.dropdown_account_link li > a:hover,
+body.tea-app-body .tea-site-header .header_account ul.dropdown_account_link li > a:focus {
+  color: #064e49 !important;
+  background: #e7f4f1 !important;
+}
+
+body.tea-app-body .tea-hero-card {
+  background:
+    linear-gradient(135deg, rgba(8, 18, 22, 0.94), rgba(10, 27, 25, 0.90)) !important;
+  border-color: rgba(184, 205, 201, 0.22) !important;
+}
+
+body.tea-app-body .tea-hero-card h1 {
+  letter-spacing: -0.035em;
+}
+
+body.tea-app-body .tea-benefit-card,
+body.tea-app-body .tea-product-card,
+body.tea-app-body .modern-shop-card,
+body.tea-app-body .tea-feature-card,
+body.tea-app-body .tea-promo-card,
+body.tea-app-body .account-profile-card,
+body.tea-app-body .account-details-card,
+body.tea-app-body .orders-panel {
+  background: #ffffff !important;
+  border-color: var(--shop-line) !important;
+  box-shadow: 0 16px 44px rgba(15, 23, 42, 0.08) !important;
+}
+
+body.tea-app-body .tea-benefit-card i {
+  color: #075f5a !important;
+  background: #e4f4f1;
+  border-color: #bfe2dc;
+}
+
+body.tea-app-body .tea-feature-overlay,
+body.tea-app-body .tea-promo-content {
+  background:
+    linear-gradient(0deg, rgba(8, 18, 22, 0.95) 0%, rgba(8, 18, 22, 0.68) 58%, rgba(8, 18, 22, 0.08) 100%) !important;
+}
+
+body.tea-app-body .tea-newsletter-wrap {
+  position: relative;
+  overflow: hidden;
+  padding: clamp(1.4rem, 3vw, 2.2rem) !important;
+  background:
+    radial-gradient(circle at 92% 12%, rgba(255, 255, 255, 0.12), transparent 18rem),
+    linear-gradient(135deg, #0b151a 0%, #0e2522 48%, #0b6b64 100%) !important;
+  border: 1px solid rgba(205, 221, 217, 0.18);
+  box-shadow: 0 24px 70px rgba(15, 23, 42, 0.20);
+}
+
+body.tea-app-body .tea-newsletter-wrap::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background:
+    linear-gradient(90deg, rgba(255, 255, 255, 0.04), transparent 36%),
+    repeating-linear-gradient(90deg, rgba(255, 255, 255, 0.035) 0 1px, transparent 1px 88px);
+  opacity: 0.45;
+}
+
+body.tea-app-body .tea-newsletter-wrap > * {
+  position: relative;
+  z-index: 1;
+}
+
+body.tea-app-body .tea-newsletter .tea-eyebrow {
+  color: #ffffff !important;
+  background: rgba(255, 255, 255, 0.10) !important;
+  border-color: rgba(255, 255, 255, 0.24) !important;
+}
+
+body.tea-app-body .tea-newsletter-wrap h2 {
+  margin-bottom: 0.5rem !important;
+  color: #ffffff !important;
+  font-size: clamp(1.9rem, 3vw, 3rem);
+  line-height: 1.04;
+}
+
+body.tea-app-body .tea-newsletter-wrap p:not(.tea-eyebrow) {
+  max-width: 680px;
+  color: #c9d8d5 !important;
+}
+
+body.tea-app-body .tea-newsletter-form {
+  display: grid !important;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 0.75rem;
+}
+
+body.tea-app-body .tea-newsletter-form input {
+  min-height: 58px;
+  color: #111827 !important;
+  background: #ffffff;
+  border: 1px solid rgba(255, 255, 255, 0.30) !important;
+}
+
+body.tea-app-body .tea-newsletter-form button {
+  min-height: 58px;
+  padding: 0 1.35rem;
+  background: #0e7c74 !important;
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  font-weight: 900;
+}
+
+body.tea-app-body .tea-footer {
+  margin-top: 0;
+  background:
+    radial-gradient(circle at 86% 20%, rgba(14, 124, 116, 0.15), transparent 22rem),
+    linear-gradient(135deg, #081216 0%, #0e191b 52%, #0d211d 100%) !important;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+body.tea-app-body .tea-footer .footer_brand h4 {
+  font-size: clamp(1.7rem, 3vw, 2.45rem);
+  letter-spacing: -0.02em;
+}
+
+body.tea-app-body .tea-footer .footer_contact_list span,
+body.tea-app-body .tea-footer .footer_menu ul li a {
+  color: #9fb2ad !important;
+}
+
+body.tea-app-body .tea-footer .footer_contact_list p,
+body.tea-app-body .tea-footer .footer_contact_list a,
+body.tea-app-body .tea-footer .copyright_right p {
+  color: #d9e4e1 !important;
+}
+
+/* Customer account/order pages */
+body.tea-app-body .account-modern-section {
+  min-height: 64vh;
+  padding-top: clamp(2.6rem, 5vw, 4.4rem);
+}
+
+body.tea-app-body .account-page-head {
+  max-width: 760px;
+  margin: 0 auto clamp(1.6rem, 3vw, 2.2rem);
+  text-align: center;
+}
+
+body.tea-app-body .account-page-head .tea-eyebrow {
+  margin-left: auto;
+  margin-right: auto;
+}
+
+body.tea-app-body .account-page-head h1 {
+  margin-bottom: 0.5rem;
+  color: #111827 !important;
+  font-size: clamp(2.2rem, 4vw, 3.3rem);
+}
+
+body.tea-app-body .account-page-head p {
+  margin: 0;
+  color: #667985 !important;
+}
+
+body.tea-app-body .account-profile-card,
+body.tea-app-body .account-details-card,
+body.tea-app-body .orders-panel {
+  height: 100%;
+  padding: clamp(1.2rem, 2.5vw, 1.65rem);
+  border-radius: 14px !important;
+}
+
+body.tea-app-body .account-profile-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+}
+
+body.tea-app-body .account-avatar {
+  width: 78px;
+  height: 78px;
+  display: grid;
+  place-items: center;
+  margin-bottom: 1rem;
+  color: #ffffff;
+  background: linear-gradient(135deg, #0e7c74, #0b6b64);
+  border-radius: 20px;
+  box-shadow: 0 18px 35px rgba(14, 124, 116, 0.25);
+  font-size: 2rem;
+  font-weight: 950;
+}
+
+body.tea-app-body .account-profile-card h2,
+body.tea-app-body .orders-panel h2 {
+  color: #111827 !important;
+  font-family: "Manrope", "Segoe UI", sans-serif !important;
+  font-weight: 900;
+}
+
+body.tea-app-body .account-role-pill,
+body.tea-app-body .account-status-pill {
+  display: inline-flex;
+  align-items: center;
+  width: fit-content;
+  padding: 0.35rem 0.7rem;
+  color: #075f5a;
+  background: #e4f4f1;
+  border: 1px solid #bfe2dc;
+  border-radius: 999px;
+  font-size: 0.78rem;
+  font-weight: 900;
+}
+
+body.tea-app-body .account-metric {
+  height: 100%;
+  padding: 1rem;
+  background: #f7faf9;
+  border: 1px solid #dce7e4;
+  border-radius: 12px;
+}
+
+body.tea-app-body .account-metric span,
+body.tea-app-body .account-info-grid span {
+  display: block;
+  color: #71828d;
+  font-size: 0.76rem;
+  font-weight: 900;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+body.tea-app-body .account-metric strong {
+  display: block;
+  margin-top: 0.35rem;
+  color: #111827;
+  font-size: 1.3rem;
+  font-weight: 950;
+}
+
+body.tea-app-body .account-info-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1rem;
+  margin: 1.3rem 0;
+}
+
+body.tea-app-body .account-info-grid div {
+  padding: 1rem 0;
+  border-bottom: 1px solid #e3ebe9;
+}
+
+body.tea-app-body .account-info-grid strong {
+  display: block;
+  margin-top: 0.25rem;
+  color: #17212b;
+  font-weight: 850;
+  word-break: break-word;
+}
+
+body.tea-app-body .account-actions,
+body.tea-app-body .orders-panel-head {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  align-items: center;
+  justify-content: space-between;
+}
+
+body.tea-app-body .orders-panel-head {
+  margin-bottom: 1rem;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid #e3ebe9;
+}
+
+body.tea-app-body .orders-panel-head h2,
+body.tea-app-body .orders-panel-head p {
+  margin: 0;
+}
+
+body.tea-app-body .orders-table {
+  min-width: 760px;
+}
+
+body.tea-app-body .orders-table thead {
+  color: #53616c;
+  background: #f3f7f6;
+  font-size: 0.76rem;
+  font-weight: 900;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+body.tea-app-body .orders-table th,
+body.tea-app-body .orders-table td {
+  padding: 1rem;
+  border-color: #e3ebe9;
+}
+
+body.tea-app-body .account-empty-state {
+  padding: clamp(2rem, 4vw, 3rem);
+  text-align: center;
+  background: #f7faf9;
+  border: 1px dashed #cbdad7;
+  border-radius: 14px;
+}
+
+body.tea-app-body .account-empty-state h3 {
+  color: #111827 !important;
+}
+
+@media (max-width: 991.98px) {
+  body.tea-app-body .tea-newsletter-form {
+    grid-template-columns: 1fr;
+  }
+
+  body.tea-app-body .tea-newsletter-form button {
+    width: 100%;
+  }
+}
+
+@media (max-width: 767.98px) {
+  body.tea-app-body .account-info-grid {
+    grid-template-columns: 1fr;
+    gap: 0.25rem;
+  }
+
+  body.tea-app-body .account-actions,
+  body.tea-app-body .orders-panel-head {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  body.tea-app-body .account-actions .btn,
+  body.tea-app-body .orders-panel-head .btn {
+    width: 100%;
+  }
+
+  body.tea-app-body .tea-footer {
+    text-align: left;
+  }
+}

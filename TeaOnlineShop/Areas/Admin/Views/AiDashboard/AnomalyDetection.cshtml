@@ -1,0 +1,209 @@
+@model TeaOnlineShop.Models.ViewModels.AiAnomalyPageViewModel
+
+@{
+    ViewData["Title"] = "Anomaly Detection";
+}
+
+<div class="container-fluid">
+    <partial name="_AiDashboardNav" />
+
+    <div class="d-flex flex-wrap justify-content-between align-items-start gap-3 mb-4">
+        <div>
+            <h2 class="mb-1"><i class="fa fa-triangle-exclamation text-warning me-2"></i>Anomaly Detection</h2>
+            <p class="text-muted mb-0">Check unusual stock, demand, or green leaf price activity.</p>
+        </div>
+        <span class="badge @(Model.AiAvailable ? "bg-success" : "bg-warning text-dark") px-3 py-2">
+            AI API @(Model.AiAvailable ? "online" : "offline")
+        </span>
+    </div>
+
+    @if (!Model.AiAvailable)
+    {
+        <div class="alert alert-warning"><i class="fa fa-triangle-exclamation me-2"></i>@Model.AiMessage</div>
+    }
+
+    @if (User.HasClaim("permission", "AI.RunPredictions"))
+    {
+    <div class="card border-0 shadow-sm mb-4">
+        <div class="card-header bg-warning py-3">
+            <h5 class="mb-1">Run Anomaly Check</h5>
+            <small>Isolation Forest and operational rules assess the values together.</small>
+        </div>
+        <div class="card-body">
+            <div class="row g-3 align-items-end">
+                <div class="col-md-4 col-xl-2">
+                    <label for="anomalyGrade" class="form-label">Tea grade</label>
+                    <select id="anomalyGrade" class="form-select">
+                        @foreach (var grade in Model.TeaGrades)
+                        {
+                            <option value="@grade">@grade</option>
+                        }
+                    </select>
+                </div>
+                <div class="col-md-4 col-xl-2">
+                    <label for="anomalyDemand" class="form-label">Demand (kg)</label>
+                    <input id="anomalyDemand" type="number" class="form-control" value="320" min="0" step="0.01" />
+                </div>
+                <div class="col-md-4 col-xl-2">
+                    <label for="anomalyStock" class="form-label">Stock (kg)</label>
+                    <input id="anomalyStock" type="number" class="form-control" value="5000" min="0" step="0.01" />
+                </div>
+                <div class="col-md-4 col-xl-2">
+                    <label for="anomalyPrice" class="form-label">Price (LKR/kg)</label>
+                    <input id="anomalyPrice" type="number" class="form-control" value="105" min="0" step="0.01" />
+                </div>
+                <div class="col-md-4 col-xl-2">
+                    <button id="checkAnomalyButton" type="button" class="btn btn-warning w-100" onclick="checkAnomaly()" disabled="@(!Model.AiAvailable)">
+                        <i class="fa fa-magnifying-glass-chart me-1"></i>Check Now
+                    </button>
+                </div>
+            </div>
+
+            <div id="anomalyLoading" class="text-center py-4" style="display:none;">
+                <div class="spinner-border text-warning" role="status"></div>
+                <p class="mb-0 mt-2">Checking operational values...</p>
+            </div>
+            <div id="anomalyResult" class="mt-4" style="display:none;" aria-live="polite"></div>
+        </div>
+    </div>
+    }
+    else
+    {
+        <div class="alert alert-info">Warehouse access is read-only. Review recent anomaly alerts below or open Alerts History.</div>
+    }
+
+    <div class="card border-0 shadow-sm">
+        <div class="card-header bg-white d-flex flex-wrap justify-content-between align-items-center gap-2 py-3">
+            <div>
+                <h5 class="mb-1">Recent Alerts</h5>
+                <small class="text-muted">Only detected anomalies are stored.</small>
+            </div>
+            <a asp-action="AlertsHistory" class="btn btn-outline-secondary btn-sm"><i class="fa fa-clock-rotate-left me-1"></i>View Alerts History</a>
+        </div>
+        <div class="card-body p-0">
+            @if (Model.RecentAlerts.Count == 0)
+            {
+                <div class="text-center text-muted py-5"><i class="fa fa-bell-slash fa-2x mb-3"></i><p class="mb-0">No anomaly alerts recorded yet.</p></div>
+            }
+            else
+            {
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle mb-0">
+                        <thead class="table-light"><tr><th>Detected</th><th>Grade</th><th>Severity</th><th>Message</th><th>Score</th></tr></thead>
+                        <tbody>
+                            @foreach (var alert in Model.RecentAlerts)
+                            {
+                                <tr>
+                                    <td class="text-nowrap">@alert.TimestampUtc.ToLocalTime().ToString("dd MMM yyyy, HH:mm")</td>
+                                    <td><strong>@alert.Grade</strong></td>
+                                    <td><span class="badge @(alert.Severity == "CRITICAL" ? "bg-danger" : "bg-warning text-dark")">@alert.Severity</span></td>
+                                    <td>@alert.Message</td>
+                                    <td>@alert.Score.ToString("0.0000")</td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            }
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        function anomalyNumber(id, label) {
+            var value = Number(document.getElementById(id).value);
+            if (!Number.isFinite(value) || value < 0) {
+                throw new Error(label + ' must be a valid non-negative number.');
+            }
+            return value;
+        }
+
+        function checkAnomaly() {
+            var result = document.getElementById('anomalyResult');
+            var button = document.getElementById('checkAnomalyButton');
+            var loading = document.getElementById('anomalyLoading');
+            result.style.display = 'none';
+            result.replaceChildren();
+
+            var now = new Date();
+            var request;
+            try {
+                request = {
+                    grade: document.getElementById('anomalyGrade').value,
+                    demand_kg: anomalyNumber('anomalyDemand', 'Demand'),
+                    stock_level_kg: anomalyNumber('anomalyStock', 'Stock'),
+                    price_per_kg: anomalyNumber('anomalyPrice', 'Price'),
+                    day_of_week: now.getDay(),
+                    month: now.getMonth() + 1,
+                    is_weekend: (now.getDay() === 0 || now.getDay() === 6) ? 1 : 0
+                };
+            } catch (error) {
+                showAnomalyMessage('danger', error.message, null);
+                return;
+            }
+
+            button.disabled = true;
+            loading.style.display = 'block';
+
+            $.ajax({
+                url: '/Admin/AiDashboard/CheckAnomaly',
+                type: 'POST',
+                contentType: 'application/json',
+                data: JSON.stringify(request),
+                success: function (data) {
+                    if (!data.success) {
+                        showAnomalyMessage('danger', data.message || 'Anomaly check failed.', null);
+                        return;
+                    }
+
+                    var severity = data.severity || 'NORMAL';
+                    var style = severity === 'CRITICAL' ? 'danger' : (severity === 'WARNING' ? 'warning' : 'success');
+                    showAnomalyMessage(style, data.message || 'Check completed.', data);
+                },
+                error: function (xhr) {
+                    showAnomalyMessage('danger', xhr.responseText || 'AI service unavailable.', null);
+                },
+                complete: function () {
+                    button.disabled = false;
+                    loading.style.display = 'none';
+                }
+            });
+        }
+
+        function showAnomalyMessage(style, message, data) {
+            var host = document.getElementById('anomalyResult');
+            var alert = document.createElement('div');
+            alert.className = 'alert alert-' + style + ' mb-0';
+
+            var title = document.createElement('h5');
+            title.className = 'mb-2';
+            title.textContent = message;
+            alert.appendChild(title);
+
+            if (data) {
+                var details = document.createElement('p');
+                details.className = 'small mb-0';
+                details.textContent = 'Severity: ' + (data.severity || 'NORMAL') +
+                    ' | Score: ' + Number(data.score || 0).toFixed(4) +
+                    ' | ML flagged: ' + Boolean(data.modelTriggered);
+                alert.appendChild(details);
+
+                var rules = data.rulesTriggered || [];
+                if (rules.length) {
+                    var list = document.createElement('ul');
+                    list.className = 'small mb-0 mt-2';
+                    rules.forEach(function (rule) {
+                        var item = document.createElement('li');
+                        item.textContent = rule.message || rule.Message || String(rule);
+                        list.appendChild(item);
+                    });
+                    alert.appendChild(list);
+                }
+            }
+
+            host.replaceChildren(alert);
+            host.style.display = 'block';
+        }
+    </script>
+}

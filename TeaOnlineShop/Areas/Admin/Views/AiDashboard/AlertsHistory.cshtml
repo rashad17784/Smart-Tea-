@@ -1,0 +1,99 @@
+@model TeaOnlineShop.Models.ViewModels.AiAlertsHistoryViewModel
+
+@{
+    ViewData["Title"] = "AI Alerts History";
+}
+
+<div class="container-fluid">
+    <partial name="_AiDashboardNav" />
+
+    <div class="d-flex flex-wrap justify-content-between align-items-start gap-3 mb-4">
+        <div>
+            <h2 class="mb-1"><i class="fa fa-clock-rotate-left text-secondary me-2"></i>Alerts History</h2>
+            <p class="text-muted mb-0">Review anomaly alerts recorded by the AI dashboard.</p>
+        </div>
+        <a asp-action="ExportAlertsCsv" asp-route-severity="@Model.SeverityFilter" asp-route-grade="@Model.GradeFilter" class="btn btn-outline-success">
+            <i class="fa fa-file-csv me-1"></i>Export Excel (CSV)
+        </a>
+    </div>
+
+    <div class="row g-3 mb-4">
+        <div class="col-md-4"><div class="card border-0 shadow-sm"><div class="card-body"><div class="text-muted small text-uppercase">Total alerts</div><h3 class="mb-0 mt-1">@Model.TotalAlerts</h3></div></div></div>
+        <div class="col-md-4"><div class="card border-0 shadow-sm"><div class="card-body"><div class="text-muted small text-uppercase">Warnings</div><h3 class="mb-0 mt-1 text-warning">@Model.WarningAlerts</h3></div></div></div>
+        <div class="col-md-4"><div class="card border-0 shadow-sm"><div class="card-body"><div class="text-muted small text-uppercase">Critical</div><h3 class="mb-0 mt-1 text-danger">@Model.CriticalAlerts</h3></div></div></div>
+    </div>
+
+    <div class="card border-0 shadow-sm mb-4">
+        <div class="card-body">
+            <form method="get" asp-action="AlertsHistory" class="row g-3 align-items-end">
+                <div class="col-md-4">
+                    <label for="severity" class="form-label">Severity</label>
+                    <select id="severity" name="severity" class="form-select">
+                        <option value="">All severities</option>
+                        <option value="WARNING" selected="@(Model.SeverityFilter == "WARNING")">Warning</option>
+                        <option value="CRITICAL" selected="@(Model.SeverityFilter == "CRITICAL")">Critical</option>
+                    </select>
+                </div>
+                <div class="col-md-4">
+                    <label for="grade" class="form-label">Tea grade</label>
+                    <select id="grade" name="grade" class="form-select">
+                        <option value="">All grades</option>
+                        @foreach (var grade in Model.TeaGrades)
+                        {
+                            <option value="@grade" selected="@(Model.GradeFilter == grade)">@grade</option>
+                        }
+                    </select>
+                </div>
+                <div class="col-md-4 d-flex gap-2">
+                    <button type="submit" class="btn btn-primary flex-grow-1"><i class="fa fa-filter me-1"></i>Apply Filters</button>
+                    <a asp-action="AlertsHistory" class="btn btn-outline-secondary">Reset</a>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div class="card border-0 shadow-sm">
+        <div class="card-header bg-white py-3"><strong>@Model.Alerts.Count matching alert(s)</strong></div>
+        <div class="card-body p-0">
+            @if (Model.Alerts.Count == 0)
+            {
+                <div class="text-center text-muted py-5 px-3"><i class="fa fa-bell-slash fa-2x mb-3"></i><p class="mb-1">No alerts match the selected filters.</p><small>Detected warnings and critical anomalies will appear here automatically.</small></div>
+            }
+            else
+            {
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle mb-0">
+                        <thead class="table-light">
+                            <tr><th>Detected</th><th>Grade</th><th>Severity</th><th>Operational values</th><th>Message</th><th>Score</th><th>User</th></tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var alert in Model.Alerts)
+                            {
+                                <tr>
+                                    <td class="text-nowrap">@alert.TimestampUtc.ToLocalTime().ToString("dd MMM yyyy, HH:mm")</td>
+                                    <td><strong>@alert.Grade</strong></td>
+                                    <td><span class="badge @(alert.Severity == "CRITICAL" ? "bg-danger" : "bg-warning text-dark")">@alert.Severity</span></td>
+                                    <td class="small text-nowrap">Demand: @alert.DemandKg.ToString("0.##") kg<br />Stock: @alert.StockLevelKg.ToString("0.##") kg<br />Price: LKR @alert.PricePerKg.ToString("0.00")</td>
+                                    <td style="min-width:280px">
+                                        @alert.Message
+                                        @if (alert.RulesTriggered.Count > 0)
+                                        {
+                                            <ul class="small mb-0 mt-1">
+                                                @foreach (var rule in alert.RulesTriggered)
+                                                {
+                                                    <li>@rule.Message</li>
+                                                }
+                                            </ul>
+                                        }
+                                    </td>
+                                    <td>@alert.Score.ToString("0.0000")<br /><small class="text-muted">ML: @(alert.ModelTriggered ? "Yes" : "No")</small></td>
+                                    <td>@(string.IsNullOrWhiteSpace(alert.UserName) ? "Admin" : alert.UserName)</td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            }
+        </div>
+    </div>
+</div>

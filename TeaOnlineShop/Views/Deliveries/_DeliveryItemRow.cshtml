@@ -1,0 +1,68 @@
+@model dynamic
+
+<div class="card mb-3 item-card">
+    <div class="card-body">
+        <div class="row">
+            <div class="col-md-4">
+                <div class="mb-3">
+                    <label class="form-label">Item</label>
+                    <select name="Items[@Model.Index].ItemId" class="form-select item-select" data-index="@Model.Index">
+                        <option value="">-- Select Item --</option>
+                        @foreach (var item in Model.Items)
+                        {
+                            <option value="@item.Value">@item.Text</option>
+                        }
+                    </select>
+                    <span class="text-danger"></span>
+                </div>
+            </div>
+            
+            <div class="col-md-2">
+                <div class="mb-3">
+                    <label class="form-label">Quantity</label>
+                    <input name="Items[@Model.Index].Quantity" class="form-control quantity-input" type="number" step="0.01" min="0.01" data-index="@Model.Index" />
+                    <span class="text-danger"></span>
+                </div>
+            </div>
+            
+            <div class="col-md-2">
+                <div class="mb-3">
+                    <label class="form-label">Unit Price</label>
+                    <div class="input-group">
+                        <span class="input-group-text">$</span>
+                        <input name="Items[@Model.Index].UnitPrice" class="form-control unit-price-input" type="number" step="0.01" min="0" data-index="@Model.Index" />
+                    </div>
+                    <span class="text-danger"></span>
+                </div>
+            </div>
+            
+            <div class="col-md-2">
+                <div class="mb-3">
+                    <label class="form-label">Total Price</label>
+                    <div class="input-group">
+                        <span class="input-group-text">$</span>
+                        <input name="Items[@Model.Index].TotalPrice" class="form-control total-price-input" type="number" step="0.01" readonly data-index="@Model.Index" />
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-md-2 d-flex align-items-end">
+                <button type="button" class="btn btn-outline-danger remove-item mb-3">
+                    <i class="icon-trash icons"></i> Remove
+                </button>
+            </div>
+        </div>
+        
+        <div class="row">
+            <div class="col-md-6">
+                <div class="mb-3">
+                    <label class="form-label">Item Notes</label>
+                    <input name="Items[@Model.Index].Notes" class="form-control" />
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="item-info text-muted small"></div>
+            </div>
+        </div>
+    </div>
+</div> 

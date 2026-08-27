@@ -1,0 +1,22 @@
+﻿{
+    "grade":  "BOP",
+    "is_anomaly":  true,
+    "severity":  "CRITICAL",
+    "message":  "🚨 CRITICAL anomaly for BOP! Stock critically low: 5.0 kg (threshold: 80 kg)",
+    "color":  "red",
+    "score":  -0.5745,
+    "model_triggered":  false,
+    "rules_triggered":  [
+                            {
+                                "rule":  "CRITICAL_LOW_STOCK",
+                                "message":  "Stock critically low: 5.0 kg (threshold: 80 kg)"
+                            }
+                        ],
+    "checks":  {
+                   "stock_level_kg":  5.0,
+                   "demand_kg":  320.0,
+                   "price_per_kg":  105.0,
+                   "min_stock_rule":  200,
+                   "max_demand_rule":  600
+               }
+}

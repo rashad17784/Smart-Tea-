@@ -1,0 +1,156 @@
+﻿@model TeaOnlineShop.Models.Dbase.Banner
+
+@{
+    ViewData["Title"] = "Edit Banner";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2 class="mb-0"><i class="fa fa-edit me-2"></i>Edit Banner</h2>
+    <a href="/Admin/Banners" class="btn btn-outline-secondary">
+        <i class="fa fa-arrow-left me-2"></i>Back to List
+    </a>
+</div>
+
+<div class="row">
+    <div class="col-md-8">
+        <div class="card shadow-sm">
+            <div class="card-header bg-light">
+                <h5 class="mb-0">Banner Information</h5>
+            </div>
+            <div class="card-body">
+                <form asp-action="Edit" enctype="multipart/form-data">
+                    <div asp-validation-summary="ModelOnly" class="alert alert-danger" role="alert"></div>
+                    <input type="hidden" asp-for="ImageName" />
+                    <input type="hidden" asp-for="Id" />
+                    
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label asp-for="Title" class="form-label fw-medium">Title</label>
+                                <input asp-for="Title" class="form-control" placeholder="Enter banner title" />
+                                <span asp-validation-for="Title" class="text-danger small"></span>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label asp-for="SubTitle" class="form-label fw-medium">Subtitle</label>
+                                <input asp-for="SubTitle" class="form-control" placeholder="Enter banner subtitle" />
+                                <span asp-validation-for="SubTitle" class="text-danger small"></span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label asp-for="Link" class="form-label fw-medium">Link URL</label>
+                                <div class="input-group">
+                                    <span class="input-group-text"><i class="fa fa-link"></i></span>
+                                    <input asp-for="Link" class="form-control" placeholder="e.g., /products/category/1" />
+                                </div>
+                                <span asp-validation-for="Link" class="text-danger small"></span>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label asp-for="Positon" class="form-label fw-medium">Position</label>
+                                <select asp-for="Positon" class="form-select">
+                                    <option value="Slider">Slider</option>
+                                    <option value="Banner1">Banner 1</option>
+                                    <option value="Banner2">Banner 2</option>
+                                </select>
+                                <span asp-validation-for="Positon" class="text-danger small"></span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label asp-for="Priority" class="form-label fw-medium">Display Priority</label>
+                                <input asp-for="Priority" class="form-control" type="number" min="1" max="100" placeholder="Lower number = higher priority" />
+                                <span asp-validation-for="Priority" class="text-danger small"></span>
+                                <div class="form-text text-muted">Lower numbers will be displayed first</div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label asp-for="ImageName" class="form-label fw-medium">Banner Image</label>
+                                <input type="file" name="ImageFile" class="form-control" />
+                                <span asp-validation-for="ImageName" class="text-danger small"></span>
+                                <div class="form-text text-muted">Recommended size: 1200×400 pixels</div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="d-grid gap-2 d-md-flex justify-content-md-end mt-4">
+                        <a href="/Admin/Banners" class="btn btn-outline-secondary">Cancel</a>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fa fa-save me-2"></i>Save Changes
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-4">
+        <div class="card shadow-sm">
+            <div class="card-header bg-light">
+                <h5 class="mb-0">Current Image</h5>
+            </div>
+            <div class="card-body">
+                <div class="text-center">
+                    <img class="img-fluid rounded" src="/images/banners/@Model.ImageName" alt="@Model.Title" />
+                </div>
+                <div class="mt-3">
+                    <dl class="row small mb-0">
+                        <dt class="col-sm-4">File Name:</dt>
+                        <dd class="col-sm-8">@Model.ImageName</dd>
+                        
+                        <dt class="col-sm-4">Position:</dt>
+                        <dd class="col-sm-8"><span class="badge bg-info text-dark">@Model.Positon</span></dd>
+                        
+                        <dt class="col-sm-4">Priority:</dt>
+                        <dd class="col-sm-8">@Model.Priority</dd>
+                    </dl>
+                </div>
+            </div>
+        </div>
+        
+        <div class="card shadow-sm mt-3">
+            <div class="card-header bg-light">
+                <h5 class="mb-0">Help & Tips</h5>
+            </div>
+            <div class="card-body">
+                <ul class="small mb-0">
+                    <li>Banners should maintain a consistent aspect ratio</li>
+                    <li>Use high-quality images (min. 1200px width)</li>
+                    <li>Keep text on banners concise and readable</li>
+                    <li>Ensure proper contrast between text and background</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+    
+    <script>
+        $(document).ready(function() {
+            // Preview image when file is selected
+            $('input[type="file"]').on('change', function() {
+                var file = this.files[0];
+                if (file) {
+                    var reader = new FileReader();
+                    reader.onload = function(e) {
+                        $('.img-fluid').attr('src', e.target.result);
+                    }
+                    reader.readAsDataURL(file);
+                }
+            });
+        });
+    </script>
+}
+

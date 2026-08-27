@@ -1,0 +1,284 @@
+@model TeaOnlineShop.Models.ViewModels.DeliveryViewModel
+
+@{
+    ViewData["Title"] = "Record Delivery";
+}
+
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-md-10 mx-auto">
+            <div class="card shadow-sm">
+                <div class="card-header bg-primary text-white">
+                    <h4>@ViewData["Title"]</h4>
+                </div>
+                <div class="card-body">
+                    <form asp-action="Create" id="deliveryForm">
+                        <div asp-validation-summary="ModelOnly" class="alert alert-danger" role="alert"></div>
+                        
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label asp-for="DeliveryCode" class="form-label"></label>
+                                    <input asp-for="DeliveryCode" class="form-control" readonly />
+                                </div>
+                                
+                                <div class="mb-3">
+                                    <label asp-for="SupplierId" class="form-label"></label>
+                                    <select asp-for="SupplierId" asp-items="Model.SuppliersList" class="form-select">
+                                        <option value="">-- Select Supplier --</option>
+                                    </select>
+                                    <span asp-validation-for="SupplierId" class="text-danger"></span>
+                                </div>
+                                
+                                <div class="mb-3">
+                                    <label asp-for="DeliveryDate" class="form-label"></label>
+                                    <input asp-for="DeliveryDate" class="form-control" type="datetime-local" />
+                                    <span asp-validation-for="DeliveryDate" class="text-danger"></span>
+                                </div>
+                            </div>
+                            
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label asp-for="Status" class="form-label"></label>
+                                    <select asp-for="Status" class="form-select">
+                                        <option value="Received">Received</option>
+                                        <option value="Pending">Pending</option>
+                                        <option value="Rejected">Rejected</option>
+                                    </select>
+                                </div>
+                                
+                                <div class="mb-3">
+                                    <label asp-for="Notes" class="form-label"></label>
+                                    <textarea asp-for="Notes" class="form-control" rows="4"></textarea>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <hr class="my-4" />
+                        
+                        <h5 class="mb-3">Delivery Items</h5>
+                        
+                        <div id="itemsContainer">
+                            @for (int i = 0; i < Model.Items.Count; i++)
+                            {
+                                <div class="card mb-3 item-card">
+                                    <div class="card-body">
+                                        <div class="row">
+                                            <div class="col-md-4">
+                                                <div class="mb-3">
+                                                    <label asp-for="Items[0].ItemId" class="form-label">Item</label>
+                                                    <select asp-for="Items[0].ItemId" asp-items="Model.SupplyItemsList" class="form-select item-select" data-index="0">
+                                                        <option value="">-- Select Item --</option>
+                                                    </select>
+                                                    <span asp-validation-for="Items[0].ItemId" class="text-danger"></span>
+                                                </div>
+                                            </div>
+                                            
+                                            <div class="col-md-2">
+                                                <div class="mb-3">
+                                                    <label asp-for="Items[0].Quantity" class="form-label">Quantity</label>
+                                                    <input asp-for="Items[0].Quantity" class="form-control quantity-input" type="number" step="0.01" min="0.01" data-index="0" />
+                                                    <span asp-validation-for="Items[0].Quantity" class="text-danger"></span>
+                                                </div>
+                                            </div>
+                                            
+                                            <div class="col-md-2">
+                                                <div class="mb-3">
+                                                    <label asp-for="Items[0].UnitPrice" class="form-label">Unit Price</label>
+                                                    <div class="input-group">
+                                                        <span class="input-group-text">$</span>
+                                                        <input asp-for="Items[0].UnitPrice" class="form-control unit-price-input" type="number" step="0.01" min="0" data-index="0" />
+                                                    </div>
+                                                    <span asp-validation-for="Items[0].UnitPrice" class="text-danger"></span>
+                                                </div>
+                                            </div>
+                                            
+                                            <div class="col-md-2">
+                                                <div class="mb-3">
+                                                    <label asp-for="Items[0].TotalPrice" class="form-label">Total Price</label>
+                                                    <div class="input-group">
+                                                        <span class="input-group-text">$</span>
+                                                        <input asp-for="Items[0].TotalPrice" class="form-control total-price-input" type="number" step="0.01" readonly data-index="0" />
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            
+                                            <div class="col-md-2 d-flex align-items-end">
+                                                <button type="button" class="btn btn-outline-danger remove-item mb-3" style="display:none;">
+                                                    <i class="icon-trash icons"></i> Remove
+                                                </button>
+                                            </div>
+                                        </div>
+                                        
+                                        <div class="row">
+                                            <div class="col-md-6">
+                                                <div class="mb-3">
+                                                    <label asp-for="Items[0].Notes" class="form-label">Item Notes</label>
+                                                    <input asp-for="Items[0].Notes" class="form-control" />
+                                                </div>
+                                            </div>
+                                            <div class="col-md-6">
+                                                <div class="item-info text-muted small"></div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            }
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-md-6">
+                                <button type="button" id="addItemBtn" class="btn btn-outline-primary">
+                                    <i class="icon-plus icons"></i> Add Item
+                                </button>
+                            </div>
+                            <div class="col-md-6 text-end">
+                                <div class="card border-0 bg-light p-3">
+                                    <div class="d-flex justify-content-between">
+                                        <h5>Total Amount:</h5>
+                                        <h5 id="grandTotal">$0.00</h5>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="card-footer bg-transparent mt-4 border-0">
+                            <div class="d-flex justify-content-between">
+                                <a asp-action="Index" class="btn btn-outline-secondary">
+                                    <i class="icon-arrow-left icons"></i> Back to List
+                                </a>
+                                <button type="submit" class="btn btn-primary">
+                                    <i class="icon-check icons"></i> Save Delivery
+                                </button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+    
+    <script>
+        $(document).ready(function() {
+            // Initialize item rows with correct indices
+            $('.item-card').each(function(index) {
+                updateItemIndices($(this), index);
+            });
+            
+            // Show remove button if there's more than one item
+            updateRemoveButtons();
+            
+            // Calculate initial totals
+            calculateAllTotals();
+            
+            // Add new item
+            $('#addItemBtn').on('click', function() {
+                const newIndex = $('.item-card').length;
+                
+                $.get('@Url.Action("GetItemRow", "Deliveries")', { index: newIndex }, function(data) {
+                    $('#itemsContainer').append(data);
+                    updateItemIndices($('.item-card').last(), newIndex);
+                    updateRemoveButtons();
+                    bindEvents();
+                });
+            });
+            
+            // Delegate event for remove item button (for dynamically added items)
+            $(document).on('click', '.remove-item', function() {
+                $(this).closest('.item-card').remove();
+                // Renumber remaining items
+                $('.item-card').each(function(index) {
+                    updateItemIndices($(this), index);
+                });
+                updateRemoveButtons();
+                calculateGrandTotal();
+            });
+            
+            // Item selection change event
+            bindEvents();
+            
+            // Calculate totals when quantity or unit price changes
+            $(document).on('change', '.quantity-input, .unit-price-input', function() {
+                const index = $(this).data('index');
+                calculateItemTotal(index);
+                calculateGrandTotal();
+            });
+            
+            // Helper functions
+            function updateItemIndices(itemCard, index) {
+                // Update all form elements with correct indices
+                itemCard.find('select, input, textarea').each(function() {
+                    const elem = $(this);
+                    const name = elem.attr('name');
+                    if (name) {
+                        const newName = name.replace(/Items\[\d+\]/, `Items[${index}]`);
+                        elem.attr('name', newName);
+                    }
+                    elem.data('index', index);
+                });
+            }
+            
+            function bindEvents() {
+                $('.item-select').off('change').on('change', function() {
+                    const itemId = $(this).val();
+                    const itemCard = $(this).closest('.item-card');
+                    const infoDiv = itemCard.find('.item-info');
+                    
+                    if (itemId) {
+                        $.get('@Url.Action("GetItemDetails", "Deliveries")', { id: itemId }, function(data) {
+                            infoDiv.html(`
+                                <span class="badge bg-info">${data.category}</span>
+                                <p class="mt-1 mb-0">Unit: ${data.unit}</p>
+                                <p class="mb-0">Current Stock: ${data.currentStock} ${data.unit}</p>
+                            `);
+                        });
+                    } else {
+                        infoDiv.empty();
+                    }
+                });
+            }
+            
+            function updateRemoveButtons() {
+                const itemCount = $('.item-card').length;
+                if (itemCount > 1) {
+                    $('.remove-item').show();
+                } else {
+                    $('.remove-item').hide();
+                }
+            }
+            
+            function calculateItemTotal(index) {
+                const quantityInput = $(`.quantity-input[data-index="${index}"]`);
+                const unitPriceInput = $(`.unit-price-input[data-index="${index}"]`);
+                const totalPriceInput = $(`.total-price-input[data-index="${index}"]`);
+                
+                const quantity = parseFloat(quantityInput.val()) || 0;
+                const unitPrice = parseFloat(unitPriceInput.val()) || 0;
+                const totalPrice = (quantity * unitPrice).toFixed(2);
+                
+                totalPriceInput.val(totalPrice);
+            }
+            
+            function calculateAllTotals() {
+                $('.item-card').each(function() {
+                    const index = $(this).find('.quantity-input').data('index');
+                    calculateItemTotal(index);
+                });
+                calculateGrandTotal();
+            }
+            
+            function calculateGrandTotal() {
+                let grandTotal = 0;
+                $('.total-price-input').each(function() {
+                    grandTotal += parseFloat($(this).val()) || 0;
+                });
+                
+                $('#grandTotal').text('$' + grandTotal.toFixed(2));
+            }
+        });
+    </script>
+} 

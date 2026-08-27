@@ -1,0 +1,703 @@
+@model TeaOnlineShop.Models.ViewModels.DashboardViewModel
+
+@{
+    ViewData["Title"] = "Analytics Dashboard";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2 class="mb-0"><i class="fa fa-chart-line me-2"></i>Analytics Dashboard</h2>
+    <div>
+        <a asp-area="Admin" asp-controller="Home" asp-action="Index" class="btn btn-outline-secondary">
+            <i class="fa fa-arrow-left me-2"></i>Back to Admin
+        </a>
+    </div>
+</div>
+
+@if (TempData["InfoMessage"] != null)
+{
+    <div class="alert alert-info alert-dismissible fade show" role="alert">
+        <i class="fa fa-info-circle me-2"></i>@TempData["InfoMessage"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+}
+
+<div class="card shadow-sm mb-4">
+    <div class="card-header bg-light d-flex justify-content-between align-items-center">
+        <h5 class="mb-0">Date Range Selection</h5>
+        <span class="badge bg-primary">Select Period</span>
+    </div>
+    <div class="card-body">
+        <form asp-area="Admin" asp-controller="Reports" asp-action="Dashboard" method="post" class="row g-3">
+            <div class="col-md-3">
+                <label class="form-label">Preset Ranges</label>
+                <select asp-for="DateRange" id="dateRangeSelect" class="form-select">
+                    <option value="today">Today</option>
+                    <option value="yesterday">Yesterday</option>
+                    <option value="last7days">Last 7 Days</option>
+                    <option value="last30days">Last 30 Days</option>
+                    <option value="thismonth">This Month</option>
+                    <option value="lastmonth">Last Month</option>
+                    <option value="custom">Custom Range</option>
+                </select>
+            </div>
+            <div class="col-md-3 custom-date-range">
+                <label asp-for="StartDate" class="form-label"></label>
+                <input asp-for="StartDate" class="form-control" type="date" />
+            </div>
+            <div class="col-md-3 custom-date-range">
+                <label asp-for="EndDate" class="form-label"></label>
+                <input asp-for="EndDate" class="form-control" type="date" />
+            </div>
+            <div class="col-md-3 d-flex align-items-end">
+                <button type="submit" class="btn btn-primary w-100">
+                    <i class="fa fa-sync-alt me-2"></i>Update Dashboard
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<div class="row mb-4">
+    <div class="col-md-3">
+        <div class="card shadow-sm h-100 border-left-primary">
+            <div class="card-body">
+                <h6 class="text-muted mb-1">Total Sales</h6>
+                <h3 class="mb-0 text-primary display-6">$@Model.TotalSales.ToString("N2")</h3>
+                <small class="text-muted">@Model.StartDate.ToString("MMM dd, yyyy") - @Model.EndDate.ToString("MMM dd, yyyy")</small>
+                <div class="mt-2">
+                    <span class="badge bg-light text-primary">@Model.SalesTransactionCount Transactions</span>
+                    <span class="badge bg-light text-primary ms-1">Avg. $@Model.AverageDailySales.ToString("N2")/day</span>
+                </div>
+            </div>
+            <div class="card-footer bg-primary bg-opacity-10 d-flex justify-content-between align-items-center">
+                <span class="small text-primary">Revenue</span>
+                <i class="fa fa-chart-line text-primary"></i>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card shadow-sm h-100 border-left-danger">
+            <div class="card-body">
+                <h6 class="text-muted mb-1">Total Units Sold</h6>
+                <h3 class="mb-0 text-danger display-6">@Model.TotalSalesQuantity.ToString("N2")</h3>
+                <small class="text-muted">Items moved from inventory</small>
+                <div class="mt-2">
+                    <span class="badge bg-light text-danger">Avg. $@Model.AverageOrderValue.ToString("N2")/transaction</span>
+                </div>
+            </div>
+            <div class="card-footer bg-danger bg-opacity-10 d-flex justify-content-between align-items-center">
+                <span class="small text-danger">Sales</span>
+                <i class="fa fa-shopping-cart text-danger"></i>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card shadow-sm h-100 border-left-success">
+            <div class="card-body">
+                <h6 class="text-muted mb-1">Production Volume</h6>
+                <h3 class="mb-0 text-success display-6">@Model.TotalProductionQuantity.ToString("N2")</h3>
+                <small class="text-muted">Units produced in-house</small>
+            </div>
+            <div class="card-footer bg-success bg-opacity-10 d-flex justify-content-between align-items-center">
+                <span class="small text-success">Production</span>
+                <i class="fa fa-industry text-success"></i>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card shadow-sm h-100 border-left-info">
+            <div class="card-body">
+                <h6 class="text-muted mb-1">Deliveries Received</h6>
+                <h3 class="mb-0 text-info display-6">@Model.TotalDeliveryQuantity.ToString("N2")</h3>
+                <small class="text-muted">Units received from suppliers</small>
+            </div>
+            <div class="card-footer bg-info bg-opacity-10 d-flex justify-content-between align-items-center">
+                <span class="small text-info">Inventory</span>
+                <i class="fa fa-truck text-info"></i>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row mb-4">
+    <div class="col-lg-6">
+        <div class="card shadow-sm h-100">
+            <div class="card-header bg-white d-flex justify-content-between align-items-center">
+                <h5 class="mb-0 text-primary">
+                    <i class="fa fa-chart-line me-2"></i>Sales & Production Trends
+                </h5>
+                <div class="btn-group btn-group-sm" role="group">
+                    <button type="button" class="btn btn-primary active px-3" id="lineChartBtn">
+                        <i class="fa fa-chart-line me-2"></i>Line
+                    </button>
+                    <button type="button" class="btn btn-outline-primary px-3" id="barChartBtn">
+                        <i class="fa fa-chart-bar me-2"></i>Bar
+                    </button>
+                </div>
+            </div>
+            <div class="card-body p-3">
+                <div style="height: 300px;">
+                    <canvas id="salesChart"></canvas>
+                </div>
+            </div>
+            <div class="card-footer bg-light">
+                <div class="d-flex justify-content-between">
+                    <span class="small text-muted"><i class="fa fa-circle text-primary me-1"></i> Sales</span>
+                    <span class="small text-muted"><i class="fa fa-circle text-success me-1"></i> Production</span>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-6">
+        <div class="card shadow-sm h-100">
+            <div class="card-header bg-white d-flex justify-content-between align-items-center">
+                <h5 class="mb-0 text-primary">
+                    <i class="fa fa-chart-pie me-2"></i>Sales by Tea Type
+                </h5>
+                <span class="badge bg-light text-dark">Distribution</span>
+            </div>
+            <div class="card-body p-3">
+                <div style="height: 300px;">
+                    <canvas id="teaTypeChart"></canvas>
+                </div>
+            </div>
+            <div class="card-footer bg-light">
+                <div class="small text-muted text-center">Showing percentage distribution by tea type</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row mb-4">
+    <div class="col-md-12">
+        <div class="card shadow-sm">
+            <div class="card-header bg-white d-flex justify-content-between align-items-center">
+                <h5 class="mb-0 text-primary">
+                    <i class="fa fa-dollar-sign me-2"></i>Detailed Sales Summary
+                </h5>
+                <a asp-area="Admin" asp-controller="Reports" asp-action="SalesReport" class="btn btn-sm btn-outline-primary">
+                    <i class="fa fa-file-alt me-2"></i>Full Sales Report
+                </a>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-3">
+                        <div class="border-start border-4 border-primary ps-3 py-2 mb-3">
+                            <h6 class="text-muted mb-1">Total Revenue</h6>
+                            <h4 class="mb-0 text-primary">$@Model.TotalSales.ToString("N2")</h4>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="border-start border-4 border-success ps-3 py-2 mb-3">
+                            <h6 class="text-muted mb-1">Transaction Count</h6>
+                            <h4 class="mb-0 text-success">@Model.SalesTransactionCount</h4>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="border-start border-4 border-danger ps-3 py-2 mb-3">
+                            <h6 class="text-muted mb-1">Average Order Value</h6>
+                            <h4 class="mb-0 text-danger">$@Model.AverageOrderValue.ToString("N2")</h4>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="border-start border-4 border-info ps-3 py-2 mb-3">
+                            <h6 class="text-muted mb-1">Average Daily Sales</h6>
+                            <h4 class="mb-0 text-info">$@Model.AverageDailySales.ToString("N2")</h4>
+                        </div>
+                    </div>
+                </div>
+                <hr>
+                <div class="alert alert-info" role="alert">
+                    <h6 class="alert-heading mb-1"><i class="fa fa-info-circle me-2"></i>Quick Insights</h6>
+                    <p class="mb-0">
+                        In the selected period (@Model.StartDate.ToString("MMM dd, yyyy") - @Model.EndDate.ToString("MMM dd, yyyy")), 
+                        total sales reached <strong>$@Model.TotalSales.ToString("N2")</strong> with <strong>@Model.TotalSalesQuantity.ToString("N0")</strong> units sold.
+                        @if(Model.TotalSales > 0 && Model.SalesTransactionCount > 0)
+                        {
+                            <span>The average transaction value was <strong>$@Model.AverageOrderValue.ToString("N2")</strong>.</span>
+                        }
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-12">
+        <div class="card shadow-sm">
+            <div class="card-header bg-light d-flex justify-content-between align-items-center">
+                <h5 class="mb-0">Top Selling Items</h5>
+                <div>
+                    <a asp-area="Admin" asp-controller="Reports" asp-action="InventoryReport" class="btn btn-sm btn-outline-primary">
+                        <i class="fa fa-list me-2"></i>Full Inventory Report
+                    </a>
+                    <a asp-area="Admin" asp-controller="Reports" asp-action="TransactionLog" class="btn btn-sm btn-outline-secondary ms-2">
+                        <i class="fa fa-history me-2"></i>Transaction Log
+                    </a>
+                </div>
+            </div>
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-hover mb-0">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Item</th>
+                                <th>Type</th>
+                                <th>Grade</th>
+                                <th>Quantity Sold</th>
+                                <th>Revenue</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @if (Model.TopSellingItems != null && Model.TopSellingItems.Any())
+                            {
+                                foreach (var item in Model.TopSellingItems)
+                                {
+                                    <tr>
+                                        <td>@item.Name</td>
+                                        <td><span class="badge bg-light text-dark">@item.TeaType</span></td>
+                                        <td>@item.Grade</td>
+                                        <td>@item.QuantitySold.ToString("N2")</td>
+                                        <td><span class="text-primary fw-bold">$@item.Revenue.ToString("N2")</span></td>
+                                        <td>
+                                            <a asp-area="Admin" asp-controller="TeaInventory" asp-action="Details" asp-route-id="@item.ItemId" 
+                                               class="btn btn-sm btn-outline-primary rounded-circle">
+                                                <i class="fa fa-info-circle"></i>
+                                            </a>
+                                        </td>
+                                    </tr>
+                                }
+                            }
+                            else
+                            {
+                                <tr>
+                                    <td colspan="6" class="text-center py-4">
+                                        <div class="alert alert-info mb-0">
+                                            <i class="fa fa-info-circle me-2"></i>No sales data available for the selected period.
+                                        </div>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            <div class="card-footer bg-light">
+                <div class="small text-muted">Showing top 5 selling items by revenue</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    
+    <script>
+        // Parse data from the model
+        const chartLabels = @Html.Raw(Json.Serialize(Model.ChartLabels));
+        const salesData = @Html.Raw(Json.Serialize(Model.SalesChartData));
+        const productionData = @Html.Raw(Json.Serialize(Model.ProductionChartData));
+        const pieLabels = @Html.Raw(Json.Serialize(Model.PieChartLabels));
+        const pieData = @Html.Raw(Json.Serialize(Model.PieChartData));
+        
+        // Chart colors - industrial admin palette
+        const colors = {
+            primary: '#0f766e',
+            secondary: '#475467',
+            success: '#15803d',
+            info: '#2563eb',
+            warning: '#b7791f',
+            danger: '#b42318'
+        };
+        
+        // Restrained chart color set
+        const pieColors = [
+            '#0f766e', '#2563eb', '#15803d', '#b7791f', '#475467',
+            '#0891b2', '#7c3aed', '#b42318', '#64748b', '#0b5f59'
+        ];
+        
+        // Initialize charts
+        let salesChart = null;
+        let teaTypeChart = null;
+        
+        // Function to initialize or update the sales chart
+        function initSalesChart(type = 'line') {
+            try {
+                const ctx = document.getElementById('salesChart');
+                if (!ctx) {
+                    console.error('Sales chart canvas not found');
+                    return;
+                }
+                
+                const chartContext = ctx.getContext('2d');
+                
+                // Ensure we have valid data
+                if (!chartLabels || !chartLabels.length || !salesData || !salesData.length) {
+                    console.warn('Missing sales chart data, using fallback data');
+                    // Provide fallback data if missing
+                    const fallbackLabels = ['Day 1', 'Day 2', 'Day 3', 'Day 4', 'Day 5'];
+                    const fallbackSales = [100, 200, 150, 300, 250];
+                    const fallbackProduction = [50, 100, 75, 150, 125];
+                } 
+                
+                // Added gradient backgrounds
+                const primaryGradient = chartContext.createLinearGradient(0, 0, 0, 300);
+                primaryGradient.addColorStop(0, hexToRgba(colors.primary, 0.4));
+                primaryGradient.addColorStop(1, hexToRgba(colors.primary, 0.05));
+                
+                const successGradient = chartContext.createLinearGradient(0, 0, 0, 300);
+                successGradient.addColorStop(0, hexToRgba(colors.success, 0.4));
+                successGradient.addColorStop(1, hexToRgba(colors.success, 0.05));
+                
+                const config = {
+                    type: type,
+                    data: {
+                        labels: chartLabels,
+                        datasets: [
+                            {
+                                label: 'Sales ($)',
+                                data: salesData,
+                                backgroundColor: type === 'line' ? primaryGradient : hexToRgba(colors.primary, 0.7),
+                                borderColor: colors.primary,
+                                borderWidth: 2,
+                                tension: 0.3,
+                                pointRadius: 4,
+                                pointBackgroundColor: '#fff',
+                                pointBorderColor: colors.primary,
+                                pointBorderWidth: 2,
+                                fill: type === 'line',
+                                yAxisID: 'y'
+                            },
+                            {
+                                label: 'Production (Units)',
+                                data: productionData,
+                                backgroundColor: type === 'line' ? successGradient : hexToRgba(colors.success, 0.7),
+                                borderColor: colors.success,
+                                borderWidth: 2,
+                                tension: 0.3,
+                                pointRadius: 4, 
+                                pointBackgroundColor: '#fff',
+                                pointBorderColor: colors.success,
+                                pointBorderWidth: 2,
+                                fill: type === 'line',
+                                yAxisID: 'y1'
+                            }
+                        ]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        interaction: {
+                            mode: 'index',
+                            intersect: false,
+                        },
+                        plugins: {
+                            legend: {
+                                position: 'top',
+                                labels: {
+                                    usePointStyle: true,
+                                    padding: 15,
+                                    font: {
+                                        size: 12
+                                    }
+                                }
+                            },
+                            tooltip: {
+                                backgroundColor: 'rgba(255, 255, 255, 0.9)',
+                                titleColor: '#333',
+                                bodyColor: '#666',
+                                borderColor: '#ddd',
+                                borderWidth: 1,
+                                padding: 12,
+                                boxPadding: 6,
+                                usePointStyle: true,
+                                callbacks: {
+                                    label: function(context) {
+                                        let label = context.dataset.label || '';
+                                        if (label) {
+                                            label += ': ';
+                                        }
+                                        if (context.parsed.y !== null) {
+                                            label += context.dataset.label.includes('Sales') ? 
+                                                '$' + context.parsed.y.toFixed(2) : 
+                                                context.parsed.y.toFixed(2) + ' units';
+                                        }
+                                        return label;
+                                    }
+                                }
+                            }
+                        },
+                        scales: {
+                            x: {
+                                grid: {
+                                    color: 'rgba(0,0,0,0.05)',
+                                    borderDash: [5, 5],
+                                },
+                                ticks: {
+                                    font: {
+                                        size: 11
+                                    }
+                                }
+                            },
+                            y: {
+                                beginAtZero: true,
+                                position: 'left',
+                                grid: {
+                                    color: 'rgba(0,0,0,0.05)',
+                                    borderDash: [5, 5],
+                                },
+                                title: {
+                                    display: true,
+                                    text: 'Sales ($)',
+                                    font: {
+                                        size: 12,
+                                        weight: 'bold'
+                                    }
+                                },
+                                ticks: {
+                                    callback: function(value) {
+                                        return '$' + value;
+                                    },
+                                    font: {
+                                        size: 11
+                                    }
+                                }
+                            },
+                            y1: {
+                                beginAtZero: true,
+                                position: 'right',
+                                grid: {
+                                    drawOnChartArea: false
+                                },
+                                title: {
+                                    display: true,
+                                    text: 'Production (Units)',
+                                    font: {
+                                        size: 12,
+                                        weight: 'bold'
+                                    }
+                                },
+                                ticks: {
+                                    font: {
+                                        size: 11
+                                    }
+                                }
+                            }
+                        }
+                    }
+                };
+                
+                // Destroy the existing chart if it exists
+                if (salesChart) {
+                    salesChart.destroy();
+                }
+                
+                // Create the new chart
+                salesChart = new Chart(ctx, config);
+                console.log('Sales chart initialized successfully');
+            } catch (error) {
+                console.error('Error initializing sales chart:', error);
+            }
+        }
+        
+        // Function to initialize the tea type chart
+        function initTeaTypeChart() {
+            try {
+                const ctx = document.getElementById('teaTypeChart');
+                if (!ctx) {
+                    console.error('Tea type chart canvas not found');
+                    return;
+                }
+                
+                const chartContext = ctx.getContext('2d');
+                
+                // Ensure we have valid data
+                if (!pieLabels || !pieLabels.length || !pieData || !pieData.length) {
+                    console.warn('Missing tea type chart data, using fallback data');
+                    
+                    // Create fallback data if no data is available
+                    const fallbackLabels = ['Black Tea', 'Green Tea', 'Oolong', 'White Tea', 'Herbal'];
+                    const fallbackData = [300, 200, 150, 100, 50];
+                }
+                
+                // Check if we have all zeros - if so, add small values to make chart visible
+                let allZeros = true;
+                if (pieData) {
+                    allZeros = pieData.every(val => val === 0);
+                }
+                
+                // If all zeros, replace with small values
+                let displayData = pieData;
+                if (allZeros) {
+                    displayData = [5, 4, 3, 2, 1]; // Small values to make chart sections visible
+                }
+                
+                const config = {
+                    type: 'doughnut',
+                    data: {
+                        labels: pieLabels,
+                        datasets: [{
+                            data: displayData,
+                            backgroundColor: pieColors,
+                            borderColor: '#fff',
+                            borderWidth: 2,
+                            hoverOffset: 20
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        cutout: '65%',
+                        layout: {
+                            padding: 20
+                        },
+                        plugins: {
+                            legend: {
+                                position: 'right',
+                                labels: {
+                                    usePointStyle: true,
+                                    padding: 15,
+                                    font: {
+                                        size: 12
+                                    }
+                                }
+                            },
+                            tooltip: {
+                                backgroundColor: 'rgba(255, 255, 255, 0.9)',
+                                titleColor: '#333',
+                                bodyColor: '#666',
+                                borderColor: '#ddd',
+                                borderWidth: 1,
+                                padding: 12,
+                                boxPadding: 6,
+                                usePointStyle: true,
+                                callbacks: {
+                                    label: function(context) {
+                                        const label = context.label || '';
+                                        const value = context.parsed || 0;
+                                        const total = context.dataset.data.reduce((a, b) => a + b, 0);
+                                        const percentage = total > 0 ? Math.round((value / total) * 100) : 0;
+                                        
+                                        // If using placeholder data, indicate that
+                                        if (allZeros) {
+                                            return `${label}: No sales data`;
+                                        }
+                                        
+                                        return `${label}: $${value.toFixed(2)} (${percentage}%)`;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                };
+                
+                // Destroy the existing chart if it exists
+                if (teaTypeChart) {
+                    teaTypeChart.destroy();
+                }
+                
+                teaTypeChart = new Chart(ctx, config);
+                console.log('Tea type chart initialized successfully');
+            } catch (error) {
+                console.error('Error initializing tea type chart:', error);
+            }
+        }
+        
+        // Helper function to convert hex color to rgba
+        function hexToRgba(hex, alpha) {
+            try {
+                const r = parseInt(hex.slice(1, 3), 16);
+                const g = parseInt(hex.slice(3, 5), 16);
+                const b = parseInt(hex.slice(5, 7), 16);
+                return `rgba(${r}, ${g}, ${b}, ${alpha})`;
+            } catch (error) {
+                console.error('Error converting hex to rgba:', error);
+                return `rgba(0, 0, 0, ${alpha})`;
+            }
+        }
+        
+        // Document ready
+        $(document).ready(function() {
+            // Initialize charts safely
+            try {
+                console.log('Initializing charts...');
+                initSalesChart();
+                initTeaTypeChart();
+                console.log('Charts initialization complete');
+                
+                // Add chart hover effects
+                $('.card').hover(
+                    function() { $(this).addClass('shadow'); },
+                    function() { $(this).removeClass('shadow'); }
+                );
+            } catch (error) {
+                console.error('Error during chart initialization:', error);
+            }
+            
+            // Toggle chart type with animation
+            $('#lineChartBtn').click(function() {
+                $(this).addClass('active').removeClass('btn-outline-primary').addClass('btn-primary');
+                $('#barChartBtn').removeClass('active').removeClass('btn-primary').addClass('btn-outline-primary');
+                initSalesChart('line');
+            });
+            
+            $('#barChartBtn').click(function() {
+                $(this).addClass('active').removeClass('btn-outline-primary').addClass('btn-primary');
+                $('#lineChartBtn').removeClass('active').removeClass('btn-primary').addClass('btn-outline-primary');
+                initSalesChart('bar');
+            });
+            
+            // Show/hide custom date fields
+            function toggleCustomDateFields() {
+                if ($('#dateRangeSelect').val() === 'custom') {
+                    $('.custom-date-range').show();
+                } else {
+                    $('.custom-date-range').hide();
+                }
+            }
+            
+            // Initial toggle
+            toggleCustomDateFields();
+            
+            // Toggle on change
+            $('#dateRangeSelect').change(toggleCustomDateFields);
+        });
+    </script>
+
+    <style>
+        /* Enhanced styling for dashboard */
+        .border-left-primary {
+            border-left: 4px solid #0f766e !important;
+        }
+        .border-left-success {
+            border-left: 4px solid #15803d !important;
+        }
+        .border-left-info {
+            border-left: 4px solid #2563eb !important;
+        }
+        .border-left-danger {
+            border-left: 4px solid #b42318 !important;
+        }
+        .card {
+            transition: box-shadow 0.2s ease, border-color 0.2s ease;
+        }
+        .card:hover {
+            border-color: #c9d3da;
+        }
+        .card-header {
+            border-bottom: 1px solid rgba(0,0,0,0.05);
+        }
+        .card-footer {
+            border-top: 1px solid rgba(0,0,0,0.05);
+        }
+        .table th {
+            font-weight: 600;
+        }
+        .display-6 {
+            font-size: 1.8rem;
+            font-weight: 500;
+        }
+    </style>
+}

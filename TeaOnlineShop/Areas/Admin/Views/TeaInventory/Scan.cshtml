@@ -1,0 +1,417 @@
+@{
+    ViewData["Title"] = "Scan QR Code";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2 class="mb-0"><i class="fa fa-qrcode me-2"></i>Scan Tea Inventory QR Code</h2>
+    <div>
+        <a asp-area="Admin" asp-controller="TeaInventory" asp-action="Index" class="btn btn-outline-secondary">
+            <i class="fa fa-arrow-left me-2"></i>Back to Inventory
+        </a>
+    </div>
+</div>
+
+@if (TempData["ErrorMessage"] != null)
+{
+    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+        <i class="fa fa-exclamation-circle me-2"></i>@TempData["ErrorMessage"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+}
+
+<div class="row">
+    <div class="col-lg-6">
+        <div class="card shadow-sm mb-4">
+            <div class="card-header bg-light">
+                <h5 class="mb-0">Camera Scan</h5>
+            </div>
+            <div class="card-body">
+                <div class="form-group mb-3">
+                    <label for="cameraSelection" class="form-label">Select Camera</label>
+                    <select id="cameraSelection" class="form-select">
+                        <option value="">Loading cameras...</option>
+                    </select>
+                </div>
+                
+                <div class="text-center mb-3">
+                    <button id="startButton" class="btn btn-primary">
+                        <i class="fa fa-camera me-2"></i>Start Camera
+                    </button>
+                    <button id="stopButton" class="btn btn-danger" style="display: none;">
+                        <i class="fa fa-stop me-2"></i>Stop Camera
+                    </button>
+                </div>
+                
+                <div id="loadingIndicator" class="text-center p-3" style="display: none;">
+                    <div class="spinner-border text-primary mb-2" role="status"></div>
+                    <p class="mb-0">Initializing camera...</p>
+                </div>
+                
+                <div id="qr-reader" style="width: 100%; min-height: 300px; border: 1px solid #ddd; margin: 0 auto 15px auto; position: relative;"></div>
+                
+                <div id="cameraError" class="alert alert-danger" style="display: none;">
+                    <h6><i class="fa fa-exclamation-circle me-2"></i>Camera Access Issues</h6>
+                    <p>Unable to access the camera. This may be due to:</p>
+                    <ul>
+                        <li>Browser permissions not granted</li>
+                        <li>No camera connected to your device</li>
+                        <li>Another application is using the camera</li>
+                    </ul>
+                    <p class="mb-1">Please check your browser permissions and make sure your camera is properly connected.</p>
+                    <button id="retryCamera" class="btn btn-sm btn-outline-danger mt-2">
+                        <i class="fa fa-redo me-2"></i>Retry Camera Access
+                    </button>
+                </div>
+                
+                <div id="resultContainer" style="display: none;">
+                    <div class="alert alert-success">
+                        <h6><i class="fa fa-check-circle me-2"></i>QR Code detected!</h6>
+                        <p class="mb-0">Code: <strong id="qrResult"></strong></p>
+                    </div>
+                    <div class="text-center">
+                        <a id="detailsLink" href="#" class="btn btn-primary">
+                            <i class="fa fa-search me-2"></i>View Item Details
+                        </a>
+                        <button id="scanAgainButton" class="btn btn-outline-secondary">
+                            <i class="fa fa-redo me-2"></i>Scan Again
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-lg-6">
+        <div class="card shadow-sm mb-4">
+            <div class="card-header bg-light">
+                <h5 class="mb-0">Manual Entry</h5>
+            </div>
+            <div class="card-body">
+                <p>If you cannot scan a QR code, you can manually enter the code below:</p>
+                
+                <form asp-area="Admin" asp-controller="TeaInventory" asp-action="FindItemByQRCode" method="get">
+                    <div class="form-group mb-3">
+                        <label for="qrCode" class="form-label">QR Code</label>
+                        <div class="input-group">
+                            <input type="text" name="qrCode" id="qrCode" class="form-control" required
+                                   placeholder="Enter QR code (e.g., INV-BLK-AAA-20230501-123456)" />
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fa fa-search me-2"></i>Find Item
+                            </button>
+                        </div>
+                        <small class="text-muted">Enter the full QR code data, including the "INV-" prefix</small>
+                    </div>
+                </form>
+                
+                <hr>
+                
+                <div class="alert alert-info">
+                    <h6><i class="fa fa-info-circle me-2"></i>QR Code Format</h6>
+                    <p class="mb-0">Inventory QR codes have the format: <code>INV-TYPE-GRADE-BATCH-DATE-CODE</code></p>
+                </div>
+                
+                <div class="alert alert-warning">
+                    <h6><i class="fa fa-exclamation-triangle me-2"></i>Note</h6>
+                    <p class="mb-0">
+                        If you need to correct inventory levels, please use the 
+                        <a asp-area="Admin" asp-controller="TeaInventory" asp-action="Index">Inventory List</a>, 
+                        find the item, and use the "Adjust Stock" feature.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // DOM Elements
+            const startButton = document.getElementById('startButton');
+            const stopButton = document.getElementById('stopButton');
+            const resultContainer = document.getElementById('resultContainer');
+            const qrResult = document.getElementById('qrResult');
+            const detailsLink = document.getElementById('detailsLink');
+            const scanAgainButton = document.getElementById('scanAgainButton');
+            const cameraError = document.getElementById('cameraError');
+            const retryCamera = document.getElementById('retryCamera');
+            const cameraSelection = document.getElementById('cameraSelection');
+            const loadingIndicator = document.getElementById('loadingIndicator');
+            const qrReader = document.getElementById('qr-reader');
+            
+            // Variables
+            let html5QrCode = null;
+            let selectedCamera = null;
+            let scannerConfig = {
+                fps: 10,
+                qrbox: { width: 250, height: 250 },
+                aspectRatio: 1.0,
+                experimentalFeatures: {
+                    useBarCodeDetectorIfSupported: true
+                },
+                rememberLastUsedCamera: true,
+                formatsToSupport: [Html5QrcodeSupportedFormats.QR_CODE]
+            };
+            
+            // Initialize
+            checkBrowserSupport();
+            
+            // Event Listeners
+            startButton.addEventListener('click', initializeScanner);
+            stopButton.addEventListener('click', stopScanner);
+            retryCamera.addEventListener('click', loadCameras);
+            scanAgainButton.addEventListener('click', restartScanner);
+            cameraSelection.addEventListener('change', function() {
+                selectedCamera = this.value;
+                localStorage.setItem('teaShopPreferredCamera', selectedCamera);
+            });
+            
+            // Functions
+            function checkBrowserSupport() {
+                if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+                    showError("Your browser doesn't support camera access. Please use a modern browser like Chrome, Firefox, or Edge.");
+                    return false;
+                }
+                
+                loadCameras();
+                return true;
+            }
+            
+            function loadCameras() {
+                hideError();
+                showLoadingMessage("Detecting cameras...");
+                
+                // Try to retrieve last used camera
+                const lastUsedCamera = localStorage.getItem('teaShopPreferredCamera');
+                
+                Html5Qrcode.getCameras()
+                    .then(cameras => {
+                        hideLoadingMessage();
+                        
+                        if (cameras && cameras.length > 0) {
+                            cameraSelection.innerHTML = '';
+                            let backCameraFound = false;
+                            let selectedIndex = 0;
+                            
+                            cameras.forEach((camera, index) => {
+                                const option = document.createElement('option');
+                                option.value = camera.id;
+                                option.text = camera.label || `Camera ${index + 1}`;
+                                
+                                // Check if this is a back camera (mobile devices)
+                                const isBackCamera = 
+                                    camera.label.toLowerCase().includes('back') || 
+                                    camera.label.toLowerCase().includes('rear') ||
+                                    camera.label.toLowerCase().includes('environment');
+                                
+                                // Prefer back camera for mobile devices
+                                if (isBackCamera) {
+                                    option.text += " (recommended)";
+                                    backCameraFound = true;
+                                    if (!lastUsedCamera) {
+                                        selectedIndex = index;
+                                    }
+                                }
+                                
+                                // Select last used camera if available
+                                if (lastUsedCamera && camera.id === lastUsedCamera) {
+                                    selectedIndex = index;
+                                }
+                                
+                                cameraSelection.appendChild(option);
+                            });
+                            
+                            // Select the preferred camera
+                            cameraSelection.selectedIndex = selectedIndex;
+                            selectedCamera = cameraSelection.value;
+                            
+                            startButton.disabled = false;
+                        } else {
+                            cameraSelection.innerHTML = '<option value="">No cameras found</option>';
+                            showError("No camera devices were detected. Please ensure your camera is properly connected and not in use by another application.");
+                            startButton.disabled = true;
+                        }
+                    })
+                    .catch(err => {
+                        console.error('Error getting cameras:', err);
+                        cameraSelection.innerHTML = '<option value="">Camera detection failed</option>';
+                        showError("Failed to detect cameras. This might be due to permission issues. Please check your browser settings and ensure camera access is allowed.");
+                        startButton.disabled = true;
+                    });
+            }
+            
+            function initializeScanner() {
+                if (!selectedCamera) {
+                    showError("Please select a camera first.");
+                    return;
+                }
+                
+                hideError();
+                showLoadingMessage("Initializing camera...");
+                
+                // Create scanner instance if needed
+                if (!html5QrCode) {
+                    html5QrCode = new Html5Qrcode("qr-reader");
+                }
+                
+                // Clear QR reader div
+                qrReader.innerHTML = '';
+                
+                // Start scanning
+                html5QrCode.start(
+                    selectedCamera,
+                    scannerConfig,
+                    onScanSuccess,
+                    onScanFailure
+                )
+                .then(() => {
+                    console.log("QR Scanner started successfully");
+                    hideLoadingMessage();
+                    startButton.style.display = 'none';
+                    stopButton.style.display = 'inline-block';
+                    cameraSelection.disabled = true;
+                })
+                .catch(err => {
+                    console.error("Failed to start QR Scanner:", err);
+                    hideLoadingMessage();
+                    
+                    if (err.toString().includes('NotAllowedError')) {
+                        showError("Camera access was denied. Please allow camera access in your browser settings and try again.");
+                    } else if (err.toString().includes('NotFoundError')) {
+                        showError("The selected camera cannot be accessed. It may be disconnected or in use by another application.");
+                    } else if (err.toString().includes('NotReadableError')) {
+                        showError("The camera is in use by another application or not accessible. Please close other applications that might be using the camera.");
+                    } else {
+                        showError("Failed to start camera: " + err.toString());
+                    }
+                });
+            }
+            
+            function stopScanner() {
+                if (html5QrCode && html5QrCode.isScanning) {
+                    showLoadingMessage("Stopping camera...");
+                    
+                    html5QrCode.stop()
+                        .then(() => {
+                            console.log('QR Scanner stopped');
+                            resetUI();
+                        })
+                        .catch(err => {
+                            console.error('Error stopping QR Scanner:', err);
+                            showError("Failed to stop the camera: " + err.toString());
+                            resetUI();
+                        });
+                }
+            }
+            
+            function restartScanner() {
+                resultContainer.style.display = 'none';
+                initializeScanner();
+            }
+            
+            function resetUI() {
+                hideLoadingMessage();
+                startButton.style.display = 'inline-block';
+                stopButton.style.display = 'none';
+                cameraSelection.disabled = false;
+            }
+            
+            function onScanSuccess(qrCodeMessage) {
+                console.log("QR code detected:", qrCodeMessage);
+                
+                // Play success sound
+                playBeepSound();
+                
+                // Stop scanner
+                if (html5QrCode && html5QrCode.isScanning) {
+                    html5QrCode.stop()
+                        .then(() => {
+                            displayResult(qrCodeMessage);
+                            resetUI();
+                        })
+                        .catch(err => {
+                            console.error('Error stopping scanner after success:', err);
+                            displayResult(qrCodeMessage);
+                            resetUI();
+                        });
+                } else {
+                    displayResult(qrCodeMessage);
+                    resetUI();
+                }
+            }
+            
+            function onScanFailure(error) {
+                // Only log severe errors, not just "QR code not found"
+                if (!error.includes("QR code not found")) {
+                    console.warn(`QR scan error: ${error}`);
+                }
+            }
+            
+            function displayResult(qrCodeMessage) {
+                // Display scanned result
+                qrResult.textContent = qrCodeMessage;
+                
+                // Check if it's an inventory QR code
+                if (qrCodeMessage.startsWith('INV-')) {
+                    detailsLink.href = '@Url.Action("FindItemByQRCode", "TeaInventory", new { area = "Admin" })?qrCode=' + encodeURIComponent(qrCodeMessage);
+                    detailsLink.classList.remove('disabled');
+                } else {
+                    qrResult.innerHTML = qrCodeMessage + ' <span class="text-danger">(Not a valid inventory QR code)</span>';
+                    detailsLink.classList.add('disabled');
+                }
+                
+                // Show result container
+                resultContainer.style.display = 'block';
+            }
+            
+            function playBeepSound() {
+                try {
+                    const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                    const oscillator = audioContext.createOscillator();
+                    const gainNode = audioContext.createGain();
+                    
+                    oscillator.type = 'sine';
+                    oscillator.frequency.value = 1500;
+                    gainNode.gain.value = 0.3;
+                    
+                    oscillator.connect(gainNode);
+                    gainNode.connect(audioContext.destination);
+                    
+                    oscillator.start();
+                    setTimeout(() => oscillator.stop(), 200);
+                } catch (e) {
+                    console.warn('Error playing beep sound:', e);
+                }
+            }
+            
+            function showError(message) {
+                const errorDiv = document.getElementById('cameraError');
+                errorDiv.innerHTML = `
+                    <h6><i class="fa fa-exclamation-circle me-2"></i>Camera Access Issues</h6>
+                    <p>${message}</p>
+                    <button id="retryCamera" class="btn btn-sm btn-outline-danger mt-2">
+                        <i class="fa fa-redo me-2"></i>Retry Camera Access
+                    </button>
+                `;
+                errorDiv.style.display = 'block';
+                
+                // Reattach event listener to retry button
+                document.getElementById('retryCamera').addEventListener('click', loadCameras);
+            }
+            
+            function hideError() {
+                document.getElementById('cameraError').style.display = 'none';
+            }
+            
+            function showLoadingMessage(message) {
+                loadingIndicator.querySelector('p').textContent = message;
+                loadingIndicator.style.display = 'block';
+            }
+            
+            function hideLoadingMessage() {
+                loadingIndicator.style.display = 'none';
+            }
+        });
+    </script>
+} 

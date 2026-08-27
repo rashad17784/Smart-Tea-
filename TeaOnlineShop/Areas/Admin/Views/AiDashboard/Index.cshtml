@@ -1,0 +1,324 @@
+@model TeaOnlineShop.Models.ViewModels.AiDashboardOverviewViewModel
+@using System.Text.Json
+
+@{
+    ViewData["Title"] = "AI Dashboard Overview";
+    var demand = Model.LatestDemandForecast;
+    var price = Model.LatestPriceForecast;
+    var demandAverage = demand?.Predictions.Count > 0 ? demand.Predictions.Average() : (double?)null;
+    var demandPeak = demand?.Predictions.Count > 0 ? demand.Predictions.Max() : (double?)null;
+    var priceValue = price?.Summary?.AvgPrice ?? price?.PredictedPrice;
+    var priceTrend = price?.Summary?.OverallTrend ?? price?.Trend ?? string.Empty;
+    var pricePoints = price?.Forecast?.Select(x => x.Predicted).ToList() ?? new List<double>();
+    var priceLabels = price?.Forecast?.Select(x => x.Day).ToList() ?? new List<string>();
+    if (pricePoints.Count == 0 && price?.PredictedPrice != null)
+    {
+        pricePoints.Add(price.PredictedPrice.Value);
+        priceLabels.Add("Tomorrow");
+    }
+}
+
+<div class="container-fluid">
+    <partial name="_AiDashboardNav" />
+
+    <div class="d-flex flex-wrap justify-content-between align-items-start gap-3 mb-4">
+        <div>
+            <h2 class="mb-1"><i class="fa fa-robot text-primary me-2"></i>AI Dashboard Overview</h2>
+            <p class="text-muted mb-0">A quick view of forecasts, alerts, insights, and AI service health.</p>
+        </div>
+        <div class="text-end">
+            <span class="badge @(Model.AiAvailable ? "bg-success" : "bg-warning text-dark") px-3 py-2">
+                <i class="fa @(Model.AiAvailable ? "fa-circle-check" : "fa-circle-exclamation") me-1"></i>
+                AI service @(Model.AiAvailable ? "online" : "offline")
+            </span>
+            <div class="text-muted small mt-1">Updated @Model.GeneratedAtUtc.ToLocalTime().ToString("dd MMM, HH:mm")</div>
+        </div>
+    </div>
+
+    @if (!Model.AiAvailable)
+    {
+        <div class="alert alert-warning">
+            <i class="fa fa-triangle-exclamation me-2"></i>@Model.AiMessage
+        </div>
+    }
+
+    <div class="row g-3 mb-4">
+        <div class="col-md-6 col-xl-3">
+            <div class="card h-100 border-0 shadow-sm">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-start">
+                        <div>
+                            <div class="text-muted small text-uppercase">Demand forecast</div>
+                            @if (demandAverage.HasValue)
+                            {
+                                <h3 class="mb-1 mt-2">@demandAverage.Value.ToString("0.0") <small class="fs-6">kg/day</small></h3>
+                                <div class="small">@demand!.Grade · @demand.HorizonDays days</div>
+                            }
+                            else
+                            {
+                                <h5 class="mt-3 mb-1">No forecast yet</h5>
+                                <div class="small text-muted">Generate the first demand forecast.</div>
+                            }
+                        </div>
+                        <span class="rounded-circle bg-primary bg-opacity-10 text-primary p-3"><i class="fa fa-chart-line"></i></span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-6 col-xl-3">
+            <div class="card h-100 border-0 shadow-sm">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-start">
+                        <div>
+                            <div class="text-muted small text-uppercase">Green leaf price</div>
+                            @if (priceValue.HasValue)
+                            {
+                                <h3 class="mb-1 mt-2">LKR @priceValue.Value.ToString("0.00")</h3>
+                                <div class="small">@(string.IsNullOrWhiteSpace(priceTrend) ? "Latest forecast" : priceTrend)</div>
+                            }
+                            else
+                            {
+                                <h5 class="mt-3 mb-1">No forecast yet</h5>
+                                <div class="small text-muted">Generate the first price forecast.</div>
+                            }
+                        </div>
+                        <span class="rounded-circle bg-success bg-opacity-10 text-success p-3"><i class="fa fa-leaf"></i></span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-6 col-xl-3">
+            <div class="card h-100 border-0 shadow-sm">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-start">
+                        <div>
+                            <div class="text-muted small text-uppercase">Anomaly alerts</div>
+                            <h3 class="mb-1 mt-2">@Model.AnomalyAlertCount</h3>
+                            <div class="small"><span class="text-danger">@Model.CriticalAlertCount critical</span> · <span class="text-warning">@Model.WarningAlertCount warnings</span></div>
+                        </div>
+                        <span class="rounded-circle bg-warning bg-opacity-25 text-dark p-3"><i class="fa fa-triangle-exclamation"></i></span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-6 col-xl-3">
+            <div class="card h-100 border-0 shadow-sm">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-start">
+                        <div>
+                            <div class="text-muted small text-uppercase">AI service</div>
+                            <h3 class="mb-1 mt-2 @(Model.AiAvailable ? "text-success" : "text-warning")">@(Model.AiAvailable ? "Healthy" : "Offline")</h3>
+                            <div class="small text-muted">Python prediction API</div>
+                        </div>
+                        <span class="rounded-circle bg-info bg-opacity-10 text-info p-3"><i class="fa fa-server"></i></span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row g-4 mb-4">
+        <div class="col-xl-4">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-header bg-white"><strong>Demand outlook</strong></div>
+                <div class="card-body">
+                    @if (demand?.Predictions.Count > 0)
+                    {
+                        <div style="height:210px"><canvas id="overviewDemandChart"></canvas></div>
+                        <div class="small text-muted mt-2">Peak: @demandPeak?.ToString("0.0") kg · MAPE: @demand.ExpectedMape.ToString("0.###")%</div>
+                    }
+                    else
+                    {
+                        <div class="text-center text-muted py-5"><i class="fa fa-chart-line fa-2x mb-3"></i><p>No saved demand data.</p></div>
+                    }
+                </div>
+            </div>
+        </div>
+
+        <div class="col-xl-4">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-header bg-white"><strong>Price outlook</strong></div>
+                <div class="card-body">
+                    @if (pricePoints.Count > 0)
+                    {
+                        <div style="height:210px"><canvas id="overviewPriceChart"></canvas></div>
+                        <div class="small text-muted mt-2">@price!.ForecastType forecast · MAPE: @price.ExpectedMape.ToString("0.###")%</div>
+                    }
+                    else
+                    {
+                        <div class="text-center text-muted py-5"><i class="fa fa-coins fa-2x mb-3"></i><p>No saved price data.</p></div>
+                    }
+                </div>
+            </div>
+        </div>
+
+        <div class="col-xl-4">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-header bg-white"><strong>Alert severity</strong></div>
+                <div class="card-body">
+                    @if (Model.AnomalyAlertCount > 0)
+                    {
+                        <div style="height:210px"><canvas id="overviewAlertsChart"></canvas></div>
+                    }
+                    else
+                    {
+                        <div class="text-center text-muted py-5"><i class="fa fa-shield-halved fa-2x mb-3"></i><p>No anomaly alerts recorded.</p></div>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="card border-0 shadow-sm mb-4">
+        <div class="card-header bg-white d-flex flex-wrap justify-content-between align-items-center gap-2">
+            <strong><i class="fa fa-microchip text-info me-2"></i>Live model performance and provenance</strong>
+            <span class="badge bg-info text-dark">Loaded from /models/info</span>
+        </div>
+        <div class="card-body" id="modelStatusPanel">
+            <div class="text-muted"><span class="spinner-border spinner-border-sm me-2"></span>Loading deployed model metadata...</div>
+        </div>
+    </div>
+
+    <div class="row g-4">
+        <div class="col-xl-7">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-header bg-white d-flex justify-content-between align-items-center">
+                    <strong><i class="fa fa-lightbulb text-warning me-2"></i>Important AI insights</strong>
+                </div>
+                <div class="card-body">
+                    <div class="list-group list-group-flush">
+                        @foreach (var insight in Model.Insights)
+                        {
+                            <div class="list-group-item px-0 d-flex gap-3">
+                                <i class="fa fa-circle-check text-primary mt-1"></i><span>@insight</span>
+                            </div>
+                        }
+                    </div>
+                    <hr />
+                    <h6 class="mb-3">Quick actions</h6>
+                    <div class="d-flex flex-wrap gap-2">
+                        <a asp-action="DemandForecast" class="btn btn-primary"><i class="fa fa-chart-line me-1"></i>Forecast demand</a>
+                        <a asp-action="GreenLeafPriceForecast" class="btn btn-success"><i class="fa fa-leaf me-1"></i>Forecast price</a>
+                        <a asp-action="AnomalyDetection" class="btn btn-warning"><i class="fa fa-magnifying-glass-chart me-1"></i>Check anomaly</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-xl-5">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-header bg-white d-flex justify-content-between align-items-center">
+                    <strong>Recent anomaly alerts</strong>
+                    <a asp-action="AlertsHistory" class="small text-decoration-none">View all</a>
+                </div>
+                <div class="card-body">
+                    @if (Model.RecentAlerts.Count == 0)
+                    {
+                        <div class="text-center text-muted py-4"><i class="fa fa-bell-slash fa-2x mb-3"></i><p class="mb-0">No alerts recorded yet.</p></div>
+                    }
+                    else
+                    {
+                        <div class="list-group list-group-flush">
+                            @foreach (var alert in Model.RecentAlerts)
+                            {
+                                <div class="list-group-item px-0">
+                                    <div class="d-flex justify-content-between gap-2">
+                                        <strong>@alert.Grade</strong>
+                                        <span class="badge @(alert.Severity == "CRITICAL" ? "bg-danger" : "bg-warning text-dark")">@alert.Severity</span>
+                                    </div>
+                                    <div class="small text-muted text-truncate mt-1" title="@alert.Message">@alert.Message</div>
+                                    <div class="small text-muted">@alert.TimestampUtc.ToLocalTime().ToString("dd MMM yyyy, HH:mm")</div>
+                                </div>
+                            }
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        (function () {
+            var demandValues = @Html.Raw(JsonSerializer.Serialize(demand?.Predictions ?? new List<double>()));
+            var priceValues = @Html.Raw(JsonSerializer.Serialize(pricePoints));
+            var priceLabels = @Html.Raw(JsonSerializer.Serialize(priceLabels));
+
+            if (demandValues.length && document.getElementById('overviewDemandChart')) {
+                new Chart(document.getElementById('overviewDemandChart'), {
+                    type: 'line',
+                    data: {
+                        labels: demandValues.map(function (_, i) { return 'Day +' + (i + 1); }),
+                        datasets: [{ label: 'Demand (kg)', data: demandValues, borderColor: '#0d6efd', backgroundColor: 'rgba(13,110,253,.10)', fill: true, tension: .3, pointRadius: 0 }]
+                    },
+                    options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } } }
+                });
+            }
+
+            if (priceValues.length && document.getElementById('overviewPriceChart')) {
+                new Chart(document.getElementById('overviewPriceChart'), {
+                    type: 'line',
+                    data: {
+                        labels: priceLabels,
+                        datasets: [{ label: 'Price (LKR/kg)', data: priceValues, borderColor: '#198754', backgroundColor: 'rgba(25,135,84,.10)', fill: true, tension: .3, pointRadius: 2 }]
+                    },
+                    options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } } }
+                });
+            }
+
+            if (@Model.AnomalyAlertCount > 0 && document.getElementById('overviewAlertsChart')) {
+                new Chart(document.getElementById('overviewAlertsChart'), {
+                    type: 'doughnut',
+                    data: {
+                        labels: ['Critical', 'Warning'],
+                        datasets: [{ data: [@Model.CriticalAlertCount, @Model.WarningAlertCount], backgroundColor: ['#dc3545', '#ffc107'] }]
+                    },
+                    options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom' } } }
+                });
+            }
+
+            var modelPanel = document.getElementById('modelStatusPanel');
+            fetch('/Admin/AiDashboard/GetModelInfo')
+                .then(function (response) { return response.json(); })
+                .then(function (data) {
+                    if (!data.success || !data.models) {
+                        throw new Error(data.message || 'Model metadata unavailable.');
+                    }
+                    var demand = data.models.demand_lstm_v2 || {};
+                    var price = data.models.price_multistep_lr || {};
+                    var anomaly = data.models.anomaly || {};
+                    var metrics = demand.grade_metrics || {};
+                    var rows = Object.keys(metrics).map(function (grade) {
+                        var item = metrics[grade];
+                        return '<tr><td><strong>' + grade + '</strong></td>' +
+                            '<td>' + Number(item.mape_30d).toFixed(3) + '%</td>' +
+                            '<td>' + Number(item.mape_45d).toFixed(3) + '%</td>' +
+                            '<td>' + Number(item.mape_60d).toFixed(3) + '%</td></tr>';
+                    }).join('');
+                    modelPanel.innerHTML =
+                        '<div class="row g-4">' +
+                        '<div class="col-xl-7"><div class="table-responsive"><table class="table table-sm align-middle mb-0">' +
+                        '<thead><tr><th>Grade</th><th>30-day MAPE</th><th>45-day MAPE</th><th>60-day MAPE</th></tr></thead>' +
+                        '<tbody>' + rows + '</tbody></table></div></div>' +
+                        '<div class="col-xl-5"><dl class="row small mb-0">' +
+                        '<dt class="col-5">Demand model</dt><dd class="col-7">LSTM v' + (demand.version || '-') + '</dd>' +
+                        '<dt class="col-5">Strategy</dt><dd class="col-7">' + (demand.strategy || '-') + '</dd>' +
+                        '<dt class="col-5">Input window</dt><dd class="col-7">' + (demand.look_back || '-') + ' days</dd>' +
+                        '<dt class="col-5">Price MAPE</dt><dd class="col-7">' +
+                            Number(price.avg_mape_7d).toFixed(3) + '% / ' +
+                            Number(price.avg_mape_14d).toFixed(3) + '% / ' +
+                            Number(price.avg_mape_30d).toFixed(3) + '%</dd>' +
+                        '<dt class="col-5">Anomaly model</dt><dd class="col-7">' + (anomaly.model || '-') + '</dd>' +
+                        '</dl></div></div>';
+                })
+                .catch(function (error) {
+                    modelPanel.innerHTML = '<div class="alert alert-warning mb-0">' + error.message + '</div>';
+                });
+        })();
+    </script>
+}

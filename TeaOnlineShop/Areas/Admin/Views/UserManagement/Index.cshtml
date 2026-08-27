@@ -1,0 +1,105 @@
+@model TeaOnlineShop.Models.ViewModels.UserManagementIndexViewModel
+@using TeaOnlineShop.Authorization
+@{
+    ViewData["Title"] = "Users & Access";
+}
+
+<div class="admin-page-card">
+    <div class="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-4">
+        <div>
+            <h1 class="mb-1"><i class="fa fa-users-gear me-2"></i>Users &amp; Access</h1>
+            <p class="text-muted mb-0">Least-privilege staff provisioning, MFA status, role governance, and session control.</p>
+        </div>
+        <div class="d-flex flex-wrap gap-2">
+            <a asp-action="LoginHistory" class="btn btn-outline-primary"><i class="fa fa-clock-rotate-left me-2"></i>Login History</a>
+            <a asp-action="SecurityAudit" class="btn btn-outline-primary"><i class="fa fa-shield-halved me-2"></i>Security Audit</a>
+            <a asp-action="CreateStaff" class="btn btn-primary"><i class="fa fa-user-plus me-2"></i>Add Staff Account</a>
+        </div>
+    </div>
+
+    <div class="alert alert-info">
+        <strong>Security policy:</strong> Every internal staff role requires MFA. Role or status changes revoke existing sessions.
+        Customer accounts cannot select or receive staff roles during public registration.
+    </div>
+
+    @if (TempData["SuccessMessage"] is string success)
+    {
+        <div class="alert alert-success">@success</div>
+    }
+    @if (TempData["ErrorMessage"] is string error)
+    {
+        <div class="alert alert-danger">@error</div>
+    }
+
+    <div class="table-responsive">
+        <table class="table align-middle">
+            <thead>
+                <tr><th>User</th><th>Role</th><th>Status</th><th>MFA</th><th>Last login</th><th class="text-end">Security actions</th></tr>
+            </thead>
+            <tbody>
+            @foreach (var item in Model.Users)
+            {
+                <tr>
+                    <td><strong>@item.FullName</strong><br /><small class="text-muted">@item.Email</small></td>
+                    <td style="min-width: 230px">
+                        @if (AppRoles.IsInternal(item.CurrentRole))
+                        {
+                            <form asp-action="ChangeRole" method="post" class="d-flex gap-2"
+                                  onsubmit="return confirm('Change this role and revoke all existing sessions?');">
+                                <input type="hidden" name="UserId" value="@item.Id" />
+                                <select name="Role" class="form-select form-select-sm" aria-label="Role for @item.Email">
+                                    @foreach (var role in Model.AvailableInternalRoles)
+                                    {
+                                        if (string.Equals(role, item.CurrentRole, StringComparison.OrdinalIgnoreCase))
+                                        {
+                                            <option value="@role" selected>@role</option>
+                                        }
+                                        else
+                                        {
+                                            <option value="@role">@role</option>
+                                        }
+                                    }
+                                </select>
+                                <button class="btn btn-sm btn-outline-primary" type="submit">Apply</button>
+                            </form>
+                        }
+                        else
+                        {
+                            <span class="badge bg-secondary">@(string.IsNullOrWhiteSpace(item.Roles) ? "No role" : item.Roles)</span>
+                        }
+                    </td>
+                    <td><span class="badge @(item.IsActive ? "bg-success" : "bg-secondary")">@(item.IsActive ? "Active" : "Inactive")</span></td>
+                    <td>
+                        @if (item.TwoFactorEnabled)
+                        {
+                            <span class="badge bg-success">Enabled</span>
+                        }
+                        else if (item.MfaRequired)
+                        {
+                            <span class="badge bg-danger">Required — pending</span>
+                        }
+                        else
+                        {
+                            <span class="badge bg-secondary">Not required</span>
+                        }
+                    </td>
+                    <td>@(item.LastLoginAtUtc?.ToLocalTime().ToString("dd MMM yyyy HH:mm") ?? "Never")</td>
+                    <td class="text-end">
+                        <div class="d-inline-flex flex-wrap gap-2 justify-content-end">
+                            <form asp-action="SetActive" method="post" onsubmit="return confirm('Change this account status and revoke its sessions?');">
+                                <input type="hidden" name="id" value="@item.Id" />
+                                <input type="hidden" name="active" value="@((!item.IsActive).ToString().ToLowerInvariant())" />
+                                <button class="btn btn-sm @(item.IsActive ? "btn-outline-danger" : "btn-outline-success")" type="submit">@(item.IsActive ? "Deactivate" : "Activate")</button>
+                            </form>
+                            <form asp-action="RevokeSessions" method="post" onsubmit="return confirm('Revoke all sessions for this account?');">
+                                <input type="hidden" name="id" value="@item.Id" />
+                                <button class="btn btn-sm btn-outline-secondary" type="submit">Revoke sessions</button>
+                            </form>
+                        </div>
+                    </td>
+                </tr>
+            }
+            </tbody>
+        </table>
+    </div>
+</div>

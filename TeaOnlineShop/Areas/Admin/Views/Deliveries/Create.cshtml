@@ -1,0 +1,300 @@
+@model TeaOnlineShop.Models.ViewModels.DeliveryViewModel
+
+@{
+    ViewData["Title"] = "Create Delivery";
+    var canViewFinancial = User.HasClaim("permission", "Dashboard.FinancialView");
+}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2 class="mb-0"><i class="fa fa-truck-loading me-2"></i>Create New Delivery</h2>
+    <div>
+        <a asp-area="Admin" asp-controller="Deliveries" asp-action="Index" class="btn btn-outline-secondary">
+            <i class="fa fa-arrow-left me-2"></i>Back to List
+        </a>
+    </div>
+</div>
+
+<form asp-area="Admin" asp-controller="Deliveries" asp-action="Create" method="post" id="deliveryForm">
+    <div asp-validation-summary="ModelOnly" class="alert alert-danger"></div>
+
+    <div class="row">
+        <div class="col-md-5">
+            <div class="card shadow-sm mb-4">
+                <div class="card-header bg-light">
+                    <h5 class="mb-0">Delivery Information</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group mb-3">
+                                <label asp-for="DeliveryCode" class="form-label">Delivery Code</label>
+                                <input asp-for="DeliveryCode" class="form-control" readonly />
+                                <span asp-validation-for="DeliveryCode" class="text-danger"></span>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group mb-3">
+                                <label asp-for="DeliveryDate" class="form-label">Delivery Date</label>
+                                <input asp-for="DeliveryDate" class="form-control" type="datetime-local" />
+                                <span asp-validation-for="DeliveryDate" class="text-danger"></span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-group mb-3">
+                        <label asp-for="SupplierId" class="form-label">Supplier</label>
+                        @if (Model.SupplierId > 0 && !string.IsNullOrEmpty(Model.SupplierName))
+                        {
+                            <input type="hidden" asp-for="SupplierId" />
+                            <input type="text" class="form-control" value="@Model.SupplierName" readonly />
+                        }
+                        else
+                        {
+                            <select asp-for="SupplierId" asp-items="Model.SuppliersList" class="form-select">
+                                <option value="">-- Select Supplier --</option>
+                            </select>
+                        }
+                        <span asp-validation-for="SupplierId" class="text-danger"></span>
+                    </div>
+
+                    <div class="form-group mb-3">
+                        <label asp-for="Status" class="form-label">Status</label>
+                        <select asp-for="Status" class="form-select">
+                            <option value="Received">Received</option>
+                            <option value="Pending">Pending</option>
+                            <option value="Cancelled">Cancelled</option>
+                        </select>
+                        <span asp-validation-for="Status" class="text-danger"></span>
+                    </div>
+
+                    <div class="form-group mb-3">
+                        <label asp-for="Notes" class="form-label">Notes</label>
+                        <textarea asp-for="Notes" class="form-control" rows="3"></textarea>
+                        <span asp-validation-for="Notes" class="text-danger"></span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-7">
+            <div class="card shadow-sm mb-4">
+                <div class="card-header bg-light d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0">Delivery Items</h5>
+                    <button type="button" id="addItemBtn" class="btn btn-sm btn-primary">
+                        <i class="fa fa-plus me-1"></i>Add Item
+                    </button>
+                </div>
+                <div class="card-body">
+                    <div id="itemsContainer">
+                        @for (int i = 0; i < Model.Items.Count; i++)
+                        {
+                            <div class="item-row mb-3 p-3 border rounded">
+                                <div class="d-flex justify-content-between mb-2">
+                                    <h6 class="mb-0">Item #@(i + 1)</h6>
+                                    <button type="button" class="btn btn-sm btn-outline-danger remove-item">
+                                        <i class="fa fa-times"></i>
+                                    </button>
+                                </div>
+                                <div class="row mb-2">
+                                    <div class="col-md-12">
+                                        <label class="form-label">Item</label>
+                                        <select name="Items[@i].ItemId" class="form-select item-select" 
+                                                data-index="@i" required>
+                                            <option value="">-- Select Item --</option>
+                                            @foreach (var item in Model.SupplyItemsList)
+                                            {
+                                                <option value="@item.Value">@item.Text</option>
+                                            }
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="row mb-2">
+                                    <div class="@(canViewFinancial ? "col-md-4" : "col-md-12")">
+                                        <label class="form-label">Quantity</label>
+                                        <input type="number" name="Items[@i].Quantity" class="form-control quantity-input" 
+                                               step="0.01" min="0.01" data-index="@i" required />
+                                    </div>
+                                    @if (canViewFinancial)
+                                    {
+                                    <div class="col-md-4">
+                                        <label class="form-label">Unit Price</label>
+                                        <input type="number" name="Items[@i].UnitPrice" class="form-control price-input" 
+                                               step="0.01" min="0" data-index="@i" />
+                                    </div>
+                                    <div class="col-md-4">
+                                        <label class="form-label">Total Price</label>
+                                        <input type="number" name="Items[@i].TotalPrice" class="form-control total-input" 
+                                               step="0.01" min="0" data-index="@i" readonly />
+                                    </div>
+                                    }
+                                </div>
+                                <div class="row">
+                                    <div class="col-md-12">
+                                        <label class="form-label">Notes</label>
+                                        <input type="text" name="Items[@i].Notes" class="form-control" />
+                                    </div>
+                                </div>
+                            </div>
+                        }
+                    </div>
+                    <div id="noItemsMessage" class="alert alert-info @(Model.Items.Count > 0 ? "d-none" : "")">
+                        No items added yet. Click "Add Item" to add delivery items.
+                    </div>
+                </div>
+                @if (canViewFinancial)
+                {
+                <div class="card-footer bg-light">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <span class="fw-bold">Total:</span>
+                        <span class="h5 mb-0" id="grandTotal">$0.00</span>
+                    </div>
+                </div>
+                }
+            </div>
+        </div>
+    </div>
+
+    <div class="d-flex justify-content-end my-4">
+        <button type="submit" class="btn btn-primary">
+            <i class="fa fa-save me-2"></i>Save Delivery
+        </button>
+    </div>
+</form>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+    
+    <script>
+        $(document).ready(function() {
+            // Item template for adding new items
+            function getItemTemplate(index) {
+                return `
+                <div class="item-row mb-3 p-3 border rounded">
+                    <div class="d-flex justify-content-between mb-2">
+                        <h6 class="mb-0">Item #${index + 1}</h6>
+                        <button type="button" class="btn btn-sm btn-outline-danger remove-item">
+                            <i class="fa fa-times"></i>
+                        </button>
+                    </div>
+                    <div class="row mb-2">
+                        <div class="col-md-12">
+                            <label class="form-label">Item</label>
+                            <select name="Items[${index}].ItemId" class="form-select item-select" data-index="${index}" required>
+                                <option value="">-- Select Item --</option>
+                                @foreach (var item in Model.SupplyItemsList)
+                                {
+                                    <option value="@item.Value">@item.Text</option>
+                                }
+                            </select>
+                        </div>
+                    </div>
+                    <div class="row mb-2">
+                        <div class="@(canViewFinancial ? "col-md-4" : "col-md-12")">
+                            <label class="form-label">Quantity</label>
+                            <input type="number" name="Items[${index}].Quantity" class="form-control quantity-input" 
+                                   step="0.01" min="0.01" data-index="${index}" required />
+                        </div>
+                        @if (canViewFinancial)
+                        {
+                        <div class="col-md-4">
+                            <label class="form-label">Unit Price</label>
+                            <input type="number" name="Items[${index}].UnitPrice" class="form-control price-input" 
+                                   step="0.01" min="0" data-index="${index}" />
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">Total Price</label>
+                            <input type="number" name="Items[${index}].TotalPrice" class="form-control total-input" 
+                                   step="0.01" min="0" data-index="${index}" readonly />
+                        </div>
+                        }
+                    </div>
+                    <div class="row">
+                        <div class="col-md-12">
+                            <label class="form-label">Notes</label>
+                            <input type="text" name="Items[${index}].Notes" class="form-control" />
+                        </div>
+                    </div>
+                </div>`;
+            }
+
+            // Add new item
+            $("#addItemBtn").click(function() {
+                const index = $(".item-row").length;
+                $("#itemsContainer").append(getItemTemplate(index));
+                $("#noItemsMessage").addClass("d-none");
+                updateItemIndices();
+                bindEvents();
+            });
+
+            // Remove item
+            function bindEvents() {
+                $(".remove-item").off("click").on("click", function() {
+                    $(this).closest(".item-row").remove();
+                    if ($(".item-row").length === 0) {
+                        $("#noItemsMessage").removeClass("d-none");
+                    }
+                    updateItemIndices();
+                    calculateTotals();
+                });
+                
+                $(".item-select").off("change").on("change", function() {
+                    const itemId = $(this).val();
+                    const index = $(this).data("index");
+                    
+                    if (itemId) {
+                        // Fetch item details
+                        $.get("/Admin/Deliveries/GetItemDetails/" + itemId, function(data) {
+                            // Update fields with item details
+                            $(`input[name="Items[${index}].UnitPrice"]`).val(data.lastPrice || 0);
+                            calculateItemTotal(index);
+                        });
+                    }
+                });
+                
+                $(".quantity-input, .price-input").off("input").on("input", function() {
+                    const index = $(this).data("index");
+                    calculateItemTotal(index);
+                });
+            }
+            
+            function calculateItemTotal(index) {
+                const quantity = parseFloat($(`input[name="Items[${index}].Quantity"]`).val()) || 0;
+                const price = parseFloat($(`input[name="Items[${index}].UnitPrice"]`).val()) || 0;
+                const total = quantity * price;
+                
+                $(`input[name="Items[${index}].TotalPrice"]`).val(total.toFixed(2));
+                calculateTotals();
+            }
+            
+            function calculateTotals() {
+                let grandTotal = 0;
+                
+                $(".total-input").each(function() {
+                    grandTotal += parseFloat($(this).val()) || 0;
+                });
+                
+                $("#grandTotal").text("$" + grandTotal.toFixed(2));
+            }
+            
+            function updateItemIndices() {
+                $(".item-row").each(function(idx) {
+                    $(this).find("h6").text("Item #" + (idx + 1));
+                    
+                    // Update data-index attributes
+                    $(this).find("[data-index]").attr("data-index", idx);
+                    
+                    // Update name attributes
+                    $(this).find("select[name^='Items[']").attr("name", `Items[${idx}].ItemId`);
+                    $(this).find("input[name$='].Quantity']").attr("name", `Items[${idx}].Quantity`);
+                    $(this).find("input[name$='].UnitPrice']").attr("name", `Items[${idx}].UnitPrice`);
+                    $(this).find("input[name$='].TotalPrice']").attr("name", `Items[${idx}].TotalPrice`);
+                    $(this).find("input[name$='].Notes']").attr("name", `Items[${idx}].Notes`);
+                });
+            }
+            
+            // Initialize
+            bindEvents();
+            calculateTotals();
+        });
+    </script>
+} 

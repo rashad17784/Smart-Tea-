@@ -1,0 +1,320 @@
+﻿@using System.IO
+@model TeaOnlineShop.Models.Dbase.Product
+@{
+    ViewData["Title"] = Model?.Title ?? "Product Details";
+    ViewData["BodyClass"] = "product-details-page";
+
+    var gallery = ViewData["gallery"] as List<TeaOnlineShop.Models.Dbase.ProductGallery> ?? new List<TeaOnlineShop.Models.Dbase.ProductGallery>();
+    var relatedProducts = ViewData["ShopProducts"] as List<TeaOnlineShop.Models.Dbase.Product> ?? new List<TeaOnlineShop.Models.Dbase.Product>();
+    var comments = ViewData["Comments"] as List<TeaOnlineShop.Models.Dbase.CommentSection> ?? new List<TeaOnlineShop.Models.Dbase.CommentSection>();
+
+    var hasDiscount = Model.Discount.HasValue && Model.Discount.Value > 0 && Model.Price.HasValue && Model.Price.Value > 0;
+    decimal price = Model.Price ?? 0;
+    decimal discount = Model.Discount ?? 0;
+    decimal finalPrice = price - discount;
+    decimal discountPercentage = hasDiscount ? (discount / price) * 100 : 0;
+    bool inStock = Model.Quantity > 0;
+
+    var tags = string.IsNullOrWhiteSpace(Model.Tags)
+        ? new List<string>()
+        : Model.Tags
+            .Split(',', StringSplitOptions.RemoveEmptyEntries)
+            .Select(t => t.Trim())
+            .Where(t => !string.IsNullOrWhiteSpace(t))
+            .Distinct()
+            .ToList();
+
+    const string fallbackImage = "/images/placeholder-tea.svg";
+    string SafeImagePath(string? rawName)
+    {
+        var fileName = System.IO.Path.GetFileName(rawName ?? string.Empty);
+        if (string.IsNullOrWhiteSpace(fileName))
+        {
+            return fallbackImage;
+        }
+
+        return $"/images/banners/{fileName}";
+    }
+
+    var mainImagePath = SafeImagePath(Model.ImageName);
+}
+
+<section class="pd-hero">
+    <div class="container">
+        <nav aria-label="breadcrumb" class="pd-breadcrumb">
+            <ol>
+                <li><a href="/">Home</a></li>
+                <li><a href="/Products">Shop</a></li>
+                <li aria-current="page">@Model.Title</li>
+            </ol>
+        </nav>
+    </div>
+</section>
+
+<section class="product-details-main pb-5">
+    <div class="container">
+        <div class="row g-5 align-items-start">
+            <div class="col-lg-6">
+                <div class="pd-gallery-wrap">
+                    @if (hasDiscount)
+                    {
+                        <span class="pd-discount-badge">-@discountPercentage.ToString("F0")%</span>
+                    }
+                    <div class="pd-gallery-main">
+                        <img id="main-product-image" src="@mainImagePath" alt="@Model.Title" onerror="this.onerror=null;this.src='@fallbackImage';" />
+                    </div>
+                    <div class="pd-thumbs">
+                        <button type="button" class="pd-thumb active" data-image="@mainImagePath" aria-label="Main image">
+                            <img src="@mainImagePath" alt="@Model.Title" onerror="this.onerror=null;this.src='@fallbackImage';" />
+                        </button>
+                        @foreach (var item in gallery.OrderBy(x => x.Id))
+                        {
+                            var galleryImagePath = SafeImagePath(item.ImageName);
+                            <button type="button" class="pd-thumb" data-image="@galleryImagePath" aria-label="Gallery image">
+                                <img src="@galleryImagePath" alt="@Model.Title" onerror="this.onerror=null;this.src='@fallbackImage';" />
+                            </button>
+                        }
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-lg-6">
+                <div class="pd-info-card">
+                    <p class="pd-sku">SKU: PRI#@Model.Id</p>
+                    <h1>@Model.Title</h1>
+
+                    <div class="pd-price-row">
+                        @if (hasDiscount)
+                        {
+                            <span class="pd-price-new">$@finalPrice.ToString("F2")</span>
+                            <span class="pd-price-old">$@price.ToString("F2")</span>
+                            <span class="pd-save">Save $@discount.ToString("F2")</span>
+                        }
+                        else
+                        {
+                            <span class="pd-price-new">$@price.ToString("F2")</span>
+                        }
+                    </div>
+
+                    <div class="pd-stock @(inStock ? "in" : "out")">
+                        @if (inStock)
+                        {
+                            <span><i class="icon-check icons"></i> In stock (@Model.Quantity available)</span>
+                        }
+                        else
+                        {
+                            <span><i class="icon-close icons"></i> Out of stock</span>
+                        }
+                    </div>
+
+                    <p class="pd-short-desc">@Model.Description</p>
+
+                    @if (inStock)
+                    {
+                        <div class="pd-purchase-row">
+                            <div class="pd-qty">
+                                <button type="button" class="quantity-down"><i class="icon-minus icons"></i></button>
+                                <input type="number" id="product-quantity" min="1" max="@Model.Quantity" value="1" />
+                                <button type="button" class="quantity-up"><i class="icon-plus icons"></i></button>
+                            </div>
+                            <button type="button" class="btn btn-primary pd-add-btn" onclick="addToCart(@Model.Id)">
+                                <i class="icon-basket-loaded icons"></i> Add To Cart
+                            </button>
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="pd-out-note">This item is currently unavailable.</div>
+                    }
+
+                    @if (tags.Any())
+                    {
+                        <div class="pd-meta-block">
+                            <strong>Tags</strong>
+                            <div class="pd-tags">
+                                @foreach (var tag in tags)
+                                {
+                                    <a href="/Products/SearchProducts?SearchText=@tag">@tag</a>
+                                }
+                            </div>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="pd-tabs-section pb-5">
+    <div class="container">
+        <div class="pd-tab-card">
+            <ul class="nav nav-tabs" id="productDetailTab" role="tablist">
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link active" id="description-tab" data-bs-toggle="tab" data-bs-target="#description" type="button" role="tab" aria-controls="description" aria-selected="true">
+                        Description
+                    </button>
+                </li>
+                @if (!string.IsNullOrWhiteSpace(Model.VideoUrl))
+                {
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link" id="video-tab" data-bs-toggle="tab" data-bs-target="#video" type="button" role="tab" aria-controls="video" aria-selected="false">
+                            Video
+                        </button>
+                    </li>
+                }
+            </ul>
+            <div class="tab-content">
+                <div class="tab-pane fade show active" id="description" role="tabpanel" aria-labelledby="description-tab">
+                    @Html.Raw((Model.FullDescription ?? Model.Description ?? string.Empty).Replace("\n", "<br />"))
+                </div>
+                @if (!string.IsNullOrWhiteSpace(Model.VideoUrl))
+                {
+                    <div class="tab-pane fade" id="video" role="tabpanel" aria-labelledby="video-tab">
+                        <div class="ratio ratio-16x9">
+                            <iframe src="@Model.VideoUrl" title="Product video" allowfullscreen></iframe>
+                        </div>
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="pd-comments-section pb-5">
+    <div class="container">
+        <div class="row g-4">
+            <div class="col-lg-7">
+                <div class="pd-section-head">
+                    <h3>Customer Reviews</h3>
+                    <p>@comments.Count review(s)</p>
+                </div>
+
+                @if (comments.Any())
+                {
+                    foreach (var c in comments)
+                    {
+                        <article class="comment-card">
+                            <div class="comment-head">
+                                <h5>@c.Name</h5>
+                                <span>@c.CreateDate.ToString("dd MMM yyyy")</span>
+                            </div>
+                            <p>@c.CommmentText</p>
+                        </article>
+                    }
+                }
+                else
+                {
+                    <div class="empty-comment-card">No reviews yet. Be the first to comment.</div>
+                }
+            </div>
+
+            <div class="col-lg-5">
+                <div class="comment-form-card">
+                    <h4>Write a Review</h4>
+
+                    @if (TempData["SuccessMessage"] != null)
+                    {
+                        <div class="alert alert-success">@TempData["SuccessMessage"]</div>
+                    }
+                    @if (TempData["ErrorMessage"] != null)
+                    {
+                        <div class="alert alert-danger">@TempData["ErrorMessage"]</div>
+                    }
+
+                    <form method="post" action="/Products/SubmitComment" class="modern-comment-form">
+                        <input type="hidden" name="productId" value="@Model.Id" />
+                        <div class="mb-3">
+                            <label class="form-label">Name</label>
+                            <input type="text" name="name" class="form-control" required />
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Email</label>
+                            <input type="email" name="email" class="form-control" required />
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Comment</label>
+                            <textarea name="comment" class="form-control" rows="4" required></textarea>
+                        </div>
+                        <button type="submit" class="btn btn-primary w-100">Submit Review</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+@if (relatedProducts.Any())
+{
+    <section class="pd-related-section pb-5">
+        <div class="container">
+            <div class="pd-section-head">
+                <h3>Related Teas</h3>
+                <p>More products from our collection</p>
+            </div>
+
+            <div class="row g-4">
+                @foreach (var item in relatedProducts.Take(4))
+                {
+                    var relatedHasDiscount = item.Discount.HasValue && item.Discount.Value > 0 && item.Price.HasValue;
+                    decimal relatedPrice = (item.Price ?? 0) - (item.Discount ?? 0);
+                    var relatedImagePath = SafeImagePath(item.ImageName);
+
+                    <div class="col-lg-3 col-md-6">
+                        <article class="related-product-card">
+                            <a class="related-product-image" href="/Products/ProductDetails/@item.Id">
+                                <img src="@relatedImagePath" alt="@item.Title" onerror="this.onerror=null;this.src='@fallbackImage';" />
+                            </a>
+                            <div class="related-product-body">
+                                <h5><a href="/Products/ProductDetails/@item.Id">@item.Title</a></h5>
+                                <div class="related-price-row">
+                                    @if (relatedHasDiscount)
+                                    {
+                                        <span class="new-price">$@relatedPrice.ToString("F2")</span>
+                                        <span class="old-price">$@((item.Price ?? 0).ToString("F2"))</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="new-price">$@((item.Price ?? 0).ToString("F2"))</span>
+                                    }
+                                </div>
+                                <button type="button" class="btn btn-outline-primary w-100" onclick="addToCart(@item.Id, 1)">Add To Cart</button>
+                            </div>
+                        </article>
+                    </div>
+                }
+            </div>
+        </div>
+    </section>
+}
+
+@section Scripts {
+    <script>
+        $(document).ready(function () {
+            $('.pd-thumb').on('click', function () {
+                const img = $(this).data('image');
+                $('#main-product-image').attr('src', img);
+                $('.pd-thumb').removeClass('active');
+                $(this).addClass('active');
+            });
+
+            $('.quantity-down').on('click', function () {
+                const input = $('#product-quantity');
+                const min = parseInt(input.attr('min')) || 1;
+                const current = parseInt(input.val()) || min;
+                if (current > min) {
+                    input.val(current - 1);
+                }
+            });
+
+            $('.quantity-up').on('click', function () {
+                const input = $('#product-quantity');
+                const max = parseInt(input.attr('max')) || 999;
+                const current = parseInt(input.val()) || 1;
+                if (current < max) {
+                    input.val(current + 1);
+                }
+            });
+        });
+    </script>
+}
+

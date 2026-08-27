@@ -1,0 +1,172 @@
+﻿@model IEnumerable<TeaOnlineShop.Models.Dbase.Product>
+
+@{
+    ViewData["Title"] = "Product Management";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2 class="mb-0"><i class="fa fa-boxes me-2"></i>Product Management</h2>
+    <a href="/Admin/Products/Create" class="btn btn-primary">
+        <i class="fa fa-plus me-2"></i>Add New Product
+    </a>
+</div>
+
+<div class="card shadow-sm">
+    <div class="card-header bg-light">
+        <div class="d-flex justify-content-between align-items-center">
+            <h5 class="mb-0">All Products</h5>
+            <div class="d-flex gap-2">
+                <select class="form-select form-select-sm" id="productFilter" style="width: 150px;">
+                    <option value="">All Products</option>
+                    <option value="in-stock">In Stock</option>
+                    <option value="out-of-stock">Out of Stock</option>
+                    <option value="discounted">Discounted</option>
+                </select>
+                <input type="text" id="productSearch" class="form-control form-control-sm" placeholder="Search products..." style="width: 200px;">
+            </div>
+        </div>
+    </div>
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table table-hover table-striped mb-0 table-admin">
+                <thead>
+                    <tr>
+                        <th style="width: 10%">
+                            <i class="fa fa-image me-2 text-muted"></i>Image
+                        </th>
+                        <th style="width: 25%">
+                            <i class="fa fa-tag me-2 text-muted"></i>@Html.DisplayNameFor(model => model.Title)
+                        </th>
+                        <th style="width: 10%" class="text-end">
+                            <i class="fa fa-dollar-sign me-2 text-muted"></i>@Html.DisplayNameFor(model => model.Price)
+                        </th>
+                        <th style="width: 10%" class="text-end">
+                            <i class="fa fa-percentage me-2 text-muted"></i>@Html.DisplayNameFor(model => model.Discount)
+                        </th>
+                        <th style="width: 10%" class="text-end">
+                            <i class="fa fa-cubes me-2 text-muted"></i>@Html.DisplayNameFor(model => model.Quantity)
+                        </th>
+                        <th style="width: 20%">
+                            <i class="fa fa-tags me-2 text-muted"></i>@Html.DisplayNameFor(model => model.Tags)
+                        </th>
+                        <th style="width: 15%" class="text-end">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                @foreach (var item in Model) {
+                    <tr class="@(item.Quantity <= 0 ? "table-danger" : "")">
+                        <td>
+                            <img src="/images/banners/@item.ImageName" class="rounded img-thumbnail" style="width: 60px; height: 60px; object-fit: cover;" />
+                        </td>
+                        <td>
+                            <div class="fw-medium">@Html.DisplayFor(modelItem => item.Title)</div>
+                            @if (!string.IsNullOrEmpty(item.Description))
+                            {
+                                <small class="text-muted d-block text-truncate" style="max-width: 250px;">@item.Description</small>
+                            }
+                        </td>
+                        <td class="text-end">
+                            <span class="fw-bold">$@Html.DisplayFor(modelItem => item.Price)</span>
+                        </td>
+                        <td class="text-end">
+                            @if (item.Discount > 0)
+                            {
+                                <span class="badge bg-success">$@Html.DisplayFor(modelItem => item.Discount)</span>
+                            }
+                            else
+                            {
+                                <span class="text-muted">-</span>
+                            }
+                        </td>
+                        <td class="text-end">
+                            @if (item.Quantity <= 0)
+                            {
+                                <span class="badge bg-danger">Out of stock</span>
+                            }
+                            else if (item.Quantity < 5)
+                            {
+                                <span class="badge bg-warning text-dark">Low: @item.Quantity</span>
+                            }
+                            else
+                            {
+                                <span class="badge bg-info text-dark">@item.Quantity</span>
+                            }
+                        </td>
+                        <td>
+                            @if (!string.IsNullOrEmpty(item.Tags))
+                            {
+                                @foreach (var tag in item.Tags.Split(',', StringSplitOptions.RemoveEmptyEntries))
+                                {
+                                    <span class="badge bg-secondary me-1">@tag.Trim()</span>
+                                }
+                            }
+                        </td>
+                        <td>
+                            <div class="d-flex justify-content-end action-buttons">
+                                <a href="/Admin/Products/Edit/@item.Id" class="btn btn-sm btn-outline-primary me-1" title="Edit">
+                                    <i class="fa fa-pencil-alt"></i>
+                                </a>
+                                <a href="/Admin/Products/Details/@item.Id" class="btn btn-sm btn-outline-info me-1" title="Details">
+                                    <i class="fa fa-info-circle"></i>
+                                </a>
+                                <a href="/Admin/Products/Delete/@item.Id" class="btn btn-sm btn-outline-danger" title="Delete">
+                                    <i class="fa fa-trash"></i>
+                                </a>
+                            </div>
+                        </td>
+                    </tr>
+                }
+                </tbody>
+            </table>
+        </div>
+    </div>
+    <div class="card-footer">
+        <div class="d-flex justify-content-between align-items-center">
+            <small class="text-muted">Showing @Model.Count() products</small>
+            <div>
+                <span class="badge bg-danger me-1">Out of Stock</span>
+                <span class="badge bg-warning text-dark me-1">Low Stock</span>
+                <span class="badge bg-success me-1">Discounted</span>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        $(document).ready(function() {
+            // Filter table as user types in search box
+            $("#productSearch").on("keyup", function() {
+                filterProducts();
+            });
+            
+            // Filter based on dropdown selection
+            $("#productFilter").on("change", function() {
+                filterProducts();
+            });
+            
+            function filterProducts() {
+                var searchValue = $("#productSearch").val().toLowerCase();
+                var filterValue = $("#productFilter").val();
+                
+                $("table tbody tr").each(function() {
+                    var row = $(this);
+                    var text = row.text().toLowerCase();
+                    var showBySearch = text.indexOf(searchValue) > -1;
+                    var showByFilter = true;
+                    
+                    // Apply additional filters
+                    if (filterValue === "in-stock") {
+                        showByFilter = !row.hasClass("table-danger");
+                    } else if (filterValue === "out-of-stock") {
+                        showByFilter = row.hasClass("table-danger");
+                    } else if (filterValue === "discounted") {
+                        showByFilter = row.find("td:nth-child(4) .badge").length > 0;
+                    }
+                    
+                    row.toggle(showBySearch && showByFilter);
+                });
+            }
+        });
+    </script>
+}

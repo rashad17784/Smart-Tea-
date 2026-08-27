@@ -1,0 +1,473 @@
+@model TeaOnlineShop.Models.ViewModels.AiPriceForecastPageViewModel
+
+@{
+    ViewData["Title"] = "Green Leaf Price Forecast";
+    var forecastHorizons = Model.ForecastHorizons.Count > 0
+        ? Model.ForecastHorizons
+        : new List<int> { 7, 14, 30 };
+}
+
+<div class="container-fluid">
+    <partial name="_AiDashboardNav" />
+
+    <div class="d-flex flex-wrap justify-content-between align-items-start gap-3 mb-4">
+        <div>
+            <h2 class="mb-1">
+                <i class="fa fa-money-bill-trend-up text-success me-2"></i>Green Leaf Price Forecast
+            </h2>
+            <p class="text-muted mb-0">
+                Predict tomorrow's green leaf price or generate a multi-day outlook.
+            </p>
+        </div>
+        <span class="badge @(Model.AiAvailable ? "bg-success" : "bg-warning text-dark") px-3 py-2">
+            AI API @(Model.AiAvailable ? "online" : "offline")
+        </span>
+    </div>
+
+    @if (!Model.AiAvailable)
+    {
+        <div class="alert alert-warning">
+            <i class="fa fa-triangle-exclamation me-2"></i>
+            @(string.IsNullOrWhiteSpace(Model.AiMessage)
+                ? "The AI service is unavailable. Start the Python API to generate price forecasts."
+                : Model.AiMessage)
+        </div>
+    }
+
+    <div class="card shadow-sm border-0 mb-4">
+        <div class="card-header bg-success text-white py-3">
+            <h5 class="mb-1">Price Prediction Inputs</h5>
+            <small id="pricePanelSubtitle">Tomorrow and multi-day green leaf price prediction.</small>
+        </div>
+        <div class="card-body">
+            <div class="row g-3">
+                <div class="col-md-6">
+                    <label for="currentPrice" class="form-label">Today's price (LKR/kg)</label>
+                    <input type="number"
+                           id="currentPrice"
+                           class="form-control"
+                           value="105.00"
+                           min="0.01"
+                           step="0.01" />
+                </div>
+                <div class="col-md-6">
+                    <label for="priceLag1" class="form-label">Yesterday's price</label>
+                    <input type="number"
+                           id="priceLag1"
+                           class="form-control"
+                           value="104.50"
+                           min="0.01"
+                           step="0.01" />
+                </div>
+                <div class="col-md-6">
+                    <label for="rainfall" class="form-label">Rainfall today (mm)</label>
+                    <input type="number"
+                           id="rainfall"
+                           class="form-control"
+                           value="5.0"
+                           min="0"
+                           step="0.1" />
+                </div>
+                <div class="col-md-6">
+                    <label for="temperature" class="form-label">Temperature (C)</label>
+                    <input type="number"
+                           id="temperature"
+                           class="form-control"
+                           value="18.0"
+                           step="0.1" />
+                </div>
+                <div class="col-12">
+                    <label for="priceHorizon" class="form-label">Multi-day forecast horizon</label>
+                    <select id="priceHorizon" class="form-select">
+                        @foreach (var horizon in forecastHorizons)
+                        {
+                            <option value="@horizon">@horizon days</option>
+                        }
+                    </select>
+                </div>
+            </div>
+
+            <div class="d-flex flex-wrap gap-2 mt-3">
+                <button id="predictTomorrowButton"
+                        class="btn btn-success"
+                        type="button"
+                        onclick="predictTomorrow()"
+                        disabled="@(!Model.AiAvailable)">
+                    <i class="fa fa-calendar-day me-2"></i>Predict Tomorrow
+                </button>
+                <button id="predictMultiStepButton"
+                        class="btn btn-outline-success"
+                        type="button"
+                        onclick="predictMultiStep()"
+                        disabled="@(!Model.AiAvailable)">
+                    <i class="fa fa-calendar-days me-2"></i>Multi-Day Forecast
+                </button>
+            </div>
+
+            <div id="priceLoading"
+                 class="text-center py-4"
+                 style="display:none;"
+                 role="status"
+                 aria-live="polite">
+                <div class="spinner-border text-success"></div>
+                <p class="mb-0 mt-2">Calculating price forecast...</p>
+            </div>
+
+            <div id="tomorrowResult" class="mt-3" style="display:none;">
+                <div class="p-4 bg-light border rounded text-center">
+                    <h6>Tomorrow's Predicted Price</h6>
+                    <h2 id="tomorrowPrice" class="text-success">LKR --</h2>
+                    <span id="trendBadge" class="badge bg-secondary"></span>
+                    <p id="changeInfo" class="text-muted small mt-2 mb-0"></p>
+                </div>
+            </div>
+
+            <div id="multiDayResult" class="mt-3" style="display:none;">
+                <div id="priceSummaryBar"
+                     class="p-3 mb-3 rounded border bg-light small"></div>
+
+                <h6 id="multiDayTableTitle">7-Day Price Forecast</h6>
+                <div class="table-responsive">
+                    <table class="table table-sm table-bordered align-middle">
+                        <thead class="table-success">
+                            <tr>
+                                <th scope="col">Day</th>
+                                <th scope="col">Price (LKR)</th>
+                                <th scope="col">Change</th>
+                                <th scope="col">Trend</th>
+                                <th scope="col">MAPE</th>
+                            </tr>
+                        </thead>
+                        <tbody id="multiDayTable"></tbody>
+                    </table>
+                </div>
+                <div id="priceModelInfo" class="text-muted small mt-1"></div>
+            </div>
+
+            <div id="priceError"
+                 class="alert alert-danger mt-3 mb-0"
+                 style="display:none;"
+                 role="alert"></div>
+        </div>
+    </div>
+
+    <div class="card shadow-sm border-0">
+        <div class="card-header bg-white py-3">
+            <h5 class="mb-1">
+                <i class="fa fa-clock-rotate-left text-secondary me-2"></i>Price Forecast History
+            </h5>
+            <small class="text-muted">Recently generated green leaf price forecasts.</small>
+        </div>
+        <div class="card-body p-0">
+            @if (Model.History.Count == 0)
+            {
+                <div class="text-center text-muted py-5 px-3">
+                    <i class="fa fa-folder-open fa-2x mb-3"></i>
+                    <p class="mb-0">No price forecasts have been generated yet.</p>
+                </div>
+            }
+            else
+            {
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle mb-0">
+                        <thead class="table-light">
+                            <tr>
+                                <th scope="col">Generated</th>
+                                <th scope="col">Type</th>
+                                <th scope="col">Period</th>
+                                <th scope="col">Prediction</th>
+                                <th scope="col">Trend</th>
+                                <th scope="col">Model</th>
+                                <th scope="col">MAPE</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var item in Model.History)
+                            {
+                                <tr>
+                                    <td>@item.TimestampUtc.ToLocalTime().ToString("dd MMM yyyy, HH:mm")</td>
+                                    <td>@item.ForecastType</td>
+                                    <td>@item.HorizonDays day@(item.HorizonDays == 1 ? string.Empty : "s")</td>
+                                    <td>
+                                        @(item.PredictedPrice.HasValue
+                                            ? $"LKR {item.PredictedPrice.Value:0.00}"
+                                            : "Multi-day forecast")
+                                    </td>
+                                    <td>@(string.IsNullOrWhiteSpace(item.Trend) ? "—" : item.Trend)</td>
+                                    <td>@item.Model</td>
+                                    <td>@item.ExpectedMape.ToString("0.###")%</td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            }
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        function showPriceError(message) {
+            var error = document.getElementById('priceError');
+            error.textContent = message || 'The price forecast request failed.';
+            error.style.display = 'block';
+        }
+
+        function hidePriceError() {
+            var error = document.getElementById('priceError');
+            error.textContent = '';
+            error.style.display = 'none';
+        }
+
+        function setPriceBusy(isBusy) {
+            document.getElementById('priceLoading').style.display =
+                isBusy ? 'block' : 'none';
+            document.getElementById('predictTomorrowButton').disabled =
+                isBusy || @Model.AiAvailable.ToString().ToLowerInvariant() === false;
+            document.getElementById('predictMultiStepButton').disabled =
+                isBusy || @Model.AiAvailable.ToString().ToLowerInvariant() === false;
+        }
+
+        function readNumber(id, label) {
+            var value = parseFloat(document.getElementById(id).value);
+            if (!Number.isFinite(value)) {
+                throw new Error('Enter a valid value for ' + label + '.');
+            }
+            return value;
+        }
+
+        function buildPriceRequest(horizonDays) {
+            var price = readNumber('currentPrice', "today's price");
+            var lag1 = readNumber('priceLag1', "yesterday's price");
+            var rain = readNumber('rainfall', 'rainfall');
+            var temp = readNumber('temperature', 'temperature');
+            var now = new Date();
+
+            if (price <= 0 || lag1 <= 0) {
+                throw new Error('Price values must be greater than zero.');
+            }
+
+            return {
+                current_price: price,
+                price_lag1: lag1,
+                price_lag2: lag1 - 0.5,
+                price_lag3: lag1 - 1.0,
+                price_lag7: price - 2.0,
+                price_lag14: price - 3.5,
+                rolling_mean7: price - 0.5,
+                rolling_mean30: price - 1.0,
+                rolling_std7: 2.5,
+                price_change_pct: ((price - lag1) / lag1) * 100,
+                quantity_kg: 4500,
+                qty_rolling7: 4300,
+                firewood_kg: 1200,
+                firewood_cost: 18.5,
+                total_cost: price * 4500,
+                temperature: temp,
+                rainfall_mm: rain,
+                heavy_rain: rain > 30 ? 1 : 0,
+                supplier_delivered: 1,
+                supplier_qty: 700,
+                promotion: 0,
+                month_start: now.getDate() <= 5 ? 1 : 0,
+                month: now.getMonth() + 1,
+                day_of_week: now.getDay(),
+                quarter: Math.ceil((now.getMonth() + 1) / 3),
+                is_weekend: (now.getDay() === 0 || now.getDay() === 6) ? 1 : 0,
+                day_of_year: Math.floor(
+                    (now - new Date(now.getFullYear(), 0, 0)) / 86400000),
+                day: now.getDate(),
+                horizon_days: horizonDays || 7
+            };
+        }
+
+        function predictTomorrow() {
+            hidePriceError();
+            document.getElementById('multiDayResult').style.display = 'none';
+            document.getElementById('tomorrowResult').style.display = 'none';
+
+            var request;
+            try {
+                request = buildPriceRequest(1);
+            } catch (error) {
+                showPriceError(error.message);
+                return;
+            }
+
+            setPriceBusy(true);
+
+            $.ajax({
+                url: '/Admin/AiDashboard/GetTomorrowPrice',
+                type: 'POST',
+                contentType: 'application/json',
+                data: JSON.stringify(request),
+                success: function (data) {
+                    setPriceBusy(false);
+
+                    if (!data.success) {
+                        showPriceError(data.message || 'Prediction failed.');
+                        return;
+                    }
+
+                    var price = data.predictedPrice ?? data.PredictedPrice ?? 0;
+                    var trend = data.trend ?? data.Trend ?? 'STABLE';
+                    var changePct = data.changePct ?? data.change_pct ?? 0;
+                    var badge = document.getElementById('trendBadge');
+
+                    document.getElementById('tomorrowPrice').textContent =
+                        'LKR ' + Number(price).toFixed(2);
+
+                    if (trend === 'RISING') {
+                        badge.className = 'badge bg-danger';
+                        badge.textContent = 'RISING';
+                    } else if (trend === 'FALLING') {
+                        badge.className = 'badge bg-success';
+                        badge.textContent = 'FALLING';
+                    } else {
+                        badge.className = 'badge bg-secondary';
+                        badge.textContent = 'STABLE';
+                    }
+
+                    document.getElementById('changeInfo').textContent =
+                        'Change: ' + (changePct > 0 ? '+' : '') +
+                        Number(changePct).toFixed(2) + '% | Model: ' +
+                        (data.model || 'LR') + ' | MAPE: ' + data.mape + '%';
+                    document.getElementById('tomorrowResult').style.display = 'block';
+                },
+                error: function (xhr) {
+                    setPriceBusy(false);
+                    showPriceError(
+                        'Error: ' +
+                        (xhr.responseText || 'AI service unavailable.'));
+                }
+            });
+        }
+
+        function predictMultiStep() {
+            hidePriceError();
+            document.getElementById('tomorrowResult').style.display = 'none';
+            document.getElementById('multiDayResult').style.display = 'none';
+
+            var horizon = parseInt(
+                document.getElementById('priceHorizon').value, 10);
+            var request;
+
+            try {
+                request = buildPriceRequest(horizon);
+            } catch (error) {
+                showPriceError(error.message);
+                return;
+            }
+
+            document.getElementById('pricePanelSubtitle').textContent =
+                'Tomorrow and ' + horizon + '-day price prediction.';
+            document.getElementById('multiDayTableTitle').textContent =
+                horizon + '-Day Price Forecast';
+            setPriceBusy(true);
+
+            $.ajax({
+                url: '/Admin/AiDashboard/GetMultiStepForecast',
+                type: 'POST',
+                contentType: 'application/json',
+                data: JSON.stringify(request),
+                success: function (data) {
+                    setPriceBusy(false);
+
+                    if (!data.success) {
+                        showPriceError(data.message || 'Forecast failed.');
+                        return;
+                    }
+
+                    var forecast = data.forecast ?? data.Forecast;
+                    if (!forecast || forecast.length === 0) {
+                        showPriceError('No forecast data was returned.');
+                        return;
+                    }
+
+                    renderPriceSummary(
+                        data.summary ?? data.Summary,
+                        horizon);
+                    renderPriceRows(
+                        forecast,
+                        request.current_price);
+
+                    document.getElementById('priceModelInfo').textContent =
+                        'Model: ' + (data.model || 'LR') +
+                        (data.modelVersion ? ' v' + data.modelVersion : '') +
+                        (data.expectedMape != null
+                            ? ' | MAPE: ' + data.expectedMape + '%'
+                            : '');
+                    document.getElementById('multiDayResult').style.display = 'block';
+                },
+                error: function (xhr) {
+                    setPriceBusy(false);
+                    showPriceError(
+                        'Error ' + xhr.status + ': ' +
+                        (xhr.responseText || 'AI service unavailable.'));
+                }
+            });
+        }
+
+        function renderPriceSummary(summary, horizon) {
+            var element = document.getElementById('priceSummaryBar');
+            if (!summary) {
+                element.textContent = '';
+                return;
+            }
+
+            var averagePrice = summary.avg_price ?? summary.avgPrice ?? 0;
+            var minimumPrice = summary.min_price ?? summary.minPrice ?? 0;
+            var maximumPrice = summary.max_price ?? summary.maxPrice ?? 0;
+            var overallTrend =
+                summary.overall_trend ?? summary.overallTrend ?? 'STABLE';
+            var overallChange =
+                summary.overall_change_pct ?? summary.overallChangePct ?? 0;
+
+            element.innerHTML =
+                '<strong>' + horizon + '-Day Summary:</strong> ' +
+                'Average: <strong>LKR ' +
+                Number(averagePrice).toFixed(2) + '</strong> | ' +
+                'Min: LKR ' + Number(minimumPrice).toFixed(2) + ' | ' +
+                'Max: LKR ' + Number(maximumPrice).toFixed(2) + ' | ' +
+                'Trend: <strong>' + overallTrend + ' (' +
+                (overallChange > 0 ? '+' : '') +
+                Number(overallChange).toFixed(2) + '%)</strong>';
+        }
+
+        function renderPriceRows(forecast, currentPrice) {
+            var rows = '';
+
+            for (var i = 0; i < forecast.length; i++) {
+                var item = forecast[i];
+                var predicted = item.predicted ?? item.Predicted ?? 0;
+                var trend = item.trend ?? item.Trend ?? 'STABLE';
+                var day = item.day ?? item.Day ?? ('Day+' + (i + 1));
+                var mape = item.expected_mape ??
+                    item.expectedMape ??
+                    item.ExpectedMape ??
+                    0;
+                var percentage =
+                    ((Number(predicted) - currentPrice) / currentPrice) * 100;
+                var rowClass = trend === 'RISING'
+                    ? 'table-danger'
+                    : (trend === 'FALLING' ? 'table-success' : '');
+                var trendLabel = trend === 'RISING'
+                    ? 'Up'
+                    : (trend === 'FALLING' ? 'Down' : 'Flat');
+
+                rows +=
+                    '<tr class="' + rowClass + '">' +
+                    '<td><strong>' + day + '</strong></td>' +
+                    '<td>LKR ' + Number(predicted).toFixed(2) + '</td>' +
+                    '<td>' + (percentage > 0 ? '+' : '') +
+                    percentage.toFixed(2) + '%</td>' +
+                    '<td>' + trendLabel + '</td>' +
+                    '<td>' + Number(mape).toFixed(3) + '%</td>' +
+                    '</tr>';
+            }
+
+            document.getElementById('multiDayTable').innerHTML = rows;
+        }
+    </script>
+}

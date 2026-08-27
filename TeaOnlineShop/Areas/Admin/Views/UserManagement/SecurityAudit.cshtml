@@ -1,0 +1,40 @@
+@model IReadOnlyCollection<TeaOnlineShop.Identity.SecurityAuditEvent>
+@{
+    ViewData["Title"] = "Security Audit";
+}
+
+<div class="admin-page-card">
+    <div class="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-4">
+        <div>
+            <h1 class="mb-1"><i class="fa fa-shield-halved me-2"></i>Security Audit</h1>
+            <p class="text-muted mb-0">Append-only evidence of staff provisioning, access changes, and session revocation.</p>
+        </div>
+        <a asp-action="Index" class="btn btn-outline-secondary">Back to users</a>
+    </div>
+
+    <div class="table-responsive">
+        <table class="table align-middle">
+            <thead><tr><th>Occurred</th><th>Action</th><th>Actor</th><th>Target</th><th>Detail</th><th>IP</th></tr></thead>
+            <tbody>
+            @if (Model.Count == 0)
+            {
+                <tr><td colspan="6" class="text-center text-muted py-4">No security administration events recorded yet.</td></tr>
+            }
+            else
+            {
+                @foreach (var item in Model)
+                {
+                    <tr>
+                        <td>@item.OccurredAtUtc.ToLocalTime().ToString("dd MMM yyyy HH:mm:ss")</td>
+                        <td><span class="badge bg-primary">@item.Action</span></td>
+                        <td>@item.ActorEmail</td>
+                        <td>@item.TargetEmail</td>
+                        <td>@item.Detail</td>
+                        <td>@(item.IpAddress ?? "—")</td>
+                    </tr>
+                }
+            }
+            </tbody>
+        </table>
+    </div>
+</div>

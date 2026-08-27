@@ -1,0 +1,7 @@
+﻿{
+    "AnonymousAdminLocation":  "http://localhost:5255/UserAccount/Login?ReturnUrl=/Admin",
+    "LoginStatus":  200,
+    "AnonymousAdminStatus":  302,
+    "CheckedAt":  "2026-08-19T17:43:00.4709678+05:30",
+    "HomeStatus":  200
+}

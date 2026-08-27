@@ -1,0 +1,57 @@
+@model TeaOnlineShop.Models.ViewModels.CreateStaffUserViewModel
+@using TeaOnlineShop.Authorization
+@{
+    ViewData["Title"] = "Add Staff Account";
+}
+
+<div class="admin-page-card">
+    <div class="d-flex flex-wrap justify-content-between align-items-start gap-3 mb-4">
+        <div>
+            <h1 class="mb-1"><i class="fa fa-user-plus me-2"></i>Add Staff Account</h1>
+            <p class="text-muted mb-0">Provision a named internal identity with one least-privilege role.</p>
+        </div>
+        <a asp-action="Index" class="btn btn-outline-secondary">Back to users</a>
+    </div>
+
+    <div class="alert alert-warning">
+        The temporary password must be delivered through a secure channel. The user must change it and enroll MFA before accessing staff pages.
+    </div>
+
+    <form asp-action="CreateStaff" method="post" class="row g-3">
+        <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+        <div class="col-md-6">
+            <label asp-for="FullName" class="form-label"></label>
+            <input asp-for="FullName" class="form-control" autocomplete="name" />
+            <span asp-validation-for="FullName" class="text-danger"></span>
+        </div>
+        <div class="col-md-6">
+            <label asp-for="Email" class="form-label"></label>
+            <input asp-for="Email" class="form-control" autocomplete="email" />
+            <span asp-validation-for="Email" class="text-danger"></span>
+        </div>
+        <div class="col-md-6">
+            <label asp-for="Role" class="form-label"></label>
+            <select asp-for="Role" class="form-select">
+                @foreach (var role in AppRoles.InternalRoles)
+                {
+                    <option value="@role">@role</option>
+                }
+            </select>
+            <span asp-validation-for="Role" class="text-danger"></span>
+        </div>
+        <div class="col-md-6">
+            <label asp-for="TemporaryPassword" class="form-label"></label>
+            <input asp-for="TemporaryPassword" class="form-control" autocomplete="new-password" />
+            <span asp-validation-for="TemporaryPassword" class="text-danger"></span>
+            <small class="form-text text-muted">At least 12 characters with uppercase, lowercase, number, symbol, and four unique characters.</small>
+        </div>
+        <div class="col-12 d-flex gap-2">
+            <button type="submit" class="btn btn-primary">Create Staff Account</button>
+            <a asp-action="Index" class="btn btn-outline-secondary">Cancel</a>
+        </div>
+    </form>
+</div>
+
+@section Scripts {
+    @{ await Html.RenderPartialAsync("_ValidationScriptsPartial"); }
+}

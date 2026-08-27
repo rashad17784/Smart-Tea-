@@ -1,0 +1,390 @@
+﻿@inject TeaOnlineShop.Models.Dbase.TeaOnlineShopContext _context
+@{
+    var topMenus = _context.Menus
+        .Where(row => row.Type == "Top")
+        .ToList();
+
+    var bottomMenus = _context.Menus
+        .Where(row => row.Type == "Bottom")
+        .ToList();
+
+    var blockedLegacyRoutes = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
+    {
+        "/index.html",
+        "/shop.html",
+        "/product-details.html",
+        "/cart.html",
+        "/checkout.html",
+        "/blog.html",
+        "/blog-details.html"
+    };
+
+    string NormalizeMenuLink(string? rawLink)
+    {
+        if (string.IsNullOrWhiteSpace(rawLink))
+        {
+            return "/";
+        }
+
+        var link = rawLink.Trim();
+        if (link.StartsWith("http://", StringComparison.OrdinalIgnoreCase) ||
+            link.StartsWith("https://", StringComparison.OrdinalIgnoreCase))
+        {
+            return "/";
+        }
+
+        var cleanPath = link.Split('?', '#')[0];
+        if (!cleanPath.StartsWith('/'))
+        {
+            cleanPath = "/" + cleanPath;
+        }
+
+        if (blockedLegacyRoutes.Contains(cleanPath))
+        {
+            return "/";
+        }
+
+        return link;
+    }
+}
+<!doctype html>
+<html class="no-js" lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="x-ua-compatible" content="ie=edge">
+    <title>@(ViewData["Title"] ?? "SmartTeaShop") | SmartTeaShop</title>
+    <meta name="description" content="SmartTeaShop - Pure Ceylon Tea" />
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="theme-color" content="#1f6a4f" />
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Playfair+Display:wght@600;700;800&display=swap" rel="stylesheet">
+
+    <link rel="stylesheet" href="/assets/css/vendor/bootstrap.min.css">
+    <link rel="stylesheet" href="/assets/css/slick.css">
+    <link rel="stylesheet" href="/assets/css/simple-line-icons.css">
+    <link rel="stylesheet" href="/assets/css/ionicons.min.css">
+    <link rel="stylesheet" href="/assets/css/font.awesome.css">
+    <link rel="stylesheet" href="/assets/css/animate.css">
+    <link rel="stylesheet" href="/assets/css/nice-select.css">
+    <link rel="stylesheet" href="/assets/css/jquery-ui.min.css">
+    <link rel="stylesheet" href="/assets/css/magnific-popup.css">
+    <link rel="stylesheet" href="/assets/css/style.css">
+    <link rel="stylesheet" href="/assets/css/custom.css">
+    <link rel="stylesheet" href="/assets/css/custom-modern.css">
+    <link rel="stylesheet" href="/assets/css/customer-premium.css">
+
+    <script src="/assets/js/vendor/modernizr-3.7.1.min.js"></script>
+
+    @RenderSection("Styles", required: false)
+</head>
+<body class="tea-app-body @(ViewData["BodyClass"] ?? "")">
+
+    <div class="body_overlay"></div>
+
+    <div class="offcanvas_menu">
+        <div class="container">
+            <div class="row">
+                <div class="col-12">
+                    <div class="offcanvas_menu_wrapper">
+                        <div class="canvas_close">
+                            <a href="javascript:void(0)"><i class="ion-android-close"></i></a>
+                        </div>
+
+                        <div class="offcanvas_brand tea-brand-block">
+                            <a href="/" class="brand_link" aria-label="SmartTeaShop Home">
+                                <span class="brand_mark">ST</span>
+                                <span class="brand_text">
+                                    <strong>SmartTeaShop</strong>
+                                    <small>Pure Ceylon Tea</small>
+                                </span>
+                            </a>
+                        </div>
+
+                        <div class="header_contact_info tea-offcanvas-contact">
+                            <ul class="d-flex">
+                                <li><i class="icons icon-phone"></i><a href="tel:+94771234987">+94 77 1234 987</a></li>
+                                <li><i class="icon-envelope-letter icons"></i><a href="mailto:smartteashop@fazigroup.com">smartteashop@fazigroup.com</a></li>
+                            </ul>
+                        </div>
+
+                        <div id="menu" class="text-left">
+                            <ul class="offcanvas_main_menu">
+                                @foreach (var menu in topMenus)
+                                {
+                                    <li><a href="@NormalizeMenuLink(menu.Link)">@menu.MenuTitle</a></li>
+                                }
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="mini_cart"></div>
+
+    <header class="header_section tea-site-header">
+        <div class="main_header">
+            <div class="container-fluid">
+                <div class="header_container tea-header-shell">
+                    <div class="canvas_open d-lg-none">
+                        <a href="javascript:void(0)" aria-label="Open Menu"><i class="ion-navicon"></i></a>
+                    </div>
+
+                    <div class="site_brand">
+                        <a href="/" class="brand_link" aria-label="SmartTeaShop Home">
+                            <span class="brand_mark">ST</span>
+                            <span class="brand_text">
+                                <strong>SmartTeaShop</strong>
+                                <small>Premium Ceylon Tea</small>
+                            </span>
+                        </a>
+                    </div>
+
+                    <div class="main_menu d-none d-lg-block">
+                        <nav>
+                            <ul class="d-flex">
+                                @foreach (var menu in topMenus)
+                                {
+                                    <li><a href="@NormalizeMenuLink(menu.Link)">@menu.MenuTitle</a></li>
+                                }
+                            </ul>
+                        </nav>
+                    </div>
+
+                    <div class="header_account">
+                        <ul class="d-flex">
+                            <li class="header_search"><a href="javascript:void(0)" aria-label="Open Search"><i class="icon-magnifier icons"></i></a></li>
+
+                            <li class="account_link">
+                                <a href="javascript:void(0)" aria-label="Account"><i class="icon-user icons @(User.Identity.IsAuthenticated ? "text-danger" : "")"></i></a>
+                                <ul class="dropdown_account_link">
+                                    @if (User.Identity.IsAuthenticated)
+                                    {
+                                        <li><a href="/UserAccount/MyAccount">My Account</a></li>
+                                        <li><a href="/UserAccount/Orders">Order List</a></li>
+                                        @if (User.HasClaim("permission", "Admin.Access"))
+                                        {
+                                            <li><a href="/Admin">Admin Area</a></li>
+                                        }
+                                        <li>
+                                            <form asp-controller="UserAccount" asp-action="Logout" method="post" class="m-0">
+                                                <button type="submit" class="account-dropdown-button">Logout</button>
+                                            </form>
+                                        </li>
+                                    }
+                                    else
+                                    {
+                                        <li><a href="/useraccount/login">Login</a></li>
+                                        <li><a href="/useraccount/register">Register</a></li>
+                                    }
+                                </ul>
+                            </li>
+
+                            <li class="shopping_cart">
+                                <a href="/Cart" aria-label="Cart"><i class="icon-basket-loaded icons"></i></a>
+                                <span class="item_count">0</span>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="page_search_box">
+            <div class="search_close">
+                <i class="ion-close-round"></i>
+            </div>
+            <form class="border-bottom" action="/products/SearchProducts">
+                <input class="border-0" placeholder="Search tea products..." type="text" name="SearchText">
+                <button type="submit"><span class="icon-magnifier icons"></span></button>
+            </form>
+        </div>
+    </header>
+
+    <main class="tea-main-content">
+        @RenderBody()
+    </main>
+
+    <footer class="footer_widgets tea-footer">
+        <div class="container">
+            <div class="row g-4 align-items-start">
+                <div class="col-lg-6 col-md-12">
+                    <div class="footer_widget_list">
+                        <div class="footer_brand">
+                            <h4>SmartTeaShop</h4>
+                            <p>AI-driven tea inventory and online sales platform for modern tea supply chains.</p>
+                        </div>
+
+                        <div class="footer_contact">
+                            <div class="footer_contact_list">
+                                <span>Our Location</span>
+                                <p>147 Main Street, Kotagala Central, Sri Lanka</p>
+                            </div>
+                            <div class="footer_contact_list">
+                                <span>24/7 Hotline</span>
+                                <a href="tel:+94771234987">(+94) 077 1234 987</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-lg-6 col-md-12">
+                    <div class="footer_widget_list tea-footer-right">
+                        <div class="footer_menu">
+                            <ul class="d-flex justify-content-lg-end justify-content-start flex-wrap">
+                                @foreach (var menu in bottomMenus)
+                                {
+                                    <li><a href="@NormalizeMenuLink(menu.Link)">@menu.MenuTitle</a></li>
+                                }
+                            </ul>
+                        </div>
+
+                        <div class="footer_social">
+                            <ul class="d-flex justify-content-lg-end justify-content-start">
+                                <li><a href="https://www.facebook.com" target="_blank" rel="noopener"><i class="ion-social-facebook"></i></a></li>
+                                <li><a href="https://www.instagram.com" target="_blank" rel="noopener"><i class="ion-social-instagram-outline"></i></a></li>
+                                <li><a href="https://www.youtube.com" target="_blank" rel="noopener"><i class="ion-social-youtube"></i></a></li>
+                            </ul>
+                        </div>
+
+                        <div class="copyright_right text-lg-end text-start">
+                            <p>© 2026 <span>SmartTeaShop</span>. All rights reserved.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <div id="tea-toast-stack" class="tea-toast-stack"></div>
+
+    <script src="/assets/js/vendor/jquery-3.4.1.min.js"></script>
+    <script src="/assets/js/vendor/popper.js"></script>
+    <script src="/assets/js/vendor/bootstrap.min.js"></script>
+    <script src="/assets/js/slick.min.js"></script>
+    <script src="/assets/js/wow.min.js"></script>
+    <script src="/assets/js/jquery.scrollup.min.js"></script>
+    <script src="/assets/js/images-loaded.min.js"></script>
+    <script src="/assets/js/isotope.pkgd.min.js"></script>
+    <script src="/assets/js/jquery.nice-select.js"></script>
+    <script src="/assets/js/tippy-bundle.umd.js"></script>
+    <script src="/assets/js/jquery-ui.min.js"></script>
+    <script src="/assets/js/jquery.instagramFeed.min.js"></script>
+    <script src="/assets/js/jquery.magnific-popup.min.js"></script>
+    <script src="/assets/js/mailchimp-ajax.js"></script>
+    <script src="/assets/js/main.js"></script>
+
+    <script>
+        function updateCart(productId, count, quantityInput) {
+            var requestedCount = parseInt(count, 10);
+            if (isNaN(requestedCount)) {
+                showToast('Enter a valid quantity.', 'error');
+                return;
+            }
+
+            $.ajax({
+                url: '/Cart/UpdateCart',
+                type: 'POST',
+                contentType: 'application/json',
+                data: JSON.stringify({ productId: productId, count: requestedCount }),
+                success: function (result) {
+                    $(".item_count").html(result);
+                    if (requestedCount === 0) {
+                        $("#" + productId).remove();
+                    }
+                    getMiniCart();
+                },
+                error: function (xhr) {
+                    var response = xhr.responseJSON || {};
+                    var message = response.message || 'Unable to update the cart.';
+
+                    if (quantityInput && response.currentQuantity !== undefined) {
+                        quantityInput.value = response.currentQuantity > 0
+                            ? response.currentQuantity
+                            : 1;
+                    }
+
+                    showToast(message, 'error');
+                }
+            });
+        }
+
+        function addToCart(productId, count) {
+            if (typeof count === 'undefined' || count === null) {
+                count = 1;
+            }
+
+            if ($("#product-quantity").length) {
+                var quantity = parseInt($("#product-quantity").val());
+                if (!isNaN(quantity) && quantity > 0) {
+                    count = quantity;
+                }
+            }
+
+            $.ajax({
+                url: '/Cart/UpdateCart',
+                type: 'POST',
+                contentType: 'application/json',
+                data: JSON.stringify({ productId: productId, count: count }),
+                success: function (result) {
+                    $(".item_count").html(result);
+                    getMiniCart();
+                    showToast('Item added to cart.', 'success');
+                    $('.mini_cart,.body_overlay').addClass('active');
+                },
+                error: function (xhr) {
+                    var response = xhr.responseJSON || {};
+                    showToast(response.message || 'Failed to add item to cart.', 'error');
+                }
+            });
+        }
+
+        function showToast(message, type) {
+            var toastType = type || 'info';
+            var toast = $('<div class="tea-toast tea-toast-' + toastType + '">' + message + '</div>');
+            $('#tea-toast-stack').append(toast);
+
+            setTimeout(function () {
+                toast.addClass('show');
+            }, 10);
+
+            setTimeout(function () {
+                toast.removeClass('show');
+                setTimeout(function () {
+                    toast.remove();
+                }, 300);
+            }, 2600);
+        }
+
+        function getMiniCart() {
+            $.ajax({
+                url: '/Cart/SmallCart',
+                type: 'GET',
+                success: function (result) {
+                    $('.mini_cart').html(result);
+                },
+                error: function () {
+                    console.error('Error fetching mini cart');
+                }
+            });
+        }
+
+        $(document).ready(function () {
+            getMiniCart();
+        });
+    </script>
+
+    @RenderSection("Scripts", required: false)
+</body>
+</html>
+
+
+
+
+
+
+
+

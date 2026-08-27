@@ -1,0 +1,113 @@
+@model IEnumerable<TeaOnlineShop.Models.Dbase.SupplierCategory>
+
+@{
+    ViewData["Title"] = "Supplier Categories";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2 class="mb-0"><i class="fa fa-tags me-2"></i>Supplier Categories</h2>
+    <div>
+        <a asp-area="Admin" asp-controller="SupplierCategories" asp-action="Create" class="btn btn-primary">
+            <i class="fa fa-plus me-2"></i>Add New Category
+        </a>
+    </div>
+</div>
+
+<div class="card shadow-sm">
+    <div class="card-header bg-light">
+        <div class="d-flex justify-content-between align-items-center">
+            <h5 class="mb-0">All Categories</h5>
+            <div>
+                <input type="text" id="categorySearch" class="form-control form-control-sm" placeholder="Search categories..." style="width: 200px;">
+            </div>
+        </div>
+    </div>
+    <div class="card-body p-0">
+        @if (TempData["SuccessMessage"] != null)
+        {
+            <div class="alert alert-success m-3">
+                @TempData["SuccessMessage"]
+            </div>
+        }
+        
+        @if (TempData["ErrorMessage"] != null)
+        {
+            <div class="alert alert-danger m-3">
+                @TempData["ErrorMessage"]
+            </div>
+        }
+        
+        <div class="table-responsive">
+            <table class="table table-hover table-striped mb-0 table-admin">
+                <thead>
+                    <tr>
+                        <th style="width: 5%">#</th>
+                        <th style="width: 30%">
+                            <i class="fa fa-tag me-2 text-muted"></i>Name
+                        </th>
+                        <th style="width: 50%">
+                            <i class="fa fa-align-left me-2 text-muted"></i>Description
+                        </th>
+                        <th style="width: 15%" class="text-end">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @if (Model != null && Model.Any())
+                    {
+                        foreach (var item in Model)
+                        {
+                            <tr>
+                                <td>@item.Id</td>
+                                <td class="fw-medium">@item.Name</td>
+                                <td>@item.Description</td>
+                                <td>
+                                    <div class="d-flex justify-content-end action-buttons">
+                                        <a asp-area="Admin" asp-controller="SupplierCategories" asp-action="Edit" asp-route-id="@item.Id" class="btn btn-sm btn-outline-secondary me-1" title="Edit">
+                                            <i class="fa fa-pencil-alt"></i>
+                                        </a>
+                                        <a asp-area="Admin" asp-controller="SupplierCategories" asp-action="Details" asp-route-id="@item.Id" class="btn btn-sm btn-outline-primary me-1" title="Details">
+                                            <i class="fa fa-eye"></i>
+                                        </a>
+                                        <a asp-area="Admin" asp-controller="SupplierCategories" asp-action="Delete" asp-route-id="@item.Id" class="btn btn-sm btn-outline-danger" title="Delete">
+                                            <i class="fa fa-trash-alt"></i>
+                                        </a>
+                                    </div>
+                                </td>
+                            </tr>
+                        }
+                    }
+                    else
+                    {
+                        <tr>
+                            <td colspan="4" class="text-center py-4">
+                                <p class="text-muted mb-0">No categories found</p>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+    <div class="card-footer">
+        <div class="d-flex justify-content-between align-items-center">
+            <a asp-area="Admin" asp-controller="Suppliers" asp-action="Index" class="btn btn-outline-secondary">
+                <i class="fa fa-truck me-2"></i>Back to Suppliers
+            </a>
+            <small class="text-muted">Showing @Model.Count() categories</small>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        $(document).ready(function() {
+            // Filter table as user types in search box
+            $("#categorySearch").on("keyup", function() {
+                var value = $(this).val().toLowerCase();
+                $("table tbody tr").filter(function() {
+                    $(this).toggle($(this).text().toLowerCase().indexOf(value) > -1)
+                });
+            });
+        });
+    </script>
+} 

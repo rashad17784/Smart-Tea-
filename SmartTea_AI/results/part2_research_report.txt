@@ -1,0 +1,72 @@
+
+╔══════════════════════════════════════════════════════════════╗
+║     🍵 SmartTea AI — Part 2 Research-Level Report            ║
+║   Linear Regression vs XGBoost — Green Leaf Price Prediction ║
+╚══════════════════════════════════════════════════════════════╝
+
+📋 EXPERIMENT SETUP:
+──────────────────────────────────────────────────────────────
+   Task          : Predict next-day green leaf price (LKR/kg)
+   Dataset       : tea_price_regression.csv (1,065 samples)
+   Train/Test    : 852 / 213 (80/20 chronological)
+   Features      : 28
+   Validation    : 5-fold Time-Series Cross-Validation
+
+🔬 SIX PILLARS OF RIGOROUS ANALYSIS:
+──────────────────────────────────────────────────────────────
+   ✅ Pillar 1: Naive baseline benchmark
+   ✅ Pillar 2: Hyperparameter tuning (GridSearchCV)
+   ✅ Pillar 3: 5-fold Time-Series Cross-Validation
+   ✅ Pillar 4: Diebold-Mariano significance test
+   ✅ Pillar 5: Residual analysis
+   ✅ Pillar 6: Feature importance interpretation
+
+📈 TEST SET PERFORMANCE:
+──────────────────────────────────────────────────────────────
+   Model              MAE        RMSE       MAPE      R²
+   ─────────────────  ─────────  ─────────  ────────  ───────
+   Naive Baseline        3.951     4.760   3.849%   0.695
+   Linear Regression     3.103     3.812   2.994%   0.804
+   XGBoost (tuned)       3.619     4.592   3.463%   0.716
+
+🔄 CROSS-VALIDATION (5 folds, mean ± std):
+──────────────────────────────────────────────────────────────
+   Linear Regression : 5.197% ± 3.432%
+   XGBoost           : 5.157% ± 2.288%
+
+🔬 STATISTICAL SIGNIFICANCE (Diebold-Mariano):
+──────────────────────────────────────────────────────────────
+   DM statistic : -3.8706
+   p-value      : 0.000109
+   Conclusion   : Difference is statistically significant (p < 0.05)
+
+🏆 RECOMMENDED MODEL: Linear Regression
+──────────────────────────────────────────────────────────────
+   Won 0/4 test metrics
+   Best XGBoost params: {'learning_rate': 0.03, 'max_depth': 3, 'n_estimators': 200, 'subsample': 1.0}
+
+📝 KEY FINDINGS:
+──────────────────────────────────────────────────────────────
+   1. Both ML models substantially outperform the naive
+      baseline, confirming they add genuine predictive value.
+
+   2. Linear Regression achieved the best overall performance across
+      multiple metrics and cross-validation folds.
+
+   3. The performance difference between the two models is
+      statistically significant (p < 0.05), providing statistical confidence in the result.
+
+   4. The most influential price driver was
+      'GreenLeafPricePerKgLKR', confirming that recent
+      price history is the strongest predictor of future price.
+
+📁 OUTPUT FILES:
+──────────────────────────────────────────────────────────────
+   plots/part2/P05_residual_analysis.png
+   plots/part2/P06_feature_importance.png
+   plots/part2/P07_predictions_overlay.png
+   plots/part2/P08_three_model_comparison.png
+   plots/part2/P09_cv_boxplot.png
+   results/part2_research_results.csv
+   results/part2_cv_results.csv
+══════════════════════════════════════════════════════════════

@@ -1,0 +1,122 @@
+@model IEnumerable<TeaOnlineShop.Models.Dbase.TeaInventoryItem>
+
+@{
+    ViewData["Title"] = "Inventory Report";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2 class="mb-0"><i class="fa fa-clipboard-list me-2"></i>Inventory Report</h2>
+    <div>
+        @if (User.HasClaim("permission", "Dashboard.FinancialView"))
+        {
+            <a asp-area="Admin" asp-controller="Reports" asp-action="ExportPdf" asp-route-reportType="inventory" class="btn btn-outline-primary me-2"><i class="fa fa-file-pdf me-2"></i>Export to PDF</a>
+            <a asp-area="Admin" asp-controller="Reports" asp-action="Dashboard" class="btn btn-outline-secondary"><i class="fa fa-chart-line me-2"></i>Analytics Dashboard</a>
+        }
+    </div>
+</div>
+
+@if (TempData["InfoMessage"] != null)
+{
+    <div class="alert alert-info alert-dismissible fade show" role="alert">
+        <i class="fa fa-info-circle me-2"></i>@TempData["InfoMessage"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+}
+
+<div class="card shadow-sm">
+    <div class="card-header bg-light d-flex justify-content-between align-items-center">
+        <h5 class="mb-0">All Inventory Items</h5>
+        <div>
+            <a asp-area="Admin" asp-controller="TeaInventory" asp-action="Index" class="btn btn-sm btn-outline-primary">
+                <i class="fa fa-list me-2"></i>Manage Inventory
+            </a>
+            <a asp-area="Admin" asp-controller="TeaInventory" asp-action="LowStock" class="btn btn-sm btn-outline-warning ms-2">
+                <i class="fa fa-exclamation-triangle me-2"></i>Low Stock Items
+            </a>
+        </div>
+    </div>
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table table-hover table-striped mb-0">
+                <thead class="table-light">
+                    <tr>
+                        <th>ID</th>
+                        <th>Name</th>
+                        <th>Tea Type</th>
+                        <th>Grade</th>
+                        <th>Current Stock</th>
+                        <th>Min Stock</th>
+                        @if (User.HasClaim("permission", "Dashboard.FinancialView"))
+                        {
+                            <th>Unit Price</th>
+                            <th>Value</th>
+                        }
+                        <th>Status</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @if (Model != null && Model.Any())
+                    {
+                        foreach (var item in Model)
+                        {
+                            var stockStatus = "success";
+                            var stockText = "In Stock";
+                            
+                            if (item.CurrentStock <= item.MinimumStock)
+                            {
+                                stockStatus = "danger";
+                                stockText = "Low Stock";
+                            }
+                            else if (item.CurrentStock <= item.MinimumStock * 1.5m)
+                            {
+                                stockStatus = "warning";
+                                stockText = "Low Stock Soon";
+                            }
+                            
+                            <tr>
+                                <td>@item.Id</td>
+                                <td>@item.Name</td>
+                                <td>@item.TeaType</td>
+                                <td>@item.Grade</td>
+                                <td>@item.CurrentStock.ToString("0.00")</td>
+                                <td>@(item.MinimumStock.HasValue ? item.MinimumStock.Value.ToString("0.00") : "N/A")</td>
+                                @if (User.HasClaim("permission", "Dashboard.FinancialView"))
+                                {
+                                    <td>$@(item.RetailPrice.HasValue ? item.RetailPrice.Value.ToString("0.00") : "N/A")</td>
+                                    <td>$@((item.CurrentStock * (item.RetailPrice ?? 0)).ToString("0.00"))</td>
+                                }
+                                <td><span class="badge bg-@stockStatus">@stockText</span></td>
+                                <td>
+                                    <a asp-area="Admin" asp-controller="TeaInventory" asp-action="Details" asp-route-id="@item.Id" 
+                                       class="btn btn-sm btn-outline-primary">
+                                        <i class="fa fa-info-circle"></i>
+                                    </a>
+                                </td>
+                            </tr>
+                        }
+                    }
+                    else
+                    {
+                        <tr>
+                            <td colspan="10" class="text-center py-4">
+                                <div class="alert alert-info mb-0">
+                                    <i class="fa fa-info-circle me-2"></i>No inventory items found.
+                                </div>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        $(document).ready(function() {
+            // Initialize any client-side functionality
+            console.log("Inventory report loaded");
+        });
+    </script>
+} 

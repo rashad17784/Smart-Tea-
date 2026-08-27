@@ -1,0 +1,28 @@
+@model IReadOnlyCollection<TeaOnlineShop.Identity.LoginHistory>
+@{
+    ViewData["Title"] = "Login History";
+}
+
+<div class="admin-page-card">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div><h1 class="mb-1"><i class="fa fa-clock-rotate-left me-2"></i>Login History</h1><p class="text-muted mb-0">Latest 500 successful and failed authentication events.</p></div>
+        <a asp-action="Index" class="btn btn-outline-secondary">Back to Users</a>
+    </div>
+    <div class="table-responsive">
+        <table class="table align-middle">
+            <thead><tr><th>Time</th><th>Email</th><th>Result</th><th>Reason</th><th>IP address</th></tr></thead>
+            <tbody>
+            @foreach (var item in Model)
+            {
+                <tr>
+                    <td>@item.OccurredAtUtc.ToLocalTime().ToString("dd MMM yyyy HH:mm:ss")</td>
+                    <td>@item.Email</td>
+                    <td><span class="badge @(item.Succeeded ? "bg-success" : "bg-danger")">@(item.Succeeded ? "Success" : "Failed")</span></td>
+                    <td>@(item.FailureReason ?? "-")</td>
+                    <td>@(item.IpAddress ?? "-")</td>
+                </tr>
+            }
+            </tbody>
+        </table>
+    </div>
+</div>

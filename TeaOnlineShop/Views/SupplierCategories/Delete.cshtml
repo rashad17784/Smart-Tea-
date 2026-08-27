@@ -1,0 +1,48 @@
+@model TeaOnlineShop.Models.Dbase.SupplierCategory
+
+@{
+    ViewData["Title"] = "Delete Supplier Category";
+}
+
+<div class="container mt-4">
+    <div class="card shadow-sm border-danger">
+        <div class="card-header bg-danger text-white">
+            <h4>@ViewData["Title"]</h4>
+        </div>
+        <div class="card-body">
+            <div class="alert alert-warning">
+                <i class="icon-exclamation icons"></i> Are you sure you want to delete this category?
+            </div>
+            
+            <h5 class="border-bottom pb-2">Category Details</h5>
+            <dl class="row mt-3">
+                <dt class="col-sm-3">ID</dt>
+                <dd class="col-sm-9">@Model.Id</dd>
+                
+                <dt class="col-sm-3">Name</dt>
+                <dd class="col-sm-9">@Model.Name</dd>
+                
+                <dt class="col-sm-3">Description</dt>
+                <dd class="col-sm-9">@(Model.Description ?? "N/A")</dd>
+            </dl>
+            
+            <div class="mt-4">
+                <p class="text-danger">
+                    <strong>Note:</strong> If this category is assigned to any suppliers, it cannot be deleted.
+                </p>
+            </div>
+            
+            <form asp-action="Delete" class="mt-4">
+                <input type="hidden" asp-for="Id" />
+                <div class="d-flex justify-content-between">
+                    <a asp-action="Index" class="btn btn-outline-secondary">
+                        <i class="icon-arrow-left icons"></i> Back to List
+                    </a>
+                    <button type="submit" class="btn btn-danger">
+                        <i class="icon-trash icons"></i> Confirm Delete
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div> 

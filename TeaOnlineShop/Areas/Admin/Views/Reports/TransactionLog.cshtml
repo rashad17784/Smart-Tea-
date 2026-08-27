@@ -1,0 +1,186 @@
+@model IEnumerable<TeaOnlineShop.Models.Dbase.TeaInventoryTransaction>
+
+@{
+    ViewData["Title"] = "Transaction Log";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2 class="mb-0"><i class="fa fa-history me-2"></i>Transaction Log</h2>
+    <div>
+        @if (User.HasClaim("permission", "Dashboard.FinancialView"))
+        {
+            <a asp-area="Admin" asp-controller="Reports" asp-action="ExportPdf" asp-route-reportType="transactions" class="btn btn-outline-primary me-2"><i class="fa fa-file-pdf me-2"></i>Export to PDF</a>
+            <a asp-area="Admin" asp-controller="Reports" asp-action="Dashboard" class="btn btn-outline-secondary"><i class="fa fa-chart-line me-2"></i>Analytics Dashboard</a>
+        }
+    </div>
+</div>
+
+@if (TempData["InfoMessage"] != null)
+{
+    <div class="alert alert-info alert-dismissible fade show" role="alert">
+        <i class="fa fa-info-circle me-2"></i>@TempData["InfoMessage"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+}
+
+<div class="card shadow-sm mb-4">
+    <div class="card-header bg-light">
+        <h5 class="mb-0">Recent Transactions</h5>
+    </div>
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table table-hover table-striped mb-0">
+                <thead class="table-light">
+                    <tr>
+                        <th>ID</th>
+                        <th>Date</th>
+                        <th>Item</th>
+                        <th>Type</th>
+                        <th>Quantity</th>
+                        @if (User.HasClaim("permission", "Dashboard.FinancialView"))
+                        {
+                            <th>Unit Price</th>
+                            <th>Total</th>
+                        }
+                        <th>Reference</th>
+                        <th>Notes</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @if (Model != null && Model.Any())
+                    {
+                        foreach (var transaction in Model)
+                        {
+                            var transactionType = transaction.TransactionType?.ToLower() ?? "";
+                            string badgeClass = "secondary";
+                            
+                            switch (transactionType)
+                            {
+                                case "sale":
+                                    badgeClass = "danger";
+                                    break;
+                                case "purchase":
+                                case "delivery":
+                                    badgeClass = "success";
+                                    break;
+                                case "production":
+                                    badgeClass = "primary";
+                                    break;
+                                case "adjustment":
+                                    badgeClass = "warning";
+                                    break;
+                                default:
+                                    badgeClass = "secondary";
+                                    break;
+                            }
+                            
+                            <tr>
+                                <td>@transaction.Id</td>
+                                <td>@transaction.TransactionDate.ToString("MMM dd, yyyy HH:mm")</td>
+                                <td>
+                                    @if (transaction.InventoryItem != null)
+                                    {
+                                        <a asp-area="Admin" asp-controller="TeaInventory" asp-action="Details" asp-route-id="@transaction.InventoryItemId">
+                                            @transaction.InventoryItem.Name
+                                        </a>
+                                    }
+                                    else
+                                    {
+                                        <span>Item #@transaction.InventoryItemId</span>
+                                    }
+                                </td>
+                                <td><span class="badge bg-@badgeClass">@transaction.TransactionType</span></td>
+                                <td>@transaction.Quantity.ToString("N2")</td>
+                                @if (User.HasClaim("permission", "Dashboard.FinancialView"))
+                                {
+                                    <td>@(transaction.UnitPrice.HasValue ? $"${transaction.UnitPrice.Value.ToString("N2")}" : "N/A")</td>
+                                    <td>@(transaction.UnitPrice.HasValue ? $"${(transaction.Quantity * transaction.UnitPrice.Value).ToString("N2")}" : "N/A")</td>
+                                }
+                                <td>@transaction.ReferenceNumber</td>
+                                <td>
+                                    @if (!string.IsNullOrEmpty(transaction.Notes))
+                                    {
+                                        <span title="@transaction.Notes">
+                                            @(transaction.Notes.Length > 30 ? transaction.Notes.Substring(0, 27) + "..." : transaction.Notes)
+                                        </span>
+                                    }
+                                </td>
+                            </tr>
+                        }
+                    }
+                    else
+                    {
+                        <tr>
+                            <td colspan="9" class="text-center py-4">
+                                <div class="alert alert-info mb-0">
+                                    <i class="fa fa-info-circle me-2"></i>No transactions found.
+                                </div>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-4">
+        <div class="card shadow-sm">
+            <div class="card-header bg-light">
+                <h5 class="mb-0">Transaction Summary</h5>
+            </div>
+            <div class="card-body">
+                <div class="list-group">
+                    @{
+                        var salesCount = Model?.Count(t => t.TransactionType == "Sale") ?? 0;
+                        var deliveryCount = Model?.Count(t => t.TransactionType == "Delivery") ?? 0;
+                        var productionCount = Model?.Count(t => t.TransactionType == "Production") ?? 0;
+                        var adjustmentCount = Model?.Count(t => t.TransactionType == "Adjustment") ?? 0;
+                        var totalCount = Model?.Count() ?? 0;
+                    }
+                    <div class="list-group-item d-flex justify-content-between align-items-center">
+                        <div><i class="fa fa-shopping-cart text-danger me-2"></i> Sales Transactions</div>
+                        <span class="badge bg-danger rounded-pill">@salesCount</span>
+                    </div>
+                    <div class="list-group-item d-flex justify-content-between align-items-center">
+                        <div><i class="fa fa-truck text-success me-2"></i> Delivery Transactions</div>
+                        <span class="badge bg-success rounded-pill">@deliveryCount</span>
+                    </div>
+                    <div class="list-group-item d-flex justify-content-between align-items-center">
+                        <div><i class="fa fa-industry text-primary me-2"></i> Production Transactions</div>
+                        <span class="badge bg-primary rounded-pill">@productionCount</span>
+                    </div>
+                    <div class="list-group-item d-flex justify-content-between align-items-center">
+                        <div><i class="fa fa-sliders-h text-warning me-2"></i> Adjustments</div>
+                        <span class="badge bg-warning rounded-pill">@adjustmentCount</span>
+                    </div>
+                    <div class="list-group-item d-flex justify-content-between align-items-center fw-bold">
+                        <div><i class="fa fa-list-alt me-2"></i> Total Transactions</div>
+                        <span class="badge bg-dark rounded-pill">@totalCount</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-8">
+        <div class="alert alert-info">
+            <h5><i class="fa fa-info-circle me-2"></i>About Transaction Log</h5>
+            <p>
+                This log shows the most recent 100 transactions in the system. Transactions include sales, deliveries, 
+                production batches, and manual inventory adjustments. For a more detailed analysis of these transactions, 
+                visit the <a asp-area="Admin" asp-controller="Reports" asp-action="Dashboard" class="alert-link">Analytics Dashboard</a>.
+            </p>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        $(document).ready(function() {
+            // Add any client-side functionality here
+            console.log("Transaction log loaded");
+        });
+    </script>
+} 

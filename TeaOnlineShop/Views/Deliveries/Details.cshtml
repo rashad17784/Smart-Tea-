@@ -1,0 +1,131 @@
+@model TeaOnlineShop.Models.Dbase.Delivery
+
+@{
+    ViewData["Title"] = "Delivery Details";
+}
+
+<div class="container mt-4">
+    <div class="card shadow-sm">
+        <div class="card-header bg-primary text-white">
+            <h4>@ViewData["Title"]</h4>
+        </div>
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-6">
+                    <h5 class="border-bottom pb-2">Delivery Information</h5>
+                    <dl class="row mt-3">
+                        <dt class="col-sm-4">Delivery Code</dt>
+                        <dd class="col-sm-8">@Model.DeliveryCode</dd>
+                        
+                        <dt class="col-sm-4">Supplier</dt>
+                        <dd class="col-sm-8">
+                            <a asp-controller="Suppliers" asp-action="Details" asp-route-id="@Model.SupplierId">
+                                @Model.Supplier.Name
+                            </a> 
+                            <span class="text-muted">(@Model.Supplier.SupplierCode)</span>
+                        </dd>
+                        
+                        <dt class="col-sm-4">Date/Time</dt>
+                        <dd class="col-sm-8">@Model.DeliveryDate.ToString("yyyy-MM-dd HH:mm")</dd>
+                        
+                        <dt class="col-sm-4">Status</dt>
+                        <dd class="col-sm-8">
+                            @if (Model.Status == "Received")
+                            {
+                                <span class="badge bg-success">Received</span>
+                            }
+                            else if (Model.Status == "Pending")
+                            {
+                                <span class="badge bg-warning text-dark">Pending</span>
+                            }
+                            else
+                            {
+                                <span class="badge bg-danger">@Model.Status</span>
+                            }
+                        </dd>
+                        
+                        <dt class="col-sm-4">Total Amount</dt>
+                        <dd class="col-sm-8">$@(Model.TotalAmount?.ToString("0.00") ?? "0.00")</dd>
+                        
+                        <dt class="col-sm-4">Received By</dt>
+                        <dd class="col-sm-8">@Model.ReceivedByName</dd>
+                        
+                        <dt class="col-sm-4">Notes</dt>
+                        <dd class="col-sm-8">@(Model.Notes ?? "N/A")</dd>
+                    </dl>
+                </div>
+                <div class="col-md-6">
+                    <h5 class="border-bottom pb-2">Supplier Contact Information</h5>
+                    <dl class="row mt-3">
+                        <dt class="col-sm-4">Contact Person</dt>
+                        <dd class="col-sm-8">@(Model.Supplier.ContactPerson ?? "N/A")</dd>
+                        
+                        <dt class="col-sm-4">Phone</dt>
+                        <dd class="col-sm-8">@(Model.Supplier.Phone ?? "N/A")</dd>
+                        
+                        <dt class="col-sm-4">Email</dt>
+                        <dd class="col-sm-8">@(Model.Supplier.Email ?? "N/A")</dd>
+                        
+                        <dt class="col-sm-4">Address</dt>
+                        <dd class="col-sm-8">@(Model.Supplier.Address ?? "N/A")</dd>
+                    </dl>
+                </div>
+            </div>
+            
+            <div class="mt-4">
+                <h5 class="border-bottom pb-2">Delivery Items</h5>
+                
+                @if (ViewBag.DeliveryItems != null && ViewBag.DeliveryItems.Count > 0)
+                {
+                    <div class="table-responsive mt-3">
+                        <table class="table table-striped">
+                            <thead>
+                                <tr>
+                                    <th>Item</th>
+                                    <th>Category</th>
+                                    <th>Quantity</th>
+                                    <th>Unit</th>
+                                    <th>Unit Price</th>
+                                    <th>Total Price</th>
+                                    <th>Notes</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var item in ViewBag.DeliveryItems)
+                                {
+                                    <tr>
+                                        <td>@item.Item.Name</td>
+                                        <td>@item.Item.Category</td>
+                                        <td>@item.Quantity</td>
+                                        <td>@item.Item.Unit</td>
+                                        <td>$@(item.UnitPrice?.ToString("0.00") ?? "N/A")</td>
+                                        <td>$@(item.TotalPrice?.ToString("0.00") ?? "N/A")</td>
+                                        <td>@(item.Notes ?? "")</td>
+                                    </tr>
+                                }
+                            </tbody>
+                            <tfoot>
+                                <tr class="table-primary">
+                                    <th colspan="5" class="text-end">Total:</th>
+                                    <th>$@(Model.TotalAmount?.ToString("0.00") ?? "0.00")</th>
+                                    <th></th>
+                                </tr>
+                            </tfoot>
+                        </table>
+                    </div>
+                }
+                else
+                {
+                    <div class="alert alert-info mt-3">
+                        <i class="icon-info icons"></i> No items found for this delivery.
+                    </div>
+                }
+            </div>
+        </div>
+        <div class="card-footer">
+            <a asp-action="Index" class="btn btn-outline-secondary">
+                <i class="icon-arrow-left icons"></i> Back to List
+            </a>
+        </div>
+    </div>
+</div> 

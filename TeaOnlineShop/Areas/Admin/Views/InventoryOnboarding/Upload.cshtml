@@ -1,0 +1,9 @@
+@model TeaOnlineShop.Models.ViewModels.InventoryImportUploadViewModel
+@{ ViewData["Title"] = "Submit Opening Balances"; }
+<div class="row justify-content-center"><div class="col-xl-8"><div class="card shadow-sm"><div class="card-header"><h1 class="h4 mb-0">Submit verified opening balances</h1></div><div class="card-body">
+<div class="alert alert-info">This process is for real, physically verified opening counts only. Existing items with ledger history are rejected. A different administrator must approve the batch.</div>
+<form asp-action="Upload" method="post" enctype="multipart/form-data"><div asp-validation-summary="ModelOnly" class="text-danger"></div>
+<div class="mb-3"><label asp-for="File" class="form-label"></label><input asp-for="File" class="form-control" accept=".csv,text/csv"/><span asp-validation-for="File" class="text-danger"></span></div>
+<div class="mb-3"><label asp-for="Notes" class="form-label"></label><textarea asp-for="Notes" class="form-control" rows="3"></textarea><span asp-validation-for="Notes" class="text-danger"></span></div>
+<div class="d-flex gap-2"><button class="btn btn-primary" type="submit">Validate and submit</button><a asp-action="Index" class="btn btn-outline-secondary">Cancel</a></div></form>
+</div></div></div></div>

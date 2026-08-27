@@ -1,0 +1,112 @@
+@{
+    bool Can(string permission) => User.HasClaim("permission", permission);
+}
+
+<ul class="nav flex-column admin-navigation">
+    @if (Can("Dashboard.OperationalView"))
+    {
+        <li class="nav-item"><a class="nav-link" href="/Admin/Home"><i class="fa fa-tachometer-alt me-2"></i>Dashboard</a></li>
+    }
+
+    @if (Can("Product.Manage") || Can("Content.Manage"))
+    {
+        <li class="nav-header">Store Management</li>
+        @if (Can("Product.Manage"))
+        {
+            <li class="nav-item"><a class="nav-link" href="/Admin/Products"><i class="fa fa-boxes me-2"></i>Products</a></li>
+        }
+        @if (Can("Content.Manage"))
+        {
+            <li class="nav-item"><a class="nav-link" href="/Admin/Banners"><i class="fa fa-images me-2"></i>Banners</a></li>
+            <li class="nav-item"><a class="nav-link" href="/Admin/Menus"><i class="fa fa-list me-2"></i>Menus</a></li>
+            <li class="nav-item"><a class="nav-link" href="/Admin/CommentSections"><i class="fa fa-comments me-2"></i>Comments</a></li>
+        }
+    }
+
+    @if (Can("Supplier.View"))
+    {
+        <li class="nav-header">Supplier Lookup</li>
+        <li class="nav-item"><a class="nav-link" href="/Admin/Suppliers"><i class="fa fa-truck me-2"></i>Suppliers</a></li>
+        <li class="nav-item"><a class="nav-link" href="/Admin/Suppliers/Scan"><i class="fa fa-qrcode me-2"></i>Scan Supplier QR</a></li>
+        @if (Can("Supplier.Manage"))
+        {
+            <li class="nav-item"><a class="nav-link" href="/Admin/SupplierCategories"><i class="fa fa-tags me-2"></i>Supplier Categories</a></li>
+        }
+    }
+
+    @if (Can("Inventory.View"))
+    {
+        <li class="nav-header">Warehouse Operations</li>
+        @if (Can("Inventory.Receive"))
+        {
+            <li class="nav-item"><a class="nav-link" href="/Admin/Deliveries"><i class="fa fa-dolly me-2"></i>Receive Deliveries</a></li>
+        }
+        <li class="nav-item"><a class="nav-link" href="/Admin/Deliveries/SupplyItems"><i class="fa fa-boxes me-2"></i>Supply Items</a></li>
+        <li class="nav-item"><a class="nav-link" href="/Admin/TeaInventory"><i class="fa fa-leaf me-2"></i>Tea Inventory</a></li>
+        <li class="nav-item"><a class="nav-link" href="/Admin/TeaInventory/Scan"><i class="fa fa-qrcode me-2"></i>Scan Item QR</a></li>
+        <li class="nav-item"><a class="nav-link" href="/Admin/TeaInventory/LowStock"><i class="fa fa-exclamation-triangle me-2"></i>Low Stock Items</a></li>
+        <li class="nav-item"><a asp-area="Admin" asp-controller="StockReconciliation" asp-action="Index" class="nav-link"><i class="fa fa-clipboard-check me-2"></i>Stock Reconciliation</a></li>
+        @if (Can("OperationalData.Import.Submit") || Can("OperationalData.Import.Approve"))
+        {
+            <li class="nav-item"><a asp-area="Admin" asp-controller="OperationalDataImport" asp-action="Index" class="nav-link"><i class="fa fa-database me-2"></i>Operational Data Imports</a></li>
+        }
+        @if (Can("Inventory.MasterDataManage"))
+        {
+            <li class="nav-item"><a asp-area="Admin" asp-controller="InventoryOnboarding" asp-action="Index" class="nav-link"><i class="fa fa-file-import me-2"></i>Inventory Onboarding</a></li>
+        }
+    }
+
+    @if (Can("Orders.View"))
+    {
+        <li class="nav-header">Order Operations</li>
+        <li class="nav-item"><a asp-area="Admin" asp-controller="Orders" asp-action="Index" class="nav-link"><i class="fa fa-box-open me-2"></i>Order Fulfilment</a></li>
+    }
+
+    @if (Can("Dashboard.FinancialView") || Can("Inventory.View") || Can("Audit.View"))
+    {
+        <li class="nav-header">Reports &amp; Analytics</li>
+        @if (Can("Dashboard.FinancialView"))
+        {
+            <li class="nav-item"><a class="nav-link" href="/Admin/Reports/Dashboard"><i class="fa fa-chart-line me-2"></i>Analytics Dashboard</a></li>
+            <li class="nav-item"><a class="nav-link" href="/Admin/Reports/SalesReport"><i class="fa fa-chart-bar me-2"></i>Sales Report</a></li>
+        }
+        @if (Can("Inventory.View"))
+        {
+            <li class="nav-item"><a class="nav-link" href="/Admin/Reports/InventoryReport"><i class="fa fa-clipboard-list me-2"></i>Inventory Report</a></li>
+        }
+        @if (Can("Audit.View"))
+        {
+            <li class="nav-item"><a class="nav-link" href="/Admin/Reports/TransactionLog"><i class="fa fa-history me-2"></i>Transaction Log</a></li>
+            <li class="nav-item"><a asp-area="Admin" asp-controller="InventoryAudit" asp-action="Ledger" class="nav-link"><i class="fa fa-book me-2"></i>Immutable Stock Ledger</a></li>
+            <li class="nav-item"><a asp-area="Admin" asp-controller="InventoryAudit" asp-action="QrScans" class="nav-link"><i class="fa fa-qrcode me-2"></i>QR Scan Audit</a></li>
+            <li class="nav-item"><a asp-area="Admin" asp-controller="InventoryAudit" asp-action="Integrity" class="nav-link"><i class="fa fa-shield-check me-2"></i>Inventory Integrity</a></li>
+        }
+    }
+
+    @if (Can("AI.OperationalView") || Can("Dashboard.FinancialView"))
+    {
+        <li class="nav-header">AI Operations</li>
+        @if (Can("Dashboard.FinancialView"))
+        {
+            <li class="nav-item"><a asp-area="Admin" asp-controller="AiDashboard" asp-action="Index" class="nav-link"><i class="fa fa-gauge-high me-2"></i>AI Overview</a></li>
+        }
+        @if (Can("AI.OperationalView"))
+        {
+            <li class="nav-item"><a asp-area="Admin" asp-controller="AiDashboard" asp-action="DemandForecast" class="nav-link"><i class="fa fa-chart-line me-2"></i>Demand Forecast</a></li>
+            <li class="nav-item"><a asp-area="Admin" asp-controller="AiDashboard" asp-action="AnomalyDetection" class="nav-link"><i class="fa fa-triangle-exclamation me-2"></i>Anomaly Alerts</a></li>
+            <li class="nav-item"><a asp-area="Admin" asp-controller="AiDashboard" asp-action="AlertsHistory" class="nav-link"><i class="fa fa-clock-rotate-left me-2"></i>Alerts History</a></li>
+        }
+        @if (Can("Dashboard.FinancialView"))
+        {
+            <li class="nav-item"><a asp-area="Admin" asp-controller="AiDashboard" asp-action="GreenLeafPriceForecast" class="nav-link"><i class="fa fa-money-bill-trend-up me-2"></i>Green Leaf Price</a></li>
+        }
+    }
+
+    @if (Can("Users.Manage"))
+    {
+        <li class="nav-header">Security</li>
+        <li class="nav-item"><a asp-area="Admin" asp-controller="UserManagement" asp-action="Index" class="nav-link"><i class="fa fa-users-gear me-2"></i>Users &amp; Access</a></li>
+        <li class="nav-item"><a asp-area="Admin" asp-controller="UserManagement" asp-action="LoginHistory" class="nav-link"><i class="fa fa-shield-halved me-2"></i>Login History</a></li>
+        <li class="nav-item"><a asp-area="Admin" asp-controller="UserManagement" asp-action="SecurityAudit" class="nav-link"><i class="fa fa-user-shield me-2"></i>Security Audit</a></li>
+    }
+</ul>

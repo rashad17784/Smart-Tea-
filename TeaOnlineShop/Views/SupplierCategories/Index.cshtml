@@ -1,0 +1,104 @@
+@model IEnumerable<TeaOnlineShop.Models.Dbase.SupplierCategory>
+
+@{
+    ViewData["Title"] = "Supplier Categories";
+}
+
+<div class="container mt-4">
+    <div class="card shadow-sm">
+        <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+            <h4 class="mb-0">Supplier Categories</h4>
+            <div>
+                <a href="/SupplierCategories/Create" class="btn btn-light btn-sm" style="z-index: 100; position: relative;">
+                    <i class="icon-plus icons"></i> Add Category
+                </a>
+            </div>
+        </div>
+        <div class="card-body">
+            @if (TempData["ErrorMessage"] != null)
+            {
+                <div class="alert alert-danger mb-3">
+                    @TempData["ErrorMessage"]
+                </div>
+            }
+            
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead class="table-light">
+                        <tr>
+                            <th>ID</th>
+                            <th>Name</th>
+                            <th>Description</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @if (Model != null && Model.Any())
+                        {
+                            @foreach (var item in Model)
+                            {
+                                <tr>
+                                    <td>@item.Id</td>
+                                    <td>@item.Name</td>
+                                    <td>@(item.Description ?? "N/A")</td>
+                                    <td>
+                                        <div class="btn-group btn-group-sm">
+                                            <a href="/SupplierCategories/Edit/@item.Id" class="btn btn-outline-secondary" style="z-index: 100; position: relative;">
+                                                <i class="icon-pencil icons"></i>
+                                            </a>
+                                            <a href="/SupplierCategories/Delete/@item.Id" class="btn btn-outline-danger" style="z-index: 100; position: relative;">
+                                                <i class="icon-trash icons"></i>
+                                            </a>
+                                        </div>
+                                    </td>
+                                </tr>
+                            }
+                        }
+                        else
+                        {
+                            <tr>
+                                <td colspan="4" class="text-center py-4">
+                                    <p class="text-muted mb-0">No categories found</p>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        <div class="card-footer">
+            <a href="/Suppliers/Index" class="btn btn-outline-secondary" style="z-index: 100; position: relative;">
+                <i class="icon-arrow-left icons"></i> Back to Suppliers
+            </a>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        $(document).ready(function() {
+            // Force the Add Category button to be clickable
+            $('.btn-light.btn-sm').on('click', function(e) {
+                var href = $(this).attr('href');
+                if (href) {
+                    window.location.href = href;
+                }
+            });
+            
+            // Disable any parent event handlers that might be intercepting clicks
+            $('.btn-light.btn-sm').parent().on('click', function(e) {
+                e.stopPropagation();
+            });
+            
+            // Force action buttons in the table to be clickable too
+            $('.btn-outline-secondary, .btn-outline-danger').on('click', function(e) {
+                var href = $(this).attr('href');
+                if (href) {
+                    window.location.href = href;
+                }
+            });
+            
+            console.log("Category buttons initialized");
+        });
+    </script>
+} 

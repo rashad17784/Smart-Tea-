@@ -1,0 +1,39 @@
+@model TeaOnlineShop.Models.ViewModels.EnableAuthenticatorViewModel
+@{
+    ViewData["Title"] = "Secure administrator account";
+    ViewData["BodyClass"] = "auth-page";
+}
+
+<section class="tea-auth-section">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-lg-6 col-md-9">
+                <div class="tea-auth-card">
+                    <div class="tea-auth-head text-center">
+                        <p class="tea-eyebrow">Administrator Security</p>
+                        <h1>Set up multi-factor authentication</h1>
+                        <p>Administrator access remains restricted until an authenticator is enrolled.</p>
+                    </div>
+                    <div class="text-center mb-3">
+                        <img src="@Model.QrCodeImageData" alt="Authenticator QR code" width="220" height="220" />
+                    </div>
+                    <p class="text-center">Scan the code in Microsoft Authenticator, Google Authenticator, or another TOTP application.</p>
+                    <div class="alert alert-secondary text-center"><strong>Manual key:</strong> @Model.SharedKey</div>
+                    <form asp-action="EnableAuthenticator" method="post" class="tea-auth-form">
+                        <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+                        <div class="mb-3">
+                            <label asp-for="Code" class="form-label"></label>
+                            <input asp-for="Code" class="form-control" inputmode="numeric" autocomplete="one-time-code" />
+                            <span asp-validation-for="Code" class="text-danger"></span>
+                        </div>
+                        <button type="submit" class="btn btn-primary w-100 rounded-pill">Verify and Enable MFA</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+@section Scripts {
+    @{ await Html.RenderPartialAsync("_ValidationScriptsPartial"); }
+}

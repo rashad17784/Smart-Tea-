@@ -1,0 +1,171 @@
+@model TeaOnlineShop.Models.Dbase.Delivery
+
+@{
+    ViewData["Title"] = "Delivery Details";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2 class="mb-0"><i class="fa fa-info-circle me-2"></i>Delivery Details</h2>
+    <div>
+        <a href="/Admin/Deliveries" class="btn btn-outline-secondary">
+            <i class="fa fa-arrow-left me-2"></i>Back to List
+        </a>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-6 mb-4">
+        <div class="card shadow-sm h-100">
+            <div class="card-header bg-light">
+                <h5 class="mb-0">Delivery Information</h5>
+            </div>
+            <div class="card-body">
+                <dl class="row">
+                    <dt class="col-sm-4">Delivery Code</dt>
+                    <dd class="col-sm-8">@Model.DeliveryCode</dd>
+                    
+                    <dt class="col-sm-4">Supplier</dt>
+                    <dd class="col-sm-8">
+                        @if (Model.Supplier != null)
+                        {
+                            <a href="/Admin/Suppliers/Details/@Model.SupplierId">@Model.Supplier.Name</a>
+                        }
+                        else
+                        {
+                            <span class="text-muted">Unknown</span>
+                        }
+                    </dd>
+                    
+                    <dt class="col-sm-4">Delivery Date</dt>
+                    <dd class="col-sm-8">@Model.DeliveryDate.ToString("yyyy-MM-dd")</dd>
+                    
+                    <dt class="col-sm-4">Status</dt>
+                    <dd class="col-sm-8">
+                        @if (Model.Status == "Received")
+                        {
+                            <span class="badge bg-success">@Model.Status</span>
+                        }
+                        else if (Model.Status == "Pending")
+                        {
+                            <span class="badge bg-warning text-dark">@Model.Status</span>
+                        }
+                        else
+                        {
+                            <span class="badge bg-secondary">@Model.Status</span>
+                        }
+                    </dd>
+                    
+                    <dt class="col-sm-4">Received By</dt>
+                    <dd class="col-sm-8">
+                        <span>@(string.IsNullOrWhiteSpace(Model.ReceivedByName) ? "Unknown" : Model.ReceivedByName)</span>
+                    </dd>
+
+                    @if (User.HasClaim("permission", "Dashboard.FinancialView"))
+                    {
+                        <dt class="col-sm-4">Total Amount</dt>
+                        <dd class="col-sm-8">@String.Format("{0:C2}", Model.TotalAmount)</dd>
+                    }
+                </dl>
+                
+                @if (!string.IsNullOrEmpty(Model.Notes))
+                {
+                    <div class="alert alert-info mt-3">
+                        <h6 class="alert-heading"><i class="fa fa-sticky-note me-2"></i>Notes</h6>
+                        <p class="mb-0">@Model.Notes</p>
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-6 mb-4">
+        <div class="card shadow-sm h-100">
+            <div class="card-header bg-light">
+                <h5 class="mb-0">QR Code</h5>
+            </div>
+            <div class="card-body text-center">
+                <img src="https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=@Model.DeliveryCode" alt="Delivery QR Code" class="img-fluid border p-2" />
+                <p class="mt-3 mb-0">Scan this QR code to view delivery details</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="card shadow-sm mb-4">
+    <div class="card-header bg-light">
+        <h5 class="mb-0">Delivered Items</h5>
+    </div>
+    <div class="card-body p-0">
+        @if (ViewBag.DeliveryItems != null && ((IEnumerable<dynamic>)ViewBag.DeliveryItems).Any())
+        {
+            <div class="table-responsive">
+                <table class="table table-hover table-striped mb-0 table-admin">
+                    <thead>
+                        <tr>
+                            <th style="width: 5%">#</th>
+                            <th style="width: 25%">Item</th>
+                            <th style="width: 15%">Quantity</th>
+                            @if (User.HasClaim("permission", "Dashboard.FinancialView"))
+                            {
+                                <th style="width: 15%">Unit Price</th>
+                                <th style="width: 15%">Total Price</th>
+                            }
+                            <th style="width: 25%">Notes</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var item in ViewBag.DeliveryItems)
+                        {
+                            <tr>
+                                <td>@item.Id</td>
+                                <td>
+                                    @if (item.Item != null)
+                                    {
+                                        <div class="fw-medium">@item.Item.Name</div>
+                                        <small class="text-muted">@item.Item.Category (@item.Item.Unit)</small>
+                                    }
+                                    else
+                                    {
+                                        <span class="text-muted">Unknown Item</span>
+                                    }
+                                </td>
+                                <td>@item.Quantity</td>
+                                @if (User.HasClaim("permission", "Dashboard.FinancialView"))
+                                {
+                                    <td>@String.Format("{0:C2}", item.UnitPrice)</td>
+                                    <td>@String.Format("{0:C2}", item.TotalPrice)</td>
+                                }
+                                <td>
+                                    @if (!string.IsNullOrEmpty(item.Notes))
+                                    {
+                                        @item.Notes
+                                    }
+                                    else
+                                    {
+                                        <span class="text-muted">-</span>
+                                    }
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                    @if (User.HasClaim("permission", "Dashboard.FinancialView"))
+                    {
+                    <tfoot class="table-light">
+                        <tr>
+                            <td colspan="4" class="text-end fw-bold">Total:</td>
+                            <td class="fw-bold">@String.Format("{0:C2}", Model.TotalAmount)</td>
+                            <td></td>
+                        </tr>
+                    </tfoot>
+                    }
+                </table>
+            </div>
+        }
+        else
+        {
+            <div class="p-4 text-center">
+                <p class="text-muted mb-0">No items found for this delivery</p>
+            </div>
+        }
+    </div>
+</div> 

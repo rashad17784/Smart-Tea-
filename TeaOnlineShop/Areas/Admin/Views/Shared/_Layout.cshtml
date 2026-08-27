@@ -1,0 +1,135 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] - Tea Online Shop Admin</title>
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/admin.css" asp-append-version="true" />
+    <!-- Font Awesome for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" integrity="sha512-iecdLmaskl7CVkqkXNQ/ZH/XLlvWZOJyj7Yy7tcenmpD1ypASozpmT/E0iPtmFIB46ZmdtAc9eNBvH0H/ZpiBw==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+</head>
+<body class="admin-shell">
+    <!-- Top Navigation Bar -->
+    <header class="admin-topbar-shell">
+        <nav class="navbar navbar-expand-sm navbar-dark bg-dark top-navbar">
+            <div class="container-fluid">
+                <a class="navbar-brand" href="/Admin/Home">
+                    <span class="brand-mark"><i class="fa fa-leaf"></i></span>
+                    <span>Tea Online Shop Admin</span>
+                </a>
+                <button class="btn admin-menu-toggle d-md-none"
+                        type="button"
+                        data-bs-toggle="offcanvas"
+                        data-bs-target="#adminMobileNavigation"
+                        aria-controls="adminMobileNavigation">
+                    <i class="fa fa-bars"></i>
+                    <span>Menu</span>
+                </button>
+                <button class="navbar-toggler topbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target=".navbar-collapse" aria-controls="navbarSupportedContent"
+                        aria-expanded="false" aria-label="Toggle navigation">
+                    <span class="navbar-toggler-icon"></span>
+                </button>
+                <div class="navbar-collapse collapse d-sm-inline-flex justify-content-between">
+                    <ul class="navbar-nav ms-auto">
+                        <li class="nav-item">
+                            <a class="nav-link top-action-link" href="/" target="_blank">
+                                <i class="fa fa-home me-1"></i>View Site
+                            </a>
+                        </li>
+                        <li class="nav-item dropdown">
+                            <a class="nav-link dropdown-toggle admin-user-menu" href="#" id="userDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                <i class="fa fa-user-circle me-1"></i>@(User.Identity?.Name ?? "Staff")
+                            </a>
+                            <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userDropdown">
+                                <li><a class="dropdown-item" href="/UserAccount/MyAccount"><i class="fa fa-user me-2"></i>Profile</a></li>
+                                <li><hr class="dropdown-divider"></li>
+                                <li>
+                                    <form asp-area="" asp-controller="UserAccount" asp-action="Logout" method="post">
+                                        <button type="submit" class="dropdown-item"><i class="fa fa-sign-out-alt me-2"></i>Logout</button>
+                                    </form>
+                                </li>
+                            </ul>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </nav>
+    </header>
+
+    <div class="offcanvas offcanvas-start admin-mobile-nav d-md-none"
+         tabindex="-1"
+         id="adminMobileNavigation"
+         aria-labelledby="adminMobileNavigationLabel">
+        <div class="offcanvas-header">
+            <div>
+                <h5 class="offcanvas-title" id="adminMobileNavigationLabel">Admin Menu</h5>
+                <small>Tea Online Shop operations</small>
+            </div>
+            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+        </div>
+        <div class="offcanvas-body">
+            <partial name="_AdminNavigation" />
+        </div>
+    </div>
+
+    <div class="container-fluid admin-layout">
+        <div class="row g-0 admin-layout-row">
+            <!-- Sidebar Navigation -->
+            <div class="col-md-3 col-lg-2 px-0 admin-sidebar d-none d-md-block">
+                <div class="position-sticky admin-sidebar-inner">
+                    <partial name="_AdminNavigation" />
+                </div>
+            </div>
+            
+            <!-- Main Content -->
+            <main class="col-md-9 ms-sm-auto col-lg-10 admin-main">
+                <div class="admin-content">
+                    @RenderBody()
+                </div>
+            </main>
+        </div>
+    </div>
+
+    <footer class="footer text-muted admin-footer py-3">
+        <div class="container-fluid">
+            &copy; @DateTime.Now.Year - Tea Online Shop - Admin Dashboard
+        </div>
+    </footer>
+    
+    <script src="~/lib/jquery/dist/jquery.min.js"></script>
+    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="~/js/site.js" asp-append-version="true"></script>
+    <script>
+        // Set active class on current nav item
+        $(document).ready(function() {
+            // Get current URL path
+            var path = window.location.pathname;
+            
+            // Find the most specific matching nav link and add active class
+            var bestMatch = '';
+            var bestMatchLength = 0;
+            
+            $('.admin-navigation .nav-link').each(function() {
+                var href = $(this).attr('href');
+                
+                // Skip root path
+                if (!href || href === '/') return;
+                
+                // Check if this path is a match and more specific than previous matches
+                if (path.startsWith(href) && href.length > bestMatchLength) {
+                    bestMatch = href;
+                    bestMatchLength = href.length;
+                }
+            });
+            
+            // Add active class to the best matching link
+            if (bestMatch) {
+                $('.admin-navigation .nav-link[href="' + bestMatch + '"]').addClass('active');
+            }
+        });
+    </script>
+    @await RenderSectionAsync("Scripts", required: false)
+</body>
+</html>

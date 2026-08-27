@@ -1,0 +1,19 @@
+﻿{
+    "grade":  "BOP",
+    "is_anomaly":  false,
+    "severity":  "NORMAL",
+    "message":  "✅ BOP levels are normal.",
+    "color":  "green",
+    "score":  -0.5745,
+    "model_triggered":  false,
+    "rules_triggered":  [
+
+                        ],
+    "checks":  {
+                   "stock_level_kg":  5000.0,
+                   "demand_kg":  320.0,
+                   "price_per_kg":  105.0,
+                   "min_stock_rule":  200,
+                   "max_demand_rule":  600
+               }
+}

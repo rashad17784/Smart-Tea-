@@ -1,0 +1,154 @@
+@model IEnumerable<TeaOnlineShop.Models.Dbase.Delivery>
+
+@{
+    ViewData["Title"] = "Deliveries";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2 class="mb-0"><i class="fa fa-dolly me-2"></i>Deliveries Management</h2>
+    <div>
+        <a href="/Admin/Deliveries/Create" class="btn btn-primary">
+            <i class="fa fa-plus me-2"></i>New Delivery
+        </a>
+        <a href="/Admin/Deliveries/ScanSupplier" class="btn btn-info text-white ms-2">
+            <i class="fa fa-qrcode me-2"></i>Scan Supplier
+        </a>
+        <a href="/Admin/Deliveries/SupplyItems" class="btn btn-secondary ms-2">
+            <i class="fa fa-boxes me-2"></i>Supply Items
+        </a>
+    </div>
+</div>
+
+<div class="card shadow-sm">
+    <div class="card-header bg-light">
+        <div class="d-flex justify-content-between align-items-center">
+            <h5 class="mb-0">All Deliveries</h5>
+            <div>
+                <input type="text" id="deliverySearch" class="form-control form-control-sm" placeholder="Search deliveries..." style="width: 200px;">
+            </div>
+        </div>
+    </div>
+    <div class="card-body p-0">
+        @if (TempData["SuccessMessage"] != null)
+        {
+            <div class="alert alert-success m-3">
+                @TempData["SuccessMessage"]
+            </div>
+        }
+        
+        @if (TempData["ErrorMessage"] != null)
+        {
+            <div class="alert alert-danger m-3">
+                @TempData["ErrorMessage"]
+            </div>
+        }
+        
+        @if (TempData["Message"] != null)
+        {
+            <div class="alert alert-info m-3">
+                @TempData["Message"]
+            </div>
+        }
+        
+        <div class="table-responsive">
+            <table class="table table-hover table-striped mb-0 table-admin">
+                <thead>
+                    <tr>
+                        <th style="width: 15%">
+                            <i class="fa fa-hashtag me-2 text-muted"></i>Delivery Code
+                        </th>
+                        <th style="width: 20%">
+                            <i class="fa fa-truck me-2 text-muted"></i>Supplier
+                        </th>
+                        <th style="width: 15%">
+                            <i class="fa fa-calendar me-2 text-muted"></i>Date
+                        </th>
+                        <th style="width: 15%">
+                            <i class="fa fa-user me-2 text-muted"></i>Received By
+                        </th>
+                        @if (User.HasClaim("permission", "Dashboard.FinancialView"))
+                        {
+                            <th style="width: 15%"><i class="fa fa-money-bill me-2 text-muted"></i>Total</th>
+                        }
+                        <th style="width: 10%">
+                            <i class="fa fa-circle me-2 text-muted"></i>Status
+                        </th>
+                        <th style="width: 10%" class="text-end">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @if (Model != null && Model.Any())
+                    {
+                        foreach (var item in Model)
+                        {
+                            <tr>
+                                <td>@item.DeliveryCode</td>
+                                <td>
+                                    @if (item.Supplier != null)
+                                    {
+                                        <div class="fw-medium">@item.Supplier.Name</div>
+                                    }
+                                    else
+                                    {
+                                        <span class="text-muted">Unknown</span>
+                                    }
+                                </td>
+                                <td>@item.DeliveryDate.ToString("yyyy-MM-dd")</td>
+                                <td>
+                                    <span>@(string.IsNullOrWhiteSpace(item.ReceivedByName) ? "Unknown" : item.ReceivedByName)</span>
+                                </td>
+                                @if (User.HasClaim("permission", "Dashboard.FinancialView"))
+                                {
+                                    <td>@String.Format("{0:C2}", item.TotalAmount)</td>
+                                }
+                                <td>
+                                    @if (item.Status == "Received")
+                                    {
+                                        <span class="badge bg-success">@item.Status</span>
+                                    }
+                                    else if (item.Status == "Pending")
+                                    {
+                                        <span class="badge bg-warning text-dark">@item.Status</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="badge bg-secondary">@item.Status</span>
+                                    }
+                                </td>
+                                <td>
+                                    <div class="d-flex justify-content-end action-buttons">
+                                        <a href="/Admin/Deliveries/Details/@item.Id" class="btn btn-sm btn-outline-primary me-1" title="Details">
+                                            <i class="fa fa-eye"></i>
+                                        </a>
+                                    </div>
+                                </td>
+                            </tr>
+                        }
+                    }
+                    else
+                    {
+                        <tr>
+                            <td colspan="7" class="text-center py-4">
+                                <p class="text-muted mb-0">No deliveries found</p>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        $(document).ready(function() {
+            // Filter table as user types in search box
+            $("#deliverySearch").on("keyup", function() {
+                var value = $(this).val().toLowerCase();
+                $("table tbody tr").filter(function() {
+                    $(this).toggle($(this).text().toLowerCase().indexOf(value) > -1)
+                });
+            });
+        });
+    </script>
+} 

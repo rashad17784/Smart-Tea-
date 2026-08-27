@@ -1,0 +1,68 @@
+@model TeaOnlineShop.Models.ViewModels.OperationalDataImportUploadViewModel
+@{
+    ViewData["Title"] = "Stage Factory Export";
+}
+
+<div class="d-flex flex-wrap justify-content-between align-items-start gap-3 mb-4">
+    <div><h1 class="h3 mb-1">Stage Genuine Factory Export</h1><p class="text-muted mb-0">The file is validated and reconciled before any record can enter verified operational history.</p></div>
+    <a asp-action="Index" class="btn btn-outline-secondary"><i class="fa fa-arrow-left me-2"></i>Import register</a>
+</div>
+
+<div class="row g-4">
+    <div class="col-xl-7">
+        <form asp-action="Upload" method="post" enctype="multipart/form-data" class="card shadow-sm border-0">
+            @Html.AntiForgeryToken()
+            <div class="card-header bg-white"><strong>Certified source manifest</strong></div>
+            <div class="card-body">
+                <div asp-validation-summary="ModelOnly" class="alert alert-danger"></div>
+                <div class="alert alert-warning small" role="alert">
+                    <strong>Operational evidence only.</strong> Synthetic, research, demonstration or sample files cannot be certified here.
+                    Use <strong>AI Dashboard → Demand Forecast → Research dataset</strong> for labelled research experiments.
+                </div>
+                <div class="mb-3"><label asp-for="File" class="form-label"></label><input asp-for="File" class="form-control" accept=".csv,text/csv"/><span asp-validation-for="File" class="text-danger small"></span><div class="form-text">CSV only, maximum 10 MB and 10,000 data rows. The original bytes and SHA-256 hash are retained.</div></div>
+                <div class="row g-3">
+                    <div class="col-md-6"><label asp-for="SourceSystem" class="form-label"></label><input asp-for="SourceSystem" class="form-control" placeholder="FACTORY-ERP"/><span asp-validation-for="SourceSystem" class="text-danger small"></span></div>
+                    <div class="col-md-6"><label asp-for="SourceDocumentReference" class="form-label"></label><input asp-for="SourceDocumentReference" class="form-control" placeholder="ERP-EXPORT-2026-07"/><span asp-validation-for="SourceDocumentReference" class="text-danger small"></span></div>
+                    <div class="col-md-6"><label asp-for="SourcePeriodStart" class="form-label"></label><input asp-for="SourcePeriodStart" class="form-control"/><span asp-validation-for="SourcePeriodStart" class="text-danger small"></span></div>
+                    <div class="col-md-6"><label asp-for="SourcePeriodEnd" class="form-label"></label><input asp-for="SourcePeriodEnd" class="form-control"/><span asp-validation-for="SourcePeriodEnd" class="text-danger small"></span></div>
+                    <div class="col-md-4"><label asp-for="ExpectedRowCount" class="form-label"></label><input asp-for="ExpectedRowCount" class="form-control"/><span asp-validation-for="ExpectedRowCount" class="text-danger small"></span></div>
+                    <div class="col-md-4"><label asp-for="ExpectedInboundKg" class="form-label"></label><input asp-for="ExpectedInboundKg" class="form-control" step="0.0001"/><span asp-validation-for="ExpectedInboundKg" class="text-danger small"></span></div>
+                    <div class="col-md-4"><label asp-for="ExpectedOutboundKg" class="form-label"></label><input asp-for="ExpectedOutboundKg" class="form-control" step="0.0001"/><span asp-validation-for="ExpectedOutboundKg" class="text-danger small"></span></div>
+                </div>
+                <div class="mt-3"><label asp-for="Notes" class="form-label"></label><textarea asp-for="Notes" class="form-control" rows="3" placeholder="Export procedure, responsible department, or handover reference"></textarea><span asp-validation-for="Notes" class="text-danger small"></span></div>
+                <div class="form-check border rounded p-3 ps-5 bg-light mt-3">
+                    <input asp-for="ConfirmedGenuineSource" class="form-check-input"/>
+                    <label asp-for="ConfirmedGenuineSource" class="form-check-label fw-semibold"></label>
+                    <span asp-validation-for="ConfirmedGenuineSource" class="text-danger small d-block"></span>
+                </div>
+            </div>
+            <div class="card-footer bg-white d-flex justify-content-end gap-2"><a asp-action="Index" class="btn btn-outline-secondary">Cancel</a><button type="submit" class="btn btn-primary"><i class="fa fa-shield-check me-2"></i>Stage and validate</button></div>
+        </form>
+    </div>
+    <div class="col-xl-5">
+        <div class="card shadow-sm border-0 mb-4">
+            <div class="card-header bg-white d-flex justify-content-between align-items-center"><strong>Controlled CSV contract</strong><a asp-action="Template" class="btn btn-sm btn-outline-primary">Download header</a></div>
+            <div class="card-body">
+                <p class="small text-muted">Columns and order are exact. SourceRecordId must be the permanent ID generated by the source system—not a spreadsheet row number.</p>
+                <ol class="small mb-0 ps-3">
+                    <li>SourceSystem</li><li>SourceRecordId</li><li>OriginalTransactionDate</li><li>TeaGrade</li><li>ItemCode</li><li>Quantity</li><li>Unit</li><li>TransactionType</li><li>SourceReferenceNumber</li><li>SupplierOrProductionReference</li><li>WarehouseCode</li><li>BinCode</li><li>UnitCost</li><li>Reason</li>
+                </ol>
+            </div>
+        </div>
+        <div class="card shadow-sm border-0">
+            <div class="card-header bg-white"><strong>Non-negotiable controls</strong></div>
+            <div class="card-body small">
+                <ul class="mb-0 ps-3">
+                    <li class="mb-2">OriginalTransactionDate requires ISO-8601 plus <code>Z</code> or an explicit UTC offset.</li>
+                    <li class="mb-2">Declared row, inbound and outbound totals must exactly reconcile within 0.0001 kg.</li>
+                    <li class="mb-2">Duplicate source IDs, unknown items, invalid grades/UOMs and missing references are rejected.</li>
+                    <li class="mb-2">A different authorized administrator must approve publication.</li>
+                    <li class="mb-2">Synthetic and research datasets are rejected from verified operational history.</li>
+                    <li>Never edit dates to make a history file look older. Correct the source system and re-export.</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts { <partial name="_ValidationScriptsPartial" /> }

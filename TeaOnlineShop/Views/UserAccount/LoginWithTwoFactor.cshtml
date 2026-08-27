@@ -1,0 +1,48 @@
+@model TeaOnlineShop.Models.ViewModels.TwoFactorLoginViewModel
+@{
+    ViewData["Title"] = "Two-factor authentication";
+    ViewData["BodyClass"] = "auth-page";
+}
+
+<section class="tea-auth-section">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-lg-5 col-md-8">
+                <div class="tea-auth-card">
+                    <div class="tea-auth-head text-center">
+                        <p class="tea-eyebrow">Secure Verification</p>
+                        <h1>Authenticator Code</h1>
+                        <p>Enter the six-digit code from your authenticator application.</p>
+                    </div>
+                    <form asp-action="LoginWithTwoFactor" method="post" class="tea-auth-form">
+                        <div asp-validation-summary="ModelOnly" class="text-danger mb-2"></div>
+                        <input asp-for="RememberMe" type="hidden" />
+                        <input asp-for="ReturnUrl" type="hidden" />
+                        <div class="mb-3">
+                            <label asp-for="Code" class="form-label"></label>
+                            <input asp-for="Code" class="form-control" inputmode="numeric" autocomplete="one-time-code" autofocus />
+                            <span asp-validation-for="Code" class="text-danger"></span>
+                        </div>
+                        <div class="form-check mb-3">
+                            <input asp-for="RememberMachine" class="form-check-input" />
+                            <label asp-for="RememberMachine" class="form-check-label">Trust this device</label>
+                        </div>
+                        <button type="submit" class="btn btn-primary w-100 rounded-pill">Verify and Sign In</button>
+                    </form>
+                    <div class="tea-auth-foot text-center">
+                        <p class="mb-0">
+                            Authenticator unavailable?
+                            <a asp-action="LoginWithRecoveryCode"
+                               asp-route-rememberMe="@Model.RememberMe"
+                               asp-route-returnUrl="@Model.ReturnUrl">Use a recovery code</a>
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+@section Scripts {
+    @{ await Html.RenderPartialAsync("_ValidationScriptsPartial"); }
+}

@@ -1,0 +1,246 @@
+@model TeaOnlineShop.Models.Dbase.TeaInventoryItem
+
+@{
+    ViewData["Title"] = "Item Details";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2 class="mb-0"><i class="fa fa-leaf me-2"></i>Inventory Item Details</h2>
+    <div>
+        @if (User.HasClaim("permission", "Inventory.MasterDataManage"))
+        {
+            <a asp-area="Admin" asp-controller="TeaInventory" asp-action="Edit" asp-route-id="@Model.Id" class="btn btn-outline-primary"><i class="fa fa-edit me-2"></i>Edit</a>
+        }
+        <a asp-area="Admin" asp-controller="TeaInventory" asp-action="Index" class="btn btn-outline-secondary ms-2">
+            <i class="fa fa-arrow-left me-2"></i>Back to List
+        </a>
+    </div>
+</div>
+
+@if (TempData["SuccessMessage"] != null)
+{
+    <div class="alert alert-success alert-dismissible fade show" role="alert">
+        <i class="fa fa-check-circle me-2"></i>@TempData["SuccessMessage"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+}
+
+@if (TempData["ErrorMessage"] != null)
+{
+    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+        <i class="fa fa-exclamation-circle me-2"></i>@TempData["ErrorMessage"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+}
+
+<div class="row">
+    <div class="col-md-6">
+        <div class="card shadow-sm mb-4">
+            <div class="card-header bg-light">
+                <h5 class="mb-0">Item Information</h5>
+            </div>
+            <div class="card-body">
+                <div class="row mb-3">
+                    <div class="col-md-3 fw-bold">ID</div>
+                    <div class="col-md-9">@Model.Id</div>
+                </div>
+                <div class="row mb-3">
+                    <div class="col-md-3 fw-bold">Item Code</div>
+                    <div class="col-md-9"><code>@Model.ItemCode</code></div>
+                </div>
+                <div class="row mb-3">
+                    <div class="col-md-3 fw-bold">Name</div>
+                    <div class="col-md-9">@Model.Name</div>
+                </div>
+                <div class="row mb-3">
+                    <div class="col-md-3 fw-bold">Tea Type</div>
+                    <div class="col-md-9">@Model.TeaType</div>
+                </div>
+                <div class="row mb-3">
+                    <div class="col-md-3 fw-bold">Grade</div>
+                    <div class="col-md-9">@Model.Grade</div>
+                </div>
+                <div class="row mb-3">
+                    <div class="col-md-3 fw-bold">Origin</div>
+                    <div class="col-md-9">@(string.IsNullOrEmpty(Model.Origin) ? "-" : Model.Origin)</div>
+                </div>
+                <div class="row mb-3">
+                    <div class="col-md-3 fw-bold">Harvest Season</div>
+                    <div class="col-md-9">@(string.IsNullOrEmpty(Model.HarvestSeason) ? "-" : Model.HarvestSeason)</div>
+                </div>
+                <div class="row mb-3">
+                    <div class="col-md-3 fw-bold">Harvest Date</div>
+                    <div class="col-md-9">
+                        @(Model.HarvestDate.HasValue ? Model.HarvestDate.Value.ToString("yyyy-MM-dd") : "-")
+                    </div>
+                </div>
+                <div class="row mb-3">
+                    <div class="col-md-3 fw-bold">Batch Number</div>
+                    <div class="col-md-9">@(string.IsNullOrEmpty(Model.BatchNumber) ? "-" : Model.BatchNumber)</div>
+                </div>
+                <div class="row mb-3">
+                    <div class="col-md-3 fw-bold">Description</div>
+                    <div class="col-md-9">@(string.IsNullOrEmpty(Model.Description) ? "-" : Model.Description)</div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-6">
+        <div class="card shadow-sm mb-4">
+            <div class="card-header bg-light">
+                <h5 class="mb-0">Stock Information</h5>
+            </div>
+            <div class="card-body">
+                <div class="row mb-3">
+                    <div class="col-md-5 fw-bold">Current Stock</div>
+                    <div class="col-md-7">
+                        <span class="h4 @(Model.CurrentStock <= (Model.MinimumStock ?? 0) ? "text-danger" : "text-success")">
+                            @Model.CurrentStock @Model.Unit
+                        </span>
+                    </div>
+                </div>
+                <div class="row mb-3">
+                    <div class="col-md-5 fw-bold">Minimum Stock</div>
+                    <div class="col-md-7">@(Model.MinimumStock.HasValue ? $"{Model.MinimumStock} {Model.Unit}" : "-")</div>
+                </div>
+                <div class="row mb-3">
+                    <div class="col-md-5 fw-bold">Reorder Level</div>
+                    <div class="col-md-7">@(Model.ReorderLevel.HasValue ? $"{Model.ReorderLevel} {Model.Unit}" : "-")</div>
+                </div>
+                <div class="row mb-3">
+                    <div class="col-md-5 fw-bold">Reorder Quantity</div>
+                    <div class="col-md-7">@(Model.ReorderQuantity.HasValue ? $"{Model.ReorderQuantity} {Model.Unit}" : "-")</div>
+                </div>
+                @if (User.HasClaim("permission", "Dashboard.FinancialView"))
+                {
+                    <div class="row mb-3"><div class="col-md-5 fw-bold">Unit Cost</div><div class="col-md-7">@(Model.UnitCost.HasValue ? $"{Model.UnitCost:C2}" : "-")</div></div>
+                    <div class="row mb-3"><div class="col-md-5 fw-bold">Retail Price</div><div class="col-md-7">@(Model.RetailPrice.HasValue ? $"{Model.RetailPrice:C2}" : "-")</div></div>
+                }
+                <div class="row mb-3">
+                    <div class="col-md-5 fw-bold">Status</div>
+                    <div class="col-md-7">
+                        <span class="badge bg-@(Model.Status == "Active" ? "success" : "secondary")">
+                            @Model.Status
+                        </span>
+                    </div>
+                </div>
+                <div class="row mb-3">
+                    <div class="col-md-5 fw-bold">Created Date</div>
+                    <div class="col-md-7">@Model.CreatedDate.ToString("yyyy-MM-dd HH:mm")</div>
+                </div>
+                <div class="row mb-3">
+                    <div class="col-md-5 fw-bold">Last Updated</div>
+                    <div class="col-md-7">
+                        @(Model.LastUpdated.HasValue ? Model.LastUpdated.Value.ToString("yyyy-MM-dd HH:mm") : "-")
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="card shadow-sm mb-4">
+            <div class="card-header bg-light">
+                <h5 class="mb-0">QR Code</h5>
+            </div>
+            <div class="card-body text-center">
+                <img src="https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=@Model.QRCodeData" alt="Item QR Code" class="img-fluid border p-2" />
+                <p class="mt-3 mb-0">Scan this QR code to identify this inventory item</p>
+                <p class="text-muted">Code: @Model.QRCodeData</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="card shadow-sm mb-4">
+    <div class="card-header bg-light d-flex justify-content-between align-items-center">
+        <h5 class="mb-0">Stock Transactions</h5>
+        <div>
+            @if (User.HasClaim("permission", "Inventory.Transact"))
+            {
+                <a asp-area="Admin" asp-controller="TeaInventory" asp-action="AddStock" asp-route-id="@Model.Id" class="btn btn-sm btn-success"><i class="fa fa-plus me-2"></i>Add Stock</a>
+                <a asp-area="Admin" asp-controller="TeaInventory" asp-action="RemoveStock" asp-route-id="@Model.Id" class="btn btn-sm btn-danger ms-2"><i class="fa fa-minus me-2"></i>Remove Stock</a>
+            }
+            @if (User.HasClaim("permission", "Inventory.AdjustSmall"))
+            {
+                <a asp-area="Admin" asp-controller="TeaInventory" asp-action="AdjustStock" asp-route-id="@Model.Id" class="btn btn-sm btn-warning ms-2"><i class="fa fa-edit me-2"></i>Adjust Stock</a>
+            }
+        </div>
+    </div>
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table table-hover mb-0">
+                <thead class="table-light">
+                    <tr>
+                        <th>Date & Time</th>
+                        <th>Transaction Type</th>
+                        <th>Quantity</th>
+                        <th>Previous Stock</th>
+                        <th>New Stock</th>
+                        <th>Reference</th>
+                        <th>Notes</th>
+                        <th>Performed By</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @if (ViewBag.Transactions != null && ViewBag.Transactions.Count > 0)
+                    {
+                        foreach (var transaction in ViewBag.Transactions)
+                        {
+                            <tr class="@(transaction.IsCorrection ? "table-warning" : "")">
+                                <td>@transaction.TransactionDate.ToString("yyyy-MM-dd HH:mm")</td>
+                                <td>
+                                    <span class="badge bg-@GetBadgeColor(transaction.TransactionType)">
+                                        @transaction.TransactionType
+                                    </span>
+                                </td>
+                                <td>@transaction.Quantity @Model.Unit</td>
+                                <td>@transaction.PreviousStock @Model.Unit</td>
+                                <td>@transaction.NewStock @Model.Unit</td>
+                                <td>@(string.IsNullOrEmpty(transaction.ReferenceNumber) ? "-" : transaction.ReferenceNumber)</td>
+                                <td>@(string.IsNullOrEmpty(transaction.Notes) ? "-" : transaction.Notes)</td>
+                                <td>@(string.IsNullOrEmpty(transaction.PerformedBy) ? "System" : transaction.PerformedBy)</td>
+                            </tr>
+                        }
+                    }
+                    else
+                    {
+                        <tr>
+                            <td colspan="8" class="text-center py-4">
+                                <div class="alert alert-info mb-0">
+                                    <i class="fa fa-info-circle me-2"></i>No transaction history found.
+                                </div>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+@if (Model.HasBeenCorrected)
+{
+    <div class="alert alert-warning">
+        <h5><i class="fa fa-exclamation-triangle me-2"></i>Correction History</h5>
+        <p>This inventory item was last corrected on @Model.LastCorrectionDate?.ToString("yyyy-MM-dd HH:mm") by @Model.LastCorrectedBy.</p>
+        <p><strong>Reason:</strong> @Model.CorrectionReason</p>
+    </div>
+}
+
+@functions {
+    string GetBadgeColor(string transactionType)
+    {
+        return transactionType switch
+        {
+            "Initial" => "primary",
+            "Delivery" => "success",
+            "Production" => "success",
+            "Return" => "success",
+            "Sale" => "danger",
+            "Damage" => "danger",
+            "Transfer" => "danger",
+            "Correction" => "warning",
+            _ => "secondary"
+        };
+    }
+} 

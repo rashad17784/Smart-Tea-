@@ -1,0 +1,4 @@
+Model,MAE,RMSE,MAPE,R2
+Naive Baseline,3.9511,4.7598,3.8485,0.6946
+Linear Regression,3.103,3.812,2.9943,0.8041
+XGBoost (tuned),3.6194,4.5918,3.4631,0.7158

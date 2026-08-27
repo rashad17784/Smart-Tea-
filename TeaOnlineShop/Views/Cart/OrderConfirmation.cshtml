@@ -1,0 +1,61 @@
+﻿@model TeaOnlineShop.Models.Dbase.Order
+@{
+    ViewData["Title"] = "Order Confirmation";
+    ViewData["BodyClass"] = "order-confirmation-page";
+}
+
+<section class="tea-confirm-section section-block">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-xl-9 col-lg-10">
+                <div class="tea-confirm-card">
+                    <div class="tea-confirm-head text-center">
+                        <i class="icon-check icons"></i>
+                        <h1>Order Confirmed</h1>
+                        <p>Your tea order has been received and is now being processed.</p>
+                        <div class="tea-confirm-order-id">Order Reference: <strong>@Model.TransId</strong></div>
+                        <div class="tea-payment-pill">Payment due on delivery</div>
+                    </div>
+
+                    <div class="row g-4">
+                        <div class="col-md-6">
+                            <div class="tea-confirm-block">
+                                <h4>Shipping Details</h4>
+                                <p>@Model.FirstName @Model.LastName</p>
+                                <p>@Model.Email</p>
+                                <p>@Model.Phone</p>
+                                <p>@Model.Address</p>
+                                <p>@Model.City, @Model.Country</p>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="tea-confirm-block">
+                                <h4>Order Summary</h4>
+                                <p><span>Date</span><strong>@(Model.CreateDate.HasValue ? String.Format("{0:MMM dd, yyyy}", Model.CreateDate) : "-")</strong></p>
+                                <p><span>Status</span><strong>@Model.Status</strong></p>
+                                <p><span>Payment</span><strong>Cash on Delivery</strong></p>
+                                <p><span>Payment status</span><strong>@Model.PaymentStatus</strong></p>
+                                <p><span>Subtotal</span><strong>@String.Format("${0:0.00}", Model.SubTotal)</strong></p>
+                                <p><span>Shipping</span><strong>@String.Format("${0:0.00}", Model.Shipping)</strong></p>
+                                <p class="total"><span>Total</span><strong>@String.Format("${0:0.00}", Model.Total)</strong></p>
+                            </div>
+                        </div>
+                    </div>
+
+                    @if (!string.IsNullOrWhiteSpace(Model.Comment))
+                    {
+                        <div class="tea-confirm-comment">
+                            <h5>Order Notes</h5>
+                            <p>@Model.Comment</p>
+                        </div>
+                    }
+
+                    <div class="tea-confirm-actions text-center">
+                        <p>Keep order reference <strong>@Model.TransId</strong> for support and delivery.</p>
+                        <a href="/Products" class="btn btn-primary rounded-pill">Continue Shopping</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>

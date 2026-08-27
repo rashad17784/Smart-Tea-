@@ -1,0 +1,62 @@
+﻿@model TeaOnlineShop.Models.ViewModels.LoginViewModel
+@{
+    ViewData["Title"] = "SmartTea System Login";
+    ViewData["BodyClass"] = "auth-page";
+}
+
+<section class="tea-auth-section">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-lg-5 col-md-8">
+                <div class="tea-auth-card">
+                    <div class="tea-auth-head text-center">
+                        <p class="tea-eyebrow">Account Access</p>
+                        <h1>SmartTea System Login</h1>
+                        <p>Secure access to inventory, supplier management, and AI decision support.</p>
+                    </div>
+
+                    @if (TempData["ErrorMessage"] != null)
+                    {
+                        <div class="alert alert-danger">@TempData["ErrorMessage"]</div>
+                    }
+
+                    <form asp-action="Login" method="post" class="tea-auth-form needs-validation" novalidate>
+                        <div asp-validation-summary="ModelOnly" class="text-danger mb-2"></div>
+
+                        <div class="mb-3">
+                            <label asp-for="Email" class="form-label">Email</label>
+                            <input asp-for="Email" class="form-control" placeholder="name@example.com" required />
+                            <span asp-validation-for="Email" class="text-danger"></span>
+                        </div>
+
+                        <div class="mb-3">
+                            <label asp-for="Password" class="form-label">Password</label>
+                            <input asp-for="Password" type="password" class="form-control" placeholder="Enter your password" required />
+                            <span asp-validation-for="Password" class="text-danger"></span>
+                        </div>
+
+                        <div class="tea-auth-meta">
+                            <div class="form-check">
+                                <input asp-for="RememberMe" class="form-check-input" type="checkbox" id="rememberMe">
+                                <label class="form-check-label" for="rememberMe">Remember me</label>
+                            </div>
+                            <input asp-for="ReturnUrl" type="hidden" />
+                            <a href="/UserAccount/ForgotPassword">Forgot password?</a>
+                            <a href="/UserAccount/Register">Need an account?</a>
+                        </div>
+
+                        <button type="submit" class="btn btn-primary w-100 rounded-pill">Sign In</button>
+                    </form>
+
+                    <div class="tea-auth-foot text-center">
+                        <p class="mb-0">New user? <a href="/UserAccount/Register">Create account</a></p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+}

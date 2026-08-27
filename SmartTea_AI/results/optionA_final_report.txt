@@ -1,0 +1,66 @@
+
+╔══════════════════════════════════════════════════════════════╗
+║        🍵 SmartTea AI — Option A Validation Report           ║
+║          Multi-Grade SARIMA vs LSTM Comparison               ║
+╚══════════════════════════════════════════════════════════════╝
+
+📋 EXPERIMENT SETUP:
+──────────────────────────────────────────────────────────────
+   Validation Type : Multi-Grade Cross-Comparison
+   Grades Tested   : BOP, BOPF, DUST, FNGS, OP
+   Test Window     : 30 days per grade
+   LSTM Look-back  : 30 days
+   Dataset Period  : 2021-01-01 to 2023-12-31
+
+📈 RESULTS BY GRADE (MAPE %):
+──────────────────────────────────────────────────────────────
+   Grade   SARIMA      LSTM        Winner       Gap
+   ─────   ──────────  ──────────  ───────────  ──────
+   BOP      15.562%✅    7.477%🌟  🏆 LSTM     8.085%
+   BOPF     17.572%✅    9.846%🌟  🏆 LSTM     7.726%
+   DUST     14.542%✅    8.083%🌟  🏆 LSTM     6.459%
+   FNGS     12.193%✅    9.403%🌟  🏆 LSTM     2.790%
+   OP       19.149%✅    8.331%🌟  🏆 LSTM     10.818%
+
+──────────────────────────────────────────────────────────────
+   AVERAGE   15.804%      8.628%
+
+📊 WIN COUNT:
+──────────────────────────────────────────────────────────────
+   LSTM   won : 5/5 grades
+   SARIMA won : 0/5 grades
+
+🏆 OVERALL WINNER (by average MAPE): LSTM
+──────────────────────────────────────────────────────────────
+
+📝 ACADEMIC CONCLUSION:
+──────────────────────────────────────────────────────────────
+   This multi-grade validation confirms that:
+
+   1. LSTM consistently outperforms SARIMA across
+      5 out of 5 tea grades tested.
+
+   2. LSTM average MAPE = 8.628%
+      SARIMA average MAPE = 15.804%
+      LSTM is 1.83x more accurate on average.
+
+   3. Grades where LSTM wins by the largest margin:
+
+      → OP: LSTM better by 10.818%
+      → BOP: LSTM better by 8.085%
+      → BOPF: LSTM better by 7.726%
+
+   4. This result is ROBUST because it was validated
+      across 5 different tea grades, not just one.
+
+   5. Recommendation: Deploy LSTM as the primary
+      forecasting model for ALL grade types in
+      the SmartTea production system.
+
+📁 OUTPUT FILES:
+──────────────────────────────────────────────────────────────
+   plots/optionA/A01_all_grades_forecasts.png
+   plots/optionA/A02_mape_comparison.png
+   plots/optionA/A03_winner_analysis.png
+   results/optionA_all_grades_results.csv
+══════════════════════════════════════════════════════════════

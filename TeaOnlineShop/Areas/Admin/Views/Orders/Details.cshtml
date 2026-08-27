@@ -1,0 +1,118 @@
+@model TeaOnlineShop.Models.Dbase.Order
+@{
+    ViewData["Title"] = "Order Details";
+    var financial = User.HasClaim("permission", "Dashboard.FinancialView");
+    var canRecordPayment = User.HasClaim("permission", "Orders.RecordPayment");
+    var ship = ViewBag.ShipModel as TeaOnlineShop.Models.ViewModels.ShipOrderViewModel ?? new();
+}
+
+<div class="d-flex flex-wrap justify-content-between gap-3 mb-4">
+    <div>
+        <h1 class="h3 mb-1">Order @Model.TransId</h1>
+        <p class="text-muted mb-0">Created @Model.CreateDate?.ToString("g") · <strong>@Model.Status</strong></p>
+    </div>
+    <a asp-action="Index" class="btn btn-outline-secondary align-self-start">Back to orders</a>
+</div>
+
+<div class="row g-4">
+    <div class="col-xl-8">
+        <div class="card mb-4">
+            <div class="card-header"><strong>Immutable order lines</strong></div>
+            <div class="table-responsive">
+                <table class="table align-middle mb-0">
+                    <thead><tr><th>SKU / product</th><th>Quantity</th>@if (financial) { <th>Unit price</th><th>Line total</th> }<th>Fulfilment</th></tr></thead>
+                    <tbody>
+                    @foreach (var line in Model.Lines)
+                    {
+                        <tr>
+                            <td><code>@line.Sku</code><br /><strong>@line.ProductName</strong></td>
+                            <td>@line.Quantity</td>
+                            @if (financial) { <td>@line.UnitPrice.ToString("F2")</td><td>@line.LineTotal.ToString("F2")</td> }
+                            <td>@line.FulfilmentStatus</td>
+                        </tr>
+                    }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <div class="card mb-4">
+            <div class="card-header"><strong>Status history</strong></div>
+            <div class="list-group list-group-flush">
+            @foreach (var item in Model.StatusHistory)
+            {
+                <div class="list-group-item">
+                    <div class="d-flex justify-content-between gap-3"><strong>@item.FromStatus → @item.ToStatus</strong><small>@item.ChangedAtUtc.ToLocalTime().ToString("g")</small></div>
+                    <div>@item.Reason</div><small class="text-muted">@item.ChangedByName</small>
+                </div>
+            }
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-header"><strong>Payment audit</strong></div>
+            <div class="list-group list-group-flush">
+            @foreach (var item in Model.PaymentEvents)
+            {
+                <div class="list-group-item">
+                    <div class="d-flex justify-content-between gap-3"><strong>@item.FromStatus → @item.ToStatus</strong><small>@item.RecordedAtUtc.ToLocalTime().ToString("g")</small></div>
+                    <div>@item.Reason</div>
+                    <small class="text-muted">Reference @item.Reference · @item.RecordedByName@if (financial) { <text> · @item.Amount.ToString("F2")</text> }</small>
+                </div>
+            }
+            </div>
+        </div>
+    </div>
+
+    <div class="col-xl-4">
+        <div class="card mb-4">
+            <div class="card-header"><strong>Delivery address</strong></div>
+            <div class="card-body"><strong>@Model.FirstName @Model.LastName</strong><br />@Model.Address<br />@Model.City, @Model.Country<br /><br />@Model.Phone<br />@Model.Email</div>
+        </div>
+
+        <div class="card mb-4">
+            <div class="card-header"><strong>Payment</strong></div>
+            <div class="card-body">
+                <div>Method: <strong>Cash on Delivery</strong></div>
+                <div>Status: <strong>@Model.PaymentStatus</strong></div>
+                @if (financial) { <div class="mt-2">Amount: <strong>@Model.Total?.ToString("F2")</strong></div> }
+            </div>
+        </div>
+
+        @if (Model.Status == "Pending" && User.HasClaim("permission", "Orders.Ship"))
+        {
+            <div class="card mb-4">
+                <div class="card-header"><strong>Dispatch order</strong></div>
+                <div class="card-body">
+                    <form asp-action="Ship" method="post">
+                        <input type="hidden" name="OrderId" value="@Model.Id" />
+                        <div class="mb-3"><label class="form-label">Carrier</label><input name="Carrier" class="form-control" maxlength="100" required /></div>
+                        <div class="mb-3"><label class="form-label">Tracking number</label><input name="TrackingNumber" class="form-control" maxlength="100" required /></div>
+                        <div class="mb-3"><label class="form-label">Dispatch verification</label><textarea name="Reason" class="form-control" maxlength="500" required>@ship.Reason</textarea></div>
+                        <button class="btn btn-success w-100" type="submit">Confirm shipped</button>
+                    </form>
+                </div>
+            </div>
+        }
+
+        @if (Model.Status == "Shipped")
+        {
+            <div class="alert alert-success"><strong>Dispatched</strong><br />@Model.Carrier · @Model.TrackingNumber<br /><small>@Model.ShippedAtUtc?.ToLocalTime().ToString("g") by @Model.ShippedByName</small></div>
+        }
+
+        @if (Model.Status == "Shipped" && Model.PaymentStatus != "Collected" && canRecordPayment)
+        {
+            <div class="card">
+                <div class="card-header"><strong>Record COD collection</strong></div>
+                <div class="card-body">
+                    <form asp-action="RecordPayment" method="post">
+                        <input type="hidden" name="OrderId" value="@Model.Id" />
+                        <div class="mb-3"><label class="form-label">Receipt / settlement reference</label><input name="Reference" class="form-control" maxlength="120" required /></div>
+                        <div class="mb-3"><label class="form-label">Collection evidence</label><textarea name="Reason" class="form-control" maxlength="500" required></textarea></div>
+                        <button class="btn btn-primary w-100" type="submit">Record collected</button>
+                    </form>
+                </div>
+            </div>
+        }
+    </div>
+</div>

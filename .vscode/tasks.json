@@ -1,0 +1,68 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "SmartTea: Ensure SQL and AI",
+      "type": "process",
+      "command": "cmd.exe",
+      "args": [
+        "/d",
+        "/c",
+        "${workspaceFolder}\\Start-SmartTea-Dependencies.cmd"
+      ],
+      "problemMatcher": []
+    },
+    {
+      "label": "SmartTea: Build (Release)",
+      "type": "process",
+      "command": "dotnet",
+      "args": [
+        "build",
+        "${workspaceFolder}/TeaOnlineShop/TeaOnlineShop.csproj",
+        "--configuration",
+        "Release",
+        "--nologo"
+      ],
+      "problemMatcher": "$msCompile",
+      "group": {
+        "kind": "build",
+        "isDefault": true
+      }
+    },
+    {
+      "label": "SmartTea: Prepare complete system",
+      "dependsOrder": "sequence",
+      "dependsOn": [
+        "SmartTea: Ensure SQL and AI",
+        "SmartTea: Build (Release)"
+      ],
+      "problemMatcher": []
+    },
+    {
+      "label": "SmartTea: Run complete system (Release)",
+      "type": "process",
+      "command": "dotnet",
+      "args": [
+        "run",
+        "--configuration",
+        "Release",
+        "--no-build",
+        "--launch-profile",
+        "http"
+      ],
+      "options": {
+        "cwd": "${workspaceFolder}/TeaOnlineShop"
+      },
+      "dependsOrder": "sequence",
+      "dependsOn": [
+        "SmartTea: Prepare complete system"
+      ],
+      "problemMatcher": "$msCompile",
+      "presentation": {
+        "reveal": "always",
+        "panel": "dedicated",
+        "clear": true
+      }
+    }
+  ]
+}
